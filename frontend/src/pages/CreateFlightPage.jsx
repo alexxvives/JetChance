@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import LocationAutocomplete from '../components/LocationAutocomplete';
-import { searchCities, searchAirports } from '../data/airportsAndCities';
+import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
 
 export default function CreateFlightPage() {
   const navigate = useNavigate();
@@ -90,17 +90,69 @@ export default function CreateFlightPage() {
     );
   };
 
+  // Smart airport search functions - filter by city if city is selected
+  const searchOriginAirports = (query, limit = 10) => {
+    if (!query || query.length < 1) return [];
+    
+    // If origin city is selected, only show airports in that city
+    if (formData.origin && formData.origin.trim() !== '') {
+      const cityAirports = getCityAirports(formData.origin);
+      const lowercaseQuery = query.toLowerCase();
+      
+      return cityAirports
+        .filter(airport => 
+          airport.code.toLowerCase().includes(lowercaseQuery) ||
+          airport.name.toLowerCase().includes(lowercaseQuery)
+        )
+        .slice(0, limit);
+    }
+    
+    // If no city selected, search all airports
+    return searchAirports(query, limit);
+  };
+
+  const searchDestinationAirports = (query, limit = 10) => {
+    if (!query || query.length < 1) return [];
+    
+    // If destination city is selected, only show airports in that city
+    if (formData.destination && formData.destination.trim() !== '') {
+      const cityAirports = getCityAirports(formData.destination);
+      const lowercaseQuery = query.toLowerCase();
+      
+      return cityAirports
+        .filter(airport => 
+          airport.code.toLowerCase().includes(lowercaseQuery) ||
+          airport.name.toLowerCase().includes(lowercaseQuery)
+        )
+        .slice(0, limit);
+    }
+    
+    // If no city selected, search all airports
+    return searchAirports(query, limit);
+  };
+
   // Handlers for autocomplete selections
   const handleOriginCityChange = (value) => {
     if (typeof value === 'object' && value.city) {
       setFormData({
         ...formData, 
         origin: value.city,
-        originCode: '', // Reset airport code when city changes
-        originAirport: null
+        // Clear airport selection if city changes to a different city
+        ...(formData.origin !== value.city && {
+          originCode: '',
+          originAirport: null
+        })
       });
     } else {
-      setFormData({...formData, origin: value, originCode: '', originAirport: null});
+      setFormData({
+        ...formData, 
+        origin: value,
+        // Clear airport if city is being typed (not from dropdown)
+        ...(value !== formData.origin && {
+          originCode: '',
+          originAirport: null
+        })
+      });
     }
   };
 
@@ -109,11 +161,22 @@ export default function CreateFlightPage() {
       setFormData({
         ...formData, 
         destination: value.city,
-        destinationCode: '', // Reset airport code when city changes
-        destinationAirport: null
+        // Clear airport selection if city changes to a different city
+        ...(formData.destination !== value.city && {
+          destinationCode: '',
+          destinationAirport: null
+        })
       });
     } else {
-      setFormData({...formData, destination: value, destinationCode: '', destinationAirport: null});
+      setFormData({
+        ...formData, 
+        destination: value,
+        // Clear airport if city is being typed (not from dropdown)
+        ...(value !== formData.destination && {
+          destinationCode: '',
+          destinationAirport: null
+        })
+      });
     }
   };
 
@@ -122,7 +185,7 @@ export default function CreateFlightPage() {
       setFormData({
         ...formData,
         originCode: value.code,
-        origin: value.city, // Update city to match airport
+        origin: value.city, // Auto-fill city based on airport
         originAirport: value
       });
     } else {
@@ -135,7 +198,7 @@ export default function CreateFlightPage() {
       setFormData({
         ...formData,
         destinationCode: value.code,
-        destination: value.city, // Update city to match airport
+        destination: value.city, // Auto-fill city based on airport
         destinationAirport: value
       });
     } else {
@@ -265,10 +328,10 @@ export default function CreateFlightPage() {
 
               <LocationAutocomplete
                 label="Origin Airport"
-                placeholder="LAX - Los Angeles International"
+                placeholder={formData.origin ? `Airports in ${formData.origin}` : "LAX - Los Angeles International"}
                 value={formData.originAirport ? `${formData.originAirport.code} - ${formData.originAirport.name}` : formData.originCode}
                 onChange={handleOriginAirportChange}
-                searchFunction={searchAirports}
+                searchFunction={searchOriginAirports}
                 renderOption={renderAirportOption}
                 required
               />
@@ -285,10 +348,10 @@ export default function CreateFlightPage() {
 
               <LocationAutocomplete
                 label="Destination Airport"
-                placeholder="JFK - John F. Kennedy International"
+                placeholder={formData.destination ? `Airports in ${formData.destination}` : "JFK - John F. Kennedy International"}
                 value={formData.destinationAirport ? `${formData.destinationAirport.code} - ${formData.destinationAirport.name}` : formData.destinationCode}
                 onChange={handleDestinationAirportChange}
-                searchFunction={searchAirports}
+                searchFunction={searchDestinationAirports}
                 renderOption={renderAirportOption}
                 required
               />
