@@ -1,0 +1,26 @@
+{
+	"name": "chancefly-api",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"@types/bcryptjs": "^2.4.6",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/uuid": "^10.0.0",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "^4.37.1"
+	},
+	"dependencies": {
+		"bcryptjs": "^3.0.2",
+		"jsonwebtoken": "^9.0.2",
+		"uuid": "^13.0.0"
+	}
+}
