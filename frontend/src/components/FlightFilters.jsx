@@ -1,34 +1,59 @@
 import React from 'react';
+import LocationAutocomplete from './LocationAutocomplete';
+import { searchCities } from '../data/airportsAndCities';
 
 export default function FlightFilters({ filters, setFilters }) {
+  const renderCityOption = (city, isSelected) => {
+    if (isSelected) {
+      return city.city; // Just return city name for input display
+    }
+    
+    return (
+      <div>
+        <div className="font-medium">{city.city}</div>
+        <div className="text-sm text-gray-500">
+          {city.state ? `${city.state}, ` : ''}{city.country}
+        </div>
+      </div>
+    );
+  };
+
+  const handleOriginChange = (value) => {
+    if (typeof value === 'object' && value.city) {
+      setFilters({...filters, origin: value.city});
+    } else {
+      setFilters({...filters, origin: value});
+    }
+  };
+
+  const handleDestinationChange = (value) => {
+    if (typeof value === 'object' && value.city) {
+      setFilters({...filters, destination: value.city});
+    } else {
+      setFilters({...filters, destination: value});
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            From
-          </label>
-          <input
-            type="text"
-            value={filters.origin}
-            onChange={(e) => setFilters({...filters, origin: e.target.value})}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Origin city"
-          />
-        </div>
+        <LocationAutocomplete
+          label="From"
+          placeholder="Origin city"
+          value={filters.origin}
+          onChange={handleOriginChange}
+          searchFunction={searchCities}
+          renderOption={renderCityOption}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            To
-          </label>
-          <input
-            type="text"
-            value={filters.destination}
-            onChange={(e) => setFilters({...filters, destination: e.target.value})}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Destination city"
-          />
-        </div>
+        <LocationAutocomplete
+          label="To"
+          placeholder="Destination city"
+          value={filters.destination}
+          onChange={handleDestinationChange}
+          searchFunction={searchCities}
+          renderOption={renderCityOption}
+        />
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

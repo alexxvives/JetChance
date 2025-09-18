@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import LocationAutocomplete from '../components/LocationAutocomplete';
+import { searchCities, searchAirports } from '../data/airportsAndCities';
 
 export default function CreateFlightPage() {
   const navigate = useNavigate();
@@ -17,7 +19,10 @@ export default function CreateFlightPage() {
     seatsAvailable: '',
     duration: '',
     aircraftImage: null,
-    description: ''
+    description: '',
+    // Store selected airport objects
+    originAirport: null,
+    destinationAirport: null
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -54,6 +59,88 @@ export default function CreateFlightPage() {
   const removeImage = () => {
     setFormData({...formData, aircraftImage: null});
     setImagePreview(null);
+  };
+
+  // Render functions for autocomplete options
+  const renderCityOption = (city, isSelected) => {
+    if (isSelected) {
+      return city.city;
+    }
+    return (
+      <div>
+        <div className="font-medium">{city.city}</div>
+        <div className="text-sm text-gray-500">
+          {city.state ? `${city.state}, ` : ''}{city.country}
+        </div>
+      </div>
+    );
+  };
+
+  const renderAirportOption = (airport, isSelected) => {
+    if (isSelected) {
+      return `${airport.code} - ${airport.name}`;
+    }
+    return (
+      <div>
+        <div className="font-medium">{airport.code} - {airport.name}</div>
+        <div className="text-sm text-gray-500">
+          {airport.city}, {airport.state ? `${airport.state}, ` : ''}{airport.country}
+        </div>
+      </div>
+    );
+  };
+
+  // Handlers for autocomplete selections
+  const handleOriginCityChange = (value) => {
+    if (typeof value === 'object' && value.city) {
+      setFormData({
+        ...formData, 
+        origin: value.city,
+        originCode: '', // Reset airport code when city changes
+        originAirport: null
+      });
+    } else {
+      setFormData({...formData, origin: value, originCode: '', originAirport: null});
+    }
+  };
+
+  const handleDestinationCityChange = (value) => {
+    if (typeof value === 'object' && value.city) {
+      setFormData({
+        ...formData, 
+        destination: value.city,
+        destinationCode: '', // Reset airport code when city changes
+        destinationAirport: null
+      });
+    } else {
+      setFormData({...formData, destination: value, destinationCode: '', destinationAirport: null});
+    }
+  };
+
+  const handleOriginAirportChange = (value) => {
+    if (typeof value === 'object' && value.code) {
+      setFormData({
+        ...formData,
+        originCode: value.code,
+        origin: value.city, // Update city to match airport
+        originAirport: value
+      });
+    } else {
+      setFormData({...formData, originCode: value, originAirport: null});
+    }
+  };
+
+  const handleDestinationAirportChange = (value) => {
+    if (typeof value === 'object' && value.code) {
+      setFormData({
+        ...formData,
+        destinationCode: value.code,
+        destination: value.city, // Update city to match airport
+        destinationAirport: value
+      });
+    } else {
+      setFormData({...formData, destinationCode: value, destinationAirport: null});
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -166,63 +253,45 @@ export default function CreateFlightPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Route Information</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Origin City *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.origin}
-                  onChange={(e) => setFormData({...formData, origin: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Los Angeles"
-                />
-              </div>
+              <LocationAutocomplete
+                label="Origin City"
+                placeholder="Los Angeles"
+                value={formData.origin}
+                onChange={handleOriginCityChange}
+                searchFunction={searchCities}
+                renderOption={renderCityOption}
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Origin Airport Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.originCode}
-                  onChange={(e) => setFormData({...formData, originCode: e.target.value.toUpperCase()})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="LAX"
-                  maxLength="3"
-                />
-              </div>
+              <LocationAutocomplete
+                label="Origin Airport"
+                placeholder="LAX - Los Angeles International"
+                value={formData.originAirport ? `${formData.originAirport.code} - ${formData.originAirport.name}` : formData.originCode}
+                onChange={handleOriginAirportChange}
+                searchFunction={searchAirports}
+                renderOption={renderAirportOption}
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Destination City *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.destination}
-                  onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="New York"
-                />
-              </div>
+              <LocationAutocomplete
+                label="Destination City"
+                placeholder="New York"
+                value={formData.destination}
+                onChange={handleDestinationCityChange}
+                searchFunction={searchCities}
+                renderOption={renderCityOption}
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Destination Airport Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.destinationCode}
-                  onChange={(e) => setFormData({...formData, destinationCode: e.target.value.toUpperCase()})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="JFK"
-                  maxLength="3"
-                />
-              </div>
+              <LocationAutocomplete
+                label="Destination Airport"
+                placeholder="JFK - John F. Kennedy International"
+                value={formData.destinationAirport ? `${formData.destinationAirport.code} - ${formData.destinationAirport.name}` : formData.destinationCode}
+                onChange={handleDestinationAirportChange}
+                searchFunction={searchAirports}
+                renderOption={renderAirportOption}
+                required
+              />
             </div>
           </div>
 

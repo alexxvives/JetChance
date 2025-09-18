@@ -79,44 +79,14 @@ export default function OperatorDashboard({ user }) {
                 Welcome back, {user?.firstName} {user?.lastName}
               </p>
             </div>
+            <button
+              onClick={() => navigate('/create-flight')}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Create Flight
+            </button>
           </div>
-        </div>
-
-        {/* Quick Access */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <button
-            onClick={() => navigate('/create-flight')}
-            className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-700 transition-colors text-left"
-          >
-            <PlusIcon className="h-6 w-6 mb-2" />
-            <div className="font-semibold">Create Flight</div>
-            <div className="text-sm opacity-90">Add new listing</div>
-          </button>
-          
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-white border-2 border-gray-200 text-gray-700 p-4 rounded-2xl hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
-          >
-            <EyeIcon className="h-6 w-6 mb-2" />
-            <div className="font-semibold">View as Customer</div>
-            <div className="text-sm text-gray-500">See your listings</div>
-          </button>
-          
-          <button
-            className="bg-white border-2 border-gray-200 text-gray-700 p-4 rounded-2xl hover:border-green-300 hover:bg-green-50 transition-colors text-left"
-          >
-            <div className="text-2xl mb-2">📊</div>
-            <div className="font-semibold">Analytics</div>
-            <div className="text-sm text-gray-500">View reports</div>
-          </button>
-          
-          <button
-            className="bg-white border-2 border-gray-200 text-gray-700 p-4 rounded-2xl hover:border-purple-300 hover:bg-purple-50 transition-colors text-left"
-          >
-            <div className="text-2xl mb-2">⚙️</div>
-            <div className="font-semibold">Settings</div>
-            <div className="text-sm text-gray-500">Manage profile</div>
-          </button>
         </div>
 
         {/* Stats */}
