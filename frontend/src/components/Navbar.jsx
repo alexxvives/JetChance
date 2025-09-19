@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
+import LanguageSelector from './LanguageSelector';
 
 export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,73 +38,79 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className={`${
-                isActivePage('/') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
-              } transition-colors text-sm font-medium`}
-            >
-              Home
-            </Link>
-            
-            {isAuthenticated && (
+          <div className="hidden md:flex items-center w-full">
+            <div className="flex-1 flex justify-center items-center space-x-8">
               <Link
-                to="/dashboard"
+                to="/"
                 className={`${
-                  isActivePage('/dashboard') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                  isActivePage('/') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
                 } transition-colors text-sm font-medium`}
               >
-                Dashboard
+                {t('nav.home')}
               </Link>
-            )}
-
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                {/* Performance Toggle */}
-                <button
-                  onClick={() => setUseSimpleBackground?.(!useSimpleBackground)}
-                  className="p-2 rounded-lg text-white/70 hover:text-violet-300 hover:bg-violet-500/20 transition-colors backdrop-blur-sm"
-                  title={useSimpleBackground ? "Switch to plasma background" : "Switch to simple background"}
-                >
-                  {useSimpleBackground ? "🎨" : "⚡"}
-                </button>
-                <div className="text-sm text-white/80">
-                  Welcome, <span className="font-semibold text-violet-300">{user?.firstName}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="bg-violet-500/20 backdrop-blur-sm text-white border border-violet-400/30 px-4 py-2 rounded-lg font-medium hover:bg-violet-500/30 transition-colors shadow-lg"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                {/* Performance Toggle */}
-                <button
-                  onClick={() => setUseSimpleBackground?.(!useSimpleBackground)}
-                  className="p-2 rounded-lg text-white/70 hover:text-violet-300 hover:bg-violet-500/20 transition-colors backdrop-blur-sm"
-                  title={useSimpleBackground ? "Switch to plasma background" : "Switch to simple background"}
-                >
-                  {useSimpleBackground ? "🎨" : "⚡"}
-                </button>
+              <Link
+                to="/operators"
+                className={`${
+                  isActivePage('/operators') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                } transition-colors text-sm font-medium`}
+              >
+                {t('nav.operators')}
+              </Link>
+              <Link
+                to="/about"
+                className={`${
+                  isActivePage('/about') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                } transition-colors text-sm font-medium`}
+              >
+                {t('nav.about')}
+              </Link>
+              <Link
+                to="/contact"
+                className={`${
+                  isActivePage('/contact') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                } transition-colors text-sm font-medium`}
+              >
+                {t('nav.contact')}
+              </Link>
+              {isAuthenticated && (
                 <Link
-                  to="/login"
+                  to="/dashboard"
                   className={`${
-                    isActivePage('/login') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                    isActivePage('/dashboard') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
                   } transition-colors text-sm font-medium`}
                 >
-                  Sign In
+                  {t('nav.dashboard')}
                 </Link>
-                <Link
-                  to="/signup"
-                  className="bg-violet-500/90 backdrop-blur-sm text-white px-6 py-2 rounded-lg font-semibold hover:bg-violet-600 transition-colors shadow-xl border border-violet-400/30"
-                >
-                  Get Started
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
+            
+            {/* Language Selector */}
+            <div className="flex items-center space-x-4">
+              <LanguageSelector />
+              
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm text-white/80">
+                    {t('nav.welcome')}, <span className="font-semibold text-violet-300">{user?.firstName}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-violet-500/20 backdrop-blur-sm text-white border border-violet-400/30 px-4 py-2 rounded-lg font-medium hover:bg-violet-500/30 transition-colors shadow-lg"
+                  >
+                    {t('nav.logout')}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    to="/signup"
+                    className="bg-violet-500/90 backdrop-blur-sm text-white px-6 py-2 rounded-lg font-semibold hover:bg-violet-600 transition-colors shadow-xl border border-violet-400/30"
+                  >
+                    {t('nav.signIn')}
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -124,7 +133,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-violet-300/20 py-4 backdrop-blur-md">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 items-center">
               <Link
                 to="/"
                 onClick={() => setIsMenuOpen(false)}
@@ -132,9 +141,35 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   isActivePage('/') ? 'text-violet-400 font-medium' : 'text-white/80'
                 } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
               >
-                Home
+                {t('nav.home')}
               </Link>
-
+              <Link
+                to="/operators"
+                onClick={() => setIsMenuOpen(false)}
+                className={`${
+                  isActivePage('/operators') ? 'text-violet-400 font-medium' : 'text-white/80'
+                } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
+              >
+                {t('nav.operators')}
+              </Link>
+              <Link
+                to="/about"
+                onClick={() => setIsMenuOpen(false)}
+                className={`${
+                  isActivePage('/about') ? 'text-violet-400 font-medium' : 'text-white/80'
+                } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
+              >
+                {t('nav.about')}
+              </Link>
+              <Link
+                to="/contact"
+                onClick={() => setIsMenuOpen(false)}
+                className={`${
+                  isActivePage('/contact') ? 'text-violet-400 font-medium' : 'text-white/80'
+                } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
+              >
+                {t('nav.contact')}
+              </Link>
               {isAuthenticated && (
                 <Link
                   to="/dashboard"
@@ -143,39 +178,36 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     isActivePage('/dashboard') ? 'text-violet-400 font-medium' : 'text-white/80'
                   } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
               )}
-
+              
+              {/* Mobile Language Selector */}
+              <div className="px-4 py-2 border-t border-violet-300/20 pt-4">
+                <div className="text-sm text-white/70 mb-3 font-medium">{t('nav.language')}</div>
+                <LanguageSelector />
+              </div>
+              
               {isAuthenticated ? (
                 <div className="px-4 py-2 border-t border-violet-300/20 pt-4">
                   <div className="text-sm text-white/70 mb-3">
-                    Signed in as <span className="font-medium text-violet-300">{user?.firstName}</span>
+                    {t('nav.welcome')} <span className="font-medium text-violet-300">{user?.firstName}</span>
                   </div>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left text-white/80 hover:text-red-400 transition-colors"
                   >
-                    Sign Out
+                    {t('nav.logout')}
                   </button>
                 </div>
               ) : (
                 <>
                   <Link
-                    to="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`${
-                      isActivePage('/login') ? 'text-violet-400 font-medium' : 'text-white/80'
-                    } block px-4 py-2 hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm`}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
                     to="/signup"
                     onClick={() => setIsMenuOpen(false)}
                     className="mx-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium text-center hover:from-violet-500 hover:to-purple-500 transition-all duration-200 backdrop-blur-sm border border-violet-400/20 shadow-lg shadow-violet-500/20"
                   >
-                    Get Started
+                    {t('nav.signIn')}
                   </Link>
                 </>
               )}

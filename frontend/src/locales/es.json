@@ -1,0 +1,292 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "operators": "Para Operadores",
+    "about": "Acerca de Nosotros",
+    "contact": "Contáctanos",
+    "dashboard": "Panel",
+    "signIn": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "welcome": "Bienvenido",
+    "language": "Idioma"
+  },
+  "hero": {
+    "title": "Vuela Privado por Menos",
+    "subtitle": "Reserva vuelos en jets privados vacíos hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles.",
+    "browseFlights": "Explorar Vuelos",
+    "learnMore": "Aprender Más"
+  },
+  "stats": {
+    "flightsBooked": "Vuelos Reservados",
+    "verifiedOperators": "Operadores Verificados",
+    "customerSatisfaction": "Satisfacción del Cliente",
+    "savingsGenerated": "Ahorros Generados"
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Reservar tu vuelo soñado es más fácil que nunca. Sigue estos simples pasos para acceder a viajes de lujo a precios increíbles.",
+    "step1": {
+      "title": "Buscar y Comparar",
+      "description": "Explora vuelos vacíos disponibles, compara precios, tipos de aeronaves y horarios de salida para encontrar tu opción perfecta."
+    },
+    "step2": {
+      "title": "Reservar al Instante",
+      "description": "Asegura tu asiento con nuestro proceso de reserva simplificado. Añade pasajeros, selecciona servicios y completa el pago en minutos."
+    },
+    "step3": {
+      "title": "Volar en Lujo",
+      "description": "Llega a la terminal privada, evita las multitudes y disfruta de tu experiencia de viaje premium con servicio personalizado."
+    }
+  },
+  "whyChoose": {
+    "title": "Por Qué Elegir ChanceFly",
+    "subtitle": "Experimenta la diferencia con nuestra plataforma premium diseñada para viajeros exigentes.",
+    "savings": {
+      "title": "Ahorros Masivos",
+      "description": "Ahorra hasta 75% en vuelos privados de lujo reservando rutas vacías de operadores verificados."
+    },
+    "quality": {
+      "title": "Calidad Verificada",
+      "description": "Todas las aeronaves y operadores son rigurosamente verificados por seguridad, estándares de lujo y excelencia en el servicio."
+    },
+    "instant": {
+      "title": "Reserva Instantánea",
+      "description": "Reserva vuelos confirmados al instante con nuestra plataforma simplificada. Sin esperas, sin incertidumbre."
+    }
+  },
+  "advantages": {
+    "noQueues": "Sin Colas en el Aeropuerto",
+    "noQueuesSub": "Evita las multitudes y largas filas de seguridad",
+    "flexibility": "Flexibilidad Total",
+    "flexibilitySub": "Cambia tus planes con restricciones mínimas",
+    "privacy": "Privacidad Completa",
+    "privacySub": "Disfruta tu vuelo sin ninguna molestia",
+    "luxury": "Amenidades de Lujo",
+    "luxurySub": "Servicios premium y comodidad en todo momento"
+  },
+  "testimonials": {
+    "title": "Lo Que Dicen Nuestros Clientes",
+    "subtitle": "Únete a miles de viajeros satisfechos que han descubierto la ventaja de ChanceFly.",
+    "customer1": {
+      "text": "ChanceFly transformó cómo viajo por negocios. Los ahorros son increíbles, y el servicio siempre es de primera clase. He reservado más de 20 vuelos y cada experiencia ha sido perfecta.",
+      "name": "Sarah Chen",
+      "title": "CEO, TechVision"
+    },
+    "customer2": {
+      "text": "Como alguien que valora tanto el lujo como la eficiencia, ChanceFly cumple en ambos aspectos. Los vuelos vacíos son revolucionarios para escapadas espontáneas de fin de semana.",
+      "name": "Marcus Rodriguez",
+      "title": "Gerente de Inversiones"
+    },
+    "customer3": {
+      "text": "La plataforma es increíblemente fácil de usar, y el equipo de soporte al cliente va más allá de lo esperado. He ahorrado miles manteniendo la experiencia de viaje de lujo que espero.",
+      "name": "Elena Petrov",
+      "title": "Diseñadora de Moda"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Experimentar Viajes de Lujo?",
+    "subtitle": "Únete a miles de viajeros inteligentes que han descubierto la ventaja de ChanceFly. Tu próximo vuelo de lujo está a solo un clic.",
+    "startBooking": "Comenzar a Reservar",
+    "browseFlights": "Explorar Vuelos"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Mantente Actualizado con Ofertas Exclusivas",
+      "subtitle": "Suscríbete a nuestro boletín y sé el primero en conocer nuevos vuelos vacíos y ofertas especiales.",
+      "placeholder": "Ingresa tu dirección de correo",
+      "subscribe": "Suscribirse"
+    },
+    "company": {
+      "description": "Tu puerta de entrada a viajes de lujo a precios accesibles. Descubre vuelos vacíos y experimenta la aviación premium."
+    },
+    "quickLinks": {
+      "title": "Enlaces Rápidos",
+      "browseFlights": "Explorar Vuelos",
+      "howItWorks": "Cómo Funciona",
+      "pricing": "Precios",
+      "about": "Acerca de Nosotros",
+      "contact": "Contacto"
+    },
+    "operators": {
+      "title": "Para Operadores",
+      "listAircraft": "Lista Tu Aeronave",
+      "partnerProgram": "Programa de Socios",
+      "operatorPortal": "Portal del Operador",
+      "resources": "Recursos"
+    },
+    "support": {
+      "title": "Soporte",
+      "helpCenter": "Centro de Ayuda",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "safety": "Seguridad y Protección"
+    },
+    "copyright": "© 2025 ChanceFly. Todos los derechos reservados."
+  },
+  "about": {
+    "hero": {
+      "title": "Redefiniendo los Viajes de Lujo",
+      "subtitle": "ChanceFly está revolucionando la aviación privada haciendo que los viajes de lujo sean accesibles, transparentes y sin esfuerzo. Descubre nuestra historia y la pasión que nos impulsa hacia adelante."
+    },
+    "mission": {
+      "title": "Nuestra Misión",
+      "subtitle": "Democratizar los viajes de lujo y crear un mundo donde las experiencias excepcionales estén al alcance de todos.",
+      "breaking": {
+        "title": "Derribando Barreras",
+        "description1": "La aviación privada ha estado reservada durante mucho tiempo para los ultra ricos. Creemos que esto no debería ser así. Al conectar viajeros con vuelos vacíos y ofertas exclusivas, estamos haciendo que los viajes de lujo sean accesibles para más personas que nunca.",
+        "description2": "Nuestro enfoque impulsado por la tecnología elimina ineficiencias, reduce costos y crea escenarios ganar-ganar tanto para viajeros como para operadores."
+      },
+      "stats": {
+        "savings": "95%",
+        "savingsLabel": "Ahorro Promedio",
+        "savingsDesc": "comparado con precios charter tradicionales"
+      }
+    },
+    "values": {
+      "title": "Nuestros Valores",
+      "subtitle": "Estos principios guían todo lo que hacemos y moldean el futuro de los viajes de lujo.",
+      "customerFirst": {
+        "title": "Cliente Primero",
+        "description": "Cada decisión que tomamos prioriza las necesidades, comodidad y satisfacción de nuestros clientes por encima de todo."
+      },
+      "innovation": {
+        "title": "Innovación",
+        "description": "Aprovechamos tecnología de vanguardia para resolver problemas complejos y crear experiencias fluidas."
+      },
+      "trustSafety": {
+        "title": "Confianza y Seguridad",
+        "description": "Mantenemos los más altos estándares de seguridad, protección y transparencia en todo lo que hacemos."
+      }
+    },
+    "team": {
+      "title": "Construido por Entusiastas de la Aviación",
+      "subtitle": "Nuestro equipo combina décadas de experiencia en la industria de la aviación con experiencia en tecnología de vanguardia. Somos apasionados por hacer que los viajes de lujo sean accesibles para todos mientras mantenemos los más altos estándares de servicio y seguridad."
+    },
+    "cta": {
+      "title": "Únete a Nuestro Viaje",
+      "subtitle": "Ya seas un viajero buscando tu próxima aventura, un operador buscando hacer crecer tu negocio, o simplemente alguien que comparte nuestra pasión por la aviación, te invitamos a ser parte de la historia de ChanceFly.",
+      "getStarted": "Empezar Hoy"
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Ponte en Contacto",
+      "subtitle": "¿Tienes preguntas sobre ChanceFly? ¿Necesitas soporte con tu reserva? ¿Quieres asociarte con nosotros? Estamos aquí para ayudarte y nos encantaría saber de ti."
+    },
+    "options": {
+      "title": "¿Cómo Podemos Ayudarte?",
+      "subtitle": "Elige la mejor manera de contactar a nuestro equipo según tus necesidades.",
+      "call": {
+        "title": "Llámanos",
+        "description": "Habla directamente con nuestros especialistas en reservas",
+        "number": "+1 (555) 123-4567"
+      },
+      "email": {
+        "title": "Soporte por Email",
+        "description": "Obtén asistencia detallada por correo electrónico",
+        "address": "support@chancefly.com"
+      },
+      "chat": {
+        "title": "Chat en Vivo",
+        "description": "Chatea con nosotros en tiempo real",
+        "button": "Iniciar Chat"
+      }
+    },
+    "form": {
+      "title": "Envíanos un Mensaje",
+      "subtitle": "Completa el formulario a continuación y te responderemos en un plazo de 24 horas.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Email",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "placeholders": {
+        "firstName": "Juan",
+        "lastName": "Pérez",
+        "email": "juan.perez@ejemplo.com",
+        "subject": "Selecciona un tema",
+        "message": "¿Cómo podemos ayudarte?"
+      },
+      "subjects": {
+        "booking": "Asistencia con Reservas",
+        "support": "Soporte al Cliente",
+        "partnership": "Consulta de Asociación",
+        "other": "Otro"
+      },
+      "button": "Enviar Mensaje"
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Respuestas rápidas a preguntas comunes sobre ChanceFly y nuestros servicios.",
+      "questions": {
+        "booking": {
+          "question": "¿Con cuánta anticipación debo reservar?",
+          "answer": "Para la mejor disponibilidad y tarifas, recomendamos reservar con al menos 48 horas de anticipación. Sin embargo, a menudo podemos acomodar solicitudes de último minuto dependiendo de la disponibilidad de aeronaves."
+        },
+        "pricing": {
+          "question": "¿Qué está incluido en el precio del vuelo?",
+          "answer": "Nuestros precios incluyen la aeronave, tripulación, combustible y catering estándar. Servicios adicionales como transporte terrestre, solicitudes especiales de catering o tarifas de pernocta pueden aplicar."
+        },
+        "cancellation": {
+          "question": "¿Qué pasa si mi vuelo es cancelado?",
+          "answer": "En el raro caso de una cancelación, trabajaremos inmediatamente para encontrarte un vuelo alternativo o proporcionar un reembolso completo. Nuestro equipo de soporte al cliente está disponible 24/7 para asistirte."
+        },
+        "pets": {
+          "question": "¿Puedo traer mascotas en mi vuelo?",
+          "answer": "¡Sí! Uno de los beneficios de la aviación privada es que las mascotas son bienvenidas. Solo háznos saber al momento de reservar para que podamos asegurar que la aeronave esté adecuadamente preparada."
+        }
+      }
+    }
+  },
+  "operators": {
+    "hero": {
+      "title": "Asociate con ChanceFly",
+      "subtitle": "Únete a la plataforma premier para aviación de lujo. Conecta con viajeros de alto valor, maximiza la utilización de tu flota, y haz crecer tu negocio con el mercado innovador de ChanceFly.",
+      "button": "Conviértete en Socio"
+    },
+    "benefits": {
+      "title": "¿Por Qué Asociarte con Nosotros?",
+      "subtitle": "Únete a una red creciente de operadores premium y desbloquea nuevas oportunidades de ingresos.",
+      "revenue": {
+        "title": "Ingresos Incrementados",
+        "description": "Monetiza vuelos de tramo vacío y llena asientos vacantes con nuestra extensa red de clientes."
+      },
+      "clientele": {
+        "title": "Clientela Premium",
+        "description": "Acceso a individuos verificados y de alto patrimonio que valoran el lujo y la confiabilidad."
+      },
+      "operations": {
+        "title": "Operaciones Simplificadas",
+        "description": "Proceso de reserva optimizado con pagos automatizados y gestión de clientes."
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "subtitle": "Únete a nuestra red en cuatro simples pasos y comienza a maximizar el potencial de tu aeronave.",
+      "apply": {
+        "title": "Aplicar",
+        "description": "Envía los detalles de tu aeronave y credenciales de operador para revisión."
+      },
+      "verify": {
+        "title": "Verificar",
+        "description": "Completa nuestro proceso integral de verificación para seguridad y calidad."
+      },
+      "list": {
+        "title": "Listar",
+        "description": "Tu aeronave se pone en vivo en nuestra plataforma de mercado premium."
+      },
+      "earn": {
+        "title": "Ganar",
+        "description": "Comienza a recibir reservas de alto valor de clientes verificados."
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Maximizar tu Flota?",
+      "subtitle": "Únete a nuestra red exclusiva de operadores premium y comienza a generar mayores retornos de tus inversiones en aeronaves.",
+      "cardTitle": "Comienza tu Asociación Hoy",
+      "cardSubtitle": "Completa nuestro proceso de aplicación simple y únete a la red de socios de aviación elite de ChanceFly.",
+      "applyButton": "Aplicar Ahora",
+      "scheduleButton": "Programar una Llamada"
+    }
+  }
+}

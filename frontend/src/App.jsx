@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { TranslationProvider } from './contexts/TranslationContext';
 import Navbar from './components/Navbar';
 import PlasmaBackground from './components/PlasmaBackground';
 import SimpleGradientBackground from './components/SimpleGradientBackground';
@@ -11,11 +12,18 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
 import CreateFlightPage from './pages/CreateFlightPage';
+import OperatorsPage from './pages/OperatorsPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
-export default function App() {
+function AppContent() {
   const [useSimpleBackground, setUseSimpleBackground] = useState(false);
   const [currentFPS, setCurrentFPS] = useState(null);
+  const location = useLocation();
+
+  // Only show PlasmaBackground on home page
+  const isHomePage = location.pathname === '/';
 
   // Performance detection
   useEffect(() => {
@@ -48,21 +56,22 @@ export default function App() {
   }, [useSimpleBackground]);
 
   return (
-    <AuthProvider>
-      <Router>
-        {/* Adaptive Background */}
+    <>
+      {/* Adaptive Background - Only on home page */}
+      {isHomePage && (
         <div className="fixed inset-0 z-0">
           <PlasmaBackground 
             color="#B19EEF"
             speed={1}
             direction="Forward"
             scale={0.9}
-            opacity={10}
+            opacity={1}
             mouseInteractive={false}
           />
         </div>
-        
-        <div className="min-h-screen bg-black">
+      )}
+
+      <div className="min-h-screen bg-black">
           {/* Content */}
           <div className="relative z-10">
             <Navbar 
@@ -74,6 +83,9 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/flight/:id" element={<FlightDetailsPage />} />
+              <Route path="/operators" element={<OperatorsPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route 
                 path="/dashboard" 
                 element={
@@ -99,7 +111,18 @@ export default function App() {
           useSimpleBackground={useSimpleBackground} 
           fps={currentFPS} 
         />
-      </Router>
-    </AuthProvider>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <TranslationProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </TranslationProvider>
   );
 }
