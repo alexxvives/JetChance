@@ -1,0 +1,5 @@
+name = "chancefly-frontend"
+compatibility_date = "2025-09-19"
+
+[assets]
+directory = "./frontend/dist"
