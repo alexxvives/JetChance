@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../api/client';
+import { mockAuthAPI, shouldUseMockAuth } from '../utils/mockAuth';
 
 // Auth action types
 const AUTH_ACTIONS = {
@@ -109,7 +110,9 @@ export const AuthProvider = ({ children }) => {
       
       if (token) {
         try {
-          const response = await authAPI.getProfile();
+          // Use mock auth if backend is not available
+          const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+          const response = await apiToUse.getProfile();
           dispatch({
             type: AUTH_ACTIONS.LOGIN_SUCCESS,
             payload: { user: response },
@@ -117,7 +120,8 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Auth check failed:', error);
           // Clear invalid tokens
-          authAPI.logout();
+          const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+          apiToUse.logout();
           dispatch({ type: AUTH_ACTIONS.LOGOUT });
         }
       } else {
@@ -133,7 +137,9 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
       
-      const response = await authAPI.login(credentials);
+      // Use mock auth if backend is not available
+      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const response = await apiToUse.login(credentials);
       
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -156,7 +162,9 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
       
-      const response = await authAPI.register(userData);
+      // Use mock auth if backend is not available
+      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const response = await apiToUse.register(userData);
       
       dispatch({
         type: AUTH_ACTIONS.REGISTER_SUCCESS,
@@ -176,14 +184,16 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    authAPI.logout();
+    const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+    apiToUse.logout();
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
   };
 
   // Update profile function
   const updateProfile = async (profileData) => {
     try {
-      const response = await authAPI.updateProfile(profileData);
+      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const response = await apiToUse.updateProfile(profileData);
       dispatch({
         type: AUTH_ACTIONS.PROFILE_UPDATE,
         payload: response.user,
