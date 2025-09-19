@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 
 export default function OperatorDashboard({ user }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [flights, setFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -11,39 +13,34 @@ export default function OperatorDashboard({ user }) {
     fetchOperatorFlights();
   }, []);
 
+  // Refresh flights when returning from create flight page
+  useEffect(() => {
+    if (location.state?.message) {
+      // Show success message briefly
+      setTimeout(() => {
+        fetchOperatorFlights();
+      }, 500);
+    }
+  }, [location.state]);
+
   const fetchOperatorFlights = async () => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/operator/flights');
-      // const data = await response.json();
-      // setFlights(data.flights);
       
-      // Mock data for now
-      setFlights([
-        {
-          id: 1,
-          origin: 'Los Angeles',
-          destination: 'New York',
-          departureTime: '2025-09-20T14:00:00',
-          price: 8500,
-          seatsAvailable: 12,
-          status: 'active',
-          bookings: 3
-        },
-        {
-          id: 2,
-          origin: 'Miami',
-          destination: 'Chicago',
-          departureTime: '2025-09-22T09:00:00',
-          price: 6200,
-          seatsAvailable: 14,
-          status: 'active',
-          bookings: 1
-        }
-      ]);
+      if (shouldUseMockFlightAPI()) {
+        const response = await mockFlightAPI.getOperatorFlights(user.id);
+        setFlights(response.flights);
+      } else {
+        // TODO: Replace with actual API call when backend is ready
+        // const response = await fetch('/api/operator/flights');
+        // const data = await response.json();
+        // setFlights(data.flights);
+        throw new Error('Real API not implemented yet');
+      }
     } catch (error) {
       console.error('Error fetching flights:', error);
+      // Fallback to empty array on error
+      setFlights([]);
     } finally {
       setIsLoading(false);
     }
@@ -52,10 +49,16 @@ export default function OperatorDashboard({ user }) {
   const handleDeleteFlight = async (flightId) => {
     if (window.confirm('Are you sure you want to delete this flight?')) {
       try {
-        // TODO: API call to delete flight
-        setFlights(flights.filter(f => f.id !== flightId));
+        if (shouldUseMockFlightAPI()) {
+          await mockFlightAPI.deleteFlight(flightId);
+          setFlights(flights.filter(f => f.id !== flightId));
+        } else {
+          // TODO: Real API call when backend is ready
+          throw new Error('Real API not implemented yet');
+        }
       } catch (error) {
         console.error('Error deleting flight:', error);
+        alert('Error deleting flight. Please try again.');
       }
     }
   };
@@ -72,6 +75,13 @@ export default function OperatorDashboard({ user }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
+          {/* Success message */}
+          {location.state?.message && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4">
+              {location.state.message}
+            </div>
+          )}
+          
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Operator Dashboard</h1>

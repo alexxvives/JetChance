@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
+import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
 
 export default function CreateFlightPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     origin: '',
     destination: '',
@@ -211,25 +214,42 @@ export default function CreateFlightPage() {
     setIsSubmitting(true);
     
     try {
-      // TODO: API call to create flight with image upload
-      const newFlight = {
-        id: Date.now(),
-        ...formData,
+      // Prepare flight data
+      const flightData = {
+        origin: formData.origin,
+        destination: formData.destination,
+        originCode: formData.originCode,
+        destinationCode: formData.destinationCode,
+        departureTime: formData.departureTime,
+        arrivalTime: formData.arrivalTime,
+        aircraftType: formData.aircraftType,
         price: parseFloat(formData.price),
         originalPrice: parseFloat(formData.originalPrice),
         seatsAvailable: parseInt(formData.seatsAvailable),
-        status: 'active',
-        bookings: 0
+        duration: formData.duration,
+        description: formData.description,
+        // Note: In a real app, aircraftImage would be uploaded to a file storage service
+        aircraftImage: formData.aircraftImage?.name || null
       };
       
-      console.log('Creating flight:', newFlight);
+      // Use mock API for now (replace with real API when backend is ready)
+      if (shouldUseMockFlightAPI()) {
+        await mockFlightAPI.createFlight(flightData, user.id);
+      } else {
+        // TODO: Real API call when backend is ready
+        // await flightsAPI.create(flightData);
+        throw new Error('Real API not implemented yet');
+      }
+      
+      console.log('Flight created successfully:', flightData);
       
       // Navigate back to dashboard
-      navigate('/operator-dashboard', { 
+      navigate('/dashboard', { 
         state: { message: 'Flight created successfully!' } 
       });
     } catch (error) {
       console.error('Error creating flight:', error);
+      alert('Error creating flight. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
