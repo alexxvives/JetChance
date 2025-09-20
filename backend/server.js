@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const flightRoutes = require('./routes/flights');
 const bookingRoutes = require('./routes/bookings');
+const uploadRoutes = require('./routes/upload-hybrid');
 
 const app = express();
 
@@ -37,6 +38,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
