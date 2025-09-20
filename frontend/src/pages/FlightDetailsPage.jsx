@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, MapPinIcon, ClockIcon, UsersIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
-import { flights } from '../data/flights';
+import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
+import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import FreeFlightMap from '../components/FreeFlightMap';
 
 export default function FlightDetailsPage() {
@@ -12,10 +13,28 @@ export default function FlightDetailsPage() {
   const [selectedPassengers, setSelectedPassengers] = useState(1);
 
   useEffect(() => {
-    // Find flight by ID
-    const foundFlight = flights.find(f => f.id === parseInt(id));
-    setFlight(foundFlight);
-    setLoading(false);
+    // Find flight by ID using appropriate API
+    const loadFlight = async () => {
+      try {
+        if (shouldUseRealAPI()) {
+          const foundFlight = await flightsAPI.getFlightById(id);
+          setFlight(foundFlight);
+        } else if (shouldUseMockFlightAPI()) {
+          const response = await mockFlightAPI.getFlights();
+          const foundFlight = response.flights.find(f => f.id === parseInt(id) || f.id === id);
+          setFlight(foundFlight);
+        } else {
+          setFlight(null);
+        }
+      } catch (error) {
+        console.error('Error loading flight:', error);
+        setFlight(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFlight();
   }, [id]);
 
   if (loading) {
@@ -45,8 +64,11 @@ export default function FlightDetailsPage() {
     );
   }
 
-  const savings = flight.original_price - flight.price;
-  const savingsPercentage = Math.round((savings / flight.original_price) * 100);
+  // Add safety checks for calculations
+  const price = flight.price || flight.empty_leg_price || 0;
+  const originalPrice = flight.original_price || price;
+  const savings = originalPrice - price;
+  const savingsPercentage = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -70,10 +92,10 @@ export default function FlightDetailsPage() {
               {/* Departure */}
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900">
-                  {new Date(flight.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {flight.departure_time ? new Date(flight.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
                 </div>
-                <div className="text-sm text-gray-600 font-medium">{flight.originCode}</div>
-                <div className="text-xs text-gray-500">{flight.origin}</div>
+                <div className="text-sm text-gray-600 font-medium">{flight.originCode || flight.origin_code || 'TBD'}</div>
+                <div className="text-xs text-gray-500">{flight.origin || flight.origin_city || 'TBD'}</div>
               </div>
 
               {/* Flight Path */}
@@ -83,28 +105,28 @@ export default function FlightDetailsPage() {
                   <div className="text-blue-600 text-lg">✈️</div>
                   <div className="w-8 h-0.5 bg-gray-300"></div>
                 </div>
-                <div className="text-xs text-gray-500 absolute mt-8">{flight.duration}</div>
+                <div className="text-xs text-gray-500 absolute mt-8">{flight.duration || 'TBD'}</div>
               </div>
 
               {/* Arrival */}
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900">
-                  {new Date(flight.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {flight.arrival_time ? new Date(flight.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
                 </div>
-                <div className="text-sm text-gray-600 font-medium">{flight.destinationCode}</div>
-                <div className="text-xs text-gray-500">{flight.destination}</div>
+                <div className="text-sm text-gray-600 font-medium">{flight.destinationCode || flight.destination_code || 'TBD'}</div>
+                <div className="text-xs text-gray-500">{flight.destination || flight.destination_city || 'TBD'}</div>
               </div>
             </div>
             
             {/* Date */}
             <div className="text-center mt-3 pt-3 border-t border-gray-200">
               <div className="text-sm text-gray-600">
-                {new Date(flight.departure_time).toLocaleDateString('en-US', { 
+                {flight.departure_time ? new Date(flight.departure_time).toLocaleDateString('en-US', { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric' 
-                })}
+                }) : 'Date TBD'}
               </div>
             </div>
           </div>
@@ -187,25 +209,29 @@ export default function FlightDetailsPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Charter price (total)</span>
-                  <span className="text-gray-900 font-semibold">${flight.price.toLocaleString()}</span>
+                  <span className="text-gray-900 font-semibold">${price.toLocaleString()}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Price per passenger</span>
                   <span className="text-lg font-bold text-blue-600">
-                    ${Math.round(flight.price / selectedPassengers).toLocaleString()}
+                    ${Math.round(price / selectedPassengers).toLocaleString()}
                   </span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Original charter price</span>
-                  <span className="text-gray-400 line-through">${flight.original_price.toLocaleString()}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">You Save (total)</span>
-                  <span className="text-green-600 font-semibold">-${savings.toLocaleString()} ({savingsPercentage}%)</span>
-                </div>
+                {originalPrice > price && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Original charter price</span>
+                      <span className="text-gray-400 line-through">${originalPrice.toLocaleString()}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">You Save (total)</span>
+                      <span className="text-green-600 font-semibold">${savings.toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
@@ -213,7 +239,7 @@ export default function FlightDetailsPage() {
                       Total Charter Price
                     </span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${flight.price.toLocaleString()}
+                      ${price.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600 mt-1">
@@ -262,7 +288,7 @@ export default function FlightDetailsPage() {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  View All Images ({flight.images.length})
+                  View All Images ({flight.images ? flight.images.length : 0})
                 </button>
               </div>
             )}

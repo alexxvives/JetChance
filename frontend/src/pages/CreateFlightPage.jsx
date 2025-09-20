@@ -2,9 +2,75 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
+
+// Function to get high-quality private jet images based on aircraft type
+const getDefaultAircraftImage = (aircraftType) => {
+  const imageMap = {
+    // Gulfstream aircraft - verified private jet images
+    'Gulfstream G650': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'Gulfstream G550': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    'Gulfstream G280': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    
+    // Citation aircraft - verified private jet images
+    'Citation CJ4': 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&h=200&fit=crop&crop=center',
+    'Citation X': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    'Citation X+': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    'Citation Sovereign': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    
+    // Learjet aircraft - verified private jet images
+    'Learjet 75': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    'Learjet 60': 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&h=200&fit=crop&crop=center',
+    
+    // Falcon aircraft - verified private jet images
+    'Falcon 7X': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'Falcon 900': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    
+    // Hawker aircraft - verified private jet images
+    'Hawker 900XP': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    'Hawker 4000': 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&h=200&fit=crop&crop=center',
+    
+    // King Air aircraft - verified private jet images
+    'King Air 350': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'King Air 250': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    
+    // Challenger aircraft - verified private jet images
+    'Challenger 350': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    'Challenger 650': 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&h=200&fit=crop&crop=center',
+    
+    // Global aircraft - verified private jet images
+    'Global 6000': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'Global Express': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    
+    // Default fallbacks for aircraft families - all verified private jets
+    'Gulfstream': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'Citation': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    'Learjet': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    'Falcon': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center',
+    'Hawker': 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&h=200&fit=crop&crop=center',
+    'King Air': 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=200&fit=crop&crop=center',
+    'Challenger': 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=400&h=200&fit=crop&crop=center',
+    'Global': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=200&fit=crop&crop=center'
+  };
+
+  // Try exact match first
+  if (imageMap[aircraftType]) {
+    return imageMap[aircraftType];
+  }
+
+  // Try to match by aircraft family (e.g., "Gulfstream G650" matches "Gulfstream")
+  for (const [family, image] of Object.entries(imageMap)) {
+    if (aircraftType && aircraftType.toLowerCase().includes(family.toLowerCase())) {
+      return image;
+    }
+  }
+
+  // Default fallback - high-quality private jet image
+  return 'https://images.unsplash.com/photo-1583094447810-64e19c025d70?w=400&h=200&fit=crop&crop=center';
+};
 
 export default function CreateFlightPage() {
   const navigate = useNavigate();
@@ -216,29 +282,45 @@ export default function CreateFlightPage() {
     try {
       // Prepare flight data
       const flightData = {
-        origin: formData.origin,
-        destination: formData.destination,
+        // Required backend fields
+        // aircraftId: not needed - backend will create default aircraft
+        aircraftType: formData.aircraftType,
         originCode: formData.originCode,
         destinationCode: formData.destinationCode,
-        departureTime: formData.departureTime,
-        arrivalTime: formData.arrivalTime,
-        aircraftType: formData.aircraftType,
-        price: parseFloat(formData.price),
+        departureDateTime: formData.departureTime,
         originalPrice: parseFloat(formData.originalPrice),
+        emptyLegPrice: parseFloat(formData.price),
+        totalSeats: parseInt(formData.seatsAvailable),
+        
+        // Optional fields
+        flightNumber: `CF${Date.now()}`, // Generate flight number
+        originName: formData.origin,
+        originCity: formData.origin,
+        originCountry: 'US', // Default for now
+        destinationName: formData.destination,
+        destinationCity: formData.destination,
+        destinationCountry: 'US', // Default for now
+        arrivalDateTime: formData.arrivalTime,
+        estimatedDuration: formData.duration,
+        description: formData.description,
+        
+        // Additional frontend fields for display
+        origin: formData.origin,
+        destination: formData.destination,
+        price: parseFloat(formData.price),
         seatsAvailable: parseInt(formData.seatsAvailable),
         duration: formData.duration,
-        description: formData.description,
-        // Note: In a real app, aircraftImage would be uploaded to a file storage service
-        aircraftImage: formData.aircraftImage?.name || null
+        aircraft_image: formData.aircraftImage ? URL.createObjectURL(formData.aircraftImage) : getDefaultAircraftImage(formData.aircraftType),
+        images: formData.aircraftImage ? [URL.createObjectURL(formData.aircraftImage)] : []
       };
       
-      // Use mock API for now (replace with real API when backend is ready)
-      if (shouldUseMockFlightAPI()) {
+      // Use real API to save to database, fallback to mock API if needed
+      if (shouldUseRealAPI()) {
+        await flightsAPI.createFlight(flightData);
+      } else if (shouldUseMockFlightAPI()) {
         await mockFlightAPI.createFlight(flightData, user.id);
       } else {
-        // TODO: Real API call when backend is ready
-        // await flightsAPI.create(flightData);
-        throw new Error('Real API not implemented yet');
+        throw new Error('No API available for flight creation');
       }
       
       console.log('Flight created successfully:', flightData);
@@ -249,7 +331,11 @@ export default function CreateFlightPage() {
       });
     } catch (error) {
       console.error('Error creating flight:', error);
-      alert('Error creating flight. Please try again.');
+      console.error('Flight data sent:', flightData);
+      
+      // Show more specific error message
+      const errorMessage = error.message || 'Unknown error occurred';
+      alert(`Error creating flight: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

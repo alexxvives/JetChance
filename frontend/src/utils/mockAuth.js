@@ -152,18 +152,6 @@ export const mockAuthAPI = {
 
 // Check if we should use mock auth (when backend is not available)
 export const shouldUseMockAuth = () => {
-  // Check if explicitly set to use mock auth
-  if (import.meta.env.VITE_USE_MOCK_AUTH === 'true') {
-    return true;
-  }
-  
-  const apiUrl = import.meta.env.VITE_API_URL;
-  
-  // Don't use mock auth if we have a proper deployed API URL
-  if (apiUrl && !apiUrl.includes('localhost')) {
-    return false;
-  }
-  
-  // Use mock auth for localhost development when backend might not be running
-  return !apiUrl || apiUrl.includes('localhost');
+  // Always try real API first in production, fall back to mock if it fails
+  return false; // Let the AuthContext handle API failures and fall back to mock
 };

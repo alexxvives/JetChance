@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const SimpleIDGenerator = require('../utils/idGenerator');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database-sqlite');
 const { authenticate } = require('../middleware/auth');
@@ -83,13 +83,17 @@ router.post('/register', registerValidation, async (req, res) => {
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // Generate user ID
-    const userId = uuidv4();
+    const userId = SimpleIDGenerator.generateUserId();
+
+    // Set company name and status for operators
+    const companyName = role === 'operator' ? `${firstName} ${lastName} Aviation` : null;
+    const status = role === 'operator' ? 'pending' : 'approved';
 
     // Create user
     await db.run(
-      `INSERT INTO users (id, email, password_hash, first_name, last_name, phone, role)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, email, passwordHash, firstName, lastName, phone, role]
+      `INSERT INTO users (id, email, password_hash, first_name, last_name, phone, role, company_name, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, email, passwordHash, firstName, lastName, phone, role, companyName, status]
     );
 
     // Get the created user
@@ -100,15 +104,6 @@ router.post('/register', registerValidation, async (req, res) => {
     const user = userResult.rows[0];
     
     const { accessToken, refreshToken } = generateTokens(user.id);
-
-    // If registering as operator, create operator profile
-    if (role === 'operator') {
-      const operatorId = uuidv4();
-      await db.run(
-        'INSERT INTO operators (id, user_id, company_name, status) VALUES (?, ?, ?, ?)',
-        [operatorId, user.id, `${firstName} ${lastName} Aviation`, 'pending']
-      );
-    }
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -286,21 +281,13 @@ router.post('/logout', authenticate, async (req, res) => {
 // @access  Private
 router.get('/me', authenticate, async (req, res) => {
   try {
-    const result = await new Promise((resolve, reject) => {
-      db.get(
-        `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.role, 
-                u.profile_image_url, u.email_verified, u.created_at,
-                o.id as operator_id, o.company_name, o.status as operator_status
-         FROM users u
-         LEFT JOIN operators o ON u.id = o.user_id
-         WHERE u.id = ?`,
-        [req.user.id],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve({ rows: row ? [row] : [] });
-        }
-      );
-    });
+    const result = await db.query(
+      `SELECT id, email, first_name, last_name, phone, role, 
+              company_name, status, created_at
+       FROM users
+       WHERE id = ?`,
+      [req.user.id]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -317,16 +304,9 @@ router.get('/me', authenticate, async (req, res) => {
       lastName: user.last_name,
       phone: user.phone,
       role: user.role,
-      profileImageUrl: user.profile_image_url,
-      emailVerified: user.email_verified,
-      createdAt: user.created_at,
-      ...(user.operator_id && {
-        operator: {
-          id: user.operator_id,
-          companyName: user.company_name,
-          status: user.operator_status
-        }
-      })
+      companyName: user.company_name,
+      status: user.status,
+      createdAt: user.created_at
     });
 
   } catch (error) {
@@ -386,26 +366,17 @@ router.put('/profile', authenticate, [
       .map(([key, value]) => `${key} = ${value}`)
       .join(', ');
 
-    const result = await new Promise((resolve, reject) => {
-      db.run(
-        `UPDATE users SET ${setClause} WHERE id = ?`,
-        [...params.slice(1), req.user.id],
-        function(err) {
-          if (err) reject(err);
-          else {
-            // Get the updated user
-            db.get(
-              'SELECT id, email, first_name, last_name, phone, updated_at FROM users WHERE id = ?',
-              [req.user.id],
-              (err, row) => {
-                if (err) reject(err);
-                else resolve({ rows: [row] });
-              }
-            );
-          }
-        }
-      );
-    });
+    // Update the user
+    await db.run(
+      `UPDATE users SET ${setClause} WHERE id = ?`,
+      [...params.slice(1), req.user.id]
+    );
+
+    // Get the updated user
+    const result = await db.query(
+      'SELECT id, email, first_name, last_name, phone, updated_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
 
     const updatedUser = result.rows[0];
 

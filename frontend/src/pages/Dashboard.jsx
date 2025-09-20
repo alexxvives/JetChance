@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import FlightFilters from '../components/FlightFilters';
 import FlightList from '../FlightList';
-import OperatorDashboard from '../components/OperatorDashboard';
+import SafeOperatorDashboard from '../components/SafeOperatorDashboard';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function Dashboard({ user, onNavigate, onLogout }) {
   const { user: authUser } = useAuth();
@@ -15,9 +16,13 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
     passengers: 1
   });
 
-  // Show operator dashboard for operators
-  if (currentUser?.role === 'operator') {
-    return <OperatorDashboard user={currentUser} />;
+  // Show operator dashboard for operators and super-admins
+  if (currentUser?.role === 'operator' || currentUser?.role === 'super-admin') {
+    return (
+      <ErrorBoundary>
+        <SafeOperatorDashboard user={currentUser} />
+      </ErrorBoundary>
+    );
   }
 
   // Show customer dashboard for customers

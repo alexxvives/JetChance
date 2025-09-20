@@ -12,6 +12,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
 import CreateFlightPage from './pages/CreateFlightPage';
+import PendingFlightsPage from './pages/PendingFlightsPage';
 import OperatorsPage from './pages/OperatorsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -99,6 +100,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <CreateFlightPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/pending-flights" 
+                element={
+                  <ProtectedRoute>
+                    <PendingFlightsPage />
                   </ProtectedRoute>
                 } 
               />

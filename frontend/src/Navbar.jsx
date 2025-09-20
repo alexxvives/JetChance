@@ -21,7 +21,7 @@ export default function Navbar({ onNavigate, isLanding = false, user = null, onL
             </button>
             <button 
               onClick={() => onNavigate('signup')}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               Join Now
             </button>
@@ -46,9 +46,9 @@ export default function Navbar({ onNavigate, isLanding = false, user = null, onL
             </button>
             <button 
               onClick={() => onNavigate('signup')}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Sign Up
+              Join Now
             </button>
           </>
         )}

@@ -1,47 +1,18 @@
 // Mock flight management for demo purposes
 const MOCK_FLIGHTS_KEY = 'chancefly_mock_flights';
 
-// Initialize with some sample flights
-const DEFAULT_FLIGHTS = [
-  {
-    id: 1,
-    origin: 'Los Angeles',
-    destination: 'New York',
-    originCode: 'LAX',
-    destinationCode: 'JFK',
-    departureTime: '2025-09-20T14:00:00',
-    arrivalTime: '2025-09-20T22:30:00',
-    aircraftType: 'Gulfstream G650',
-    price: 8500,
-    originalPrice: 34000,
-    seatsAvailable: 12,
-    duration: '5h 30m',
-    status: 'active',
-    bookings: 3,
-    operatorId: '3', // operator@example.com
-    description: 'Luxury transcontinental flight with premium amenities',
-    createdAt: '2025-09-15T10:00:00Z'
-  },
-  {
-    id: 2,
-    origin: 'Miami',
-    destination: 'Chicago',
-    originCode: 'MIA',
-    destinationCode: 'ORD',
-    departureTime: '2025-09-22T09:00:00',
-    arrivalTime: '2025-09-22T12:15:00',
-    aircraftType: 'Citation X+',
-    price: 6200,
-    originalPrice: 18500,
-    seatsAvailable: 14,
-    duration: '3h 15m',
-    status: 'active',
-    bookings: 1,
-    operatorId: '3', // operator@example.com
-    description: 'Efficient business travel with executive seating',
-    createdAt: '2025-09-16T14:30:00Z'
+// Initialize with empty flights - user will create their own
+const DEFAULT_FLIGHTS = [];
+
+// Clear all flight data
+const clearAllFlights = () => {
+  try {
+    localStorage.removeItem(MOCK_FLIGHTS_KEY);
+    console.log('All flight data cleared from localStorage');
+  } catch (error) {
+    console.warn('Error clearing flight data:', error);
   }
-];
+};
 
 // Get flights from localStorage or initialize with defaults
 const getStoredFlights = () => {
@@ -63,9 +34,10 @@ const saveFlights = (flights) => {
   }
 };
 
-// Initialize flights in localStorage if not present
+// Initialize flights in localStorage if not present (don't clear existing data)
 if (!localStorage.getItem(MOCK_FLIGHTS_KEY)) {
   saveFlights(DEFAULT_FLIGHTS);
+  console.log('✅ Initialized localStorage with empty flights array');
 }
 
 // Simulate API delay
@@ -209,13 +181,19 @@ export const mockFlightAPI = {
     };
     
     return stats;
+  },
+
+  // Clear all flight data
+  clearAllFlights: async () => {
+    await delay(200);
+    clearAllFlights();
+    return { success: true, message: 'All flight data cleared' };
   }
 };
 
 // Check if we should use mock flight API
 export const shouldUseMockFlightAPI = () => {
-  // Same logic as auth - use mock when no backend available
+  // Only use mock when explicitly enabled
   return import.meta.env.VITE_USE_MOCK_AUTH === 'true' || 
-         !import.meta.env.VITE_API_URL || 
-         import.meta.env.VITE_API_URL.includes('localhost');
+         !import.meta.env.VITE_API_URL;
 };

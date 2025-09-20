@@ -40,6 +40,15 @@ const destinationIcon = new L.Icon({
 });
 
 export default function FreeFlightMap({ flight }) {
+  // Early return or loading state if flight data is not available
+  if (!flight || !flight.coordinates || !flight.coordinates.origin || !flight.coordinates.destination) {
+    return (
+      <div className="h-96 w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-500">Loading flight map...</div>
+      </div>
+    );
+  }
+
   const origin = [flight.coordinates.origin.lat, flight.coordinates.origin.lng];
   const destination = [flight.coordinates.destination.lat, flight.coordinates.destination.lng];
   
@@ -70,8 +79,8 @@ export default function FreeFlightMap({ flight }) {
         <Marker position={origin} icon={originIcon}>
           <Popup>
             <div className="text-center">
-              <strong>{flight.origin}</strong><br/>
-              <span className="text-sm text-gray-600">{flight.originCode}</span><br/>
+              <strong>{flight.origin || 'Origin'}</strong><br/>
+              <span className="text-sm text-gray-600">{flight.originCode || ''}</span><br/>
               <span className="text-xs text-gray-500">Departure</span>
             </div>
           </Popup>
@@ -81,8 +90,8 @@ export default function FreeFlightMap({ flight }) {
         <Marker position={destination} icon={destinationIcon}>
           <Popup>
             <div className="text-center">
-              <strong>{flight.destination}</strong><br/>
-              <span className="text-sm text-gray-600">{flight.destinationCode}</span><br/>
+              <strong>{flight.destination || 'Destination'}</strong><br/>
+              <span className="text-sm text-gray-600">{flight.destinationCode || ''}</span><br/>
               <span className="text-xs text-gray-500">Arrival</span>
             </div>
           </Popup>

@@ -21,9 +21,11 @@ const authenticate = async (req, res, next) => {
     );
 
     if (result.rows.length === 0) {
+      // User not found - likely old UUID from before migration
+      // Treat as invalid token to force re-login
       return res.status(401).json({
         error: 'Access denied',
-        message: 'Invalid token or user not found'
+        message: 'Token contains outdated user reference. Please log in again.'
       });
     }
 
