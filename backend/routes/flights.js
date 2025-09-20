@@ -17,14 +17,20 @@ router.get('/', [
   query('max_price').optional().isFloat({ min: 0 }),
   query('aircraft_type').optional().trim(),
   query('user_id').optional().matches(/^[A-Z]{2,3}\d{3}$/),
+  query('status').optional().isIn(['pending', 'approved', 'denied']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('sort_by').optional().isIn(['price', 'departure', 'duration']),
   query('sort_order').optional().isIn(['asc', 'desc']),
 ], async (req, res) => {
   try {
+    console.log('=== FLIGHTS API CALLED ===');
+    console.log('Query params:', req.query);
+    console.log('User:', req.user);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({
         error: 'Invalid query parameters',
         details: errors.array()
@@ -45,34 +51,29 @@ router.get('/', [
       sort_order = 'asc'
     } = req.query;
 
-    // Determine user role and status filtering
-    let statusFilter = 'approved'; // Default for customers
+    // Simple status filtering - default to approved flights for catalog
+    let statusFilter = req.query.status || 'approved';
     let isOperatorOwned = false;
     let isSuperAdmin = false;
     let operatorId = null;
     
     // If user_id is provided, check if it's for operator viewing their own flights
     if (user_id) {
-      const userResult = await db.query('SELECT role FROM users WHERE id = $1', [user_id]);
+      const userResult = await db.query('SELECT role FROM users WHERE id = ?', [user_id]);
       if (userResult.rows.length > 0) {
         const userRole = userResult.rows[0].role;
         if (userRole === 'operator') {
-          // Operator viewing their own flights - show all statuses
+          // Operator viewing their own flights
           isOperatorOwned = true;
-          // Get the operator_id for this user
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = $1', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
-        } else if (userRole === 'admin') {
-          // Admin viewing all flights - show all statuses  
-          statusFilter = null; // No status filter for admin
         } else if (userRole === 'super-admin') {
-          // Super-admin viewing all flights - show all statuses
-          statusFilter = null;
+          // Super-admin viewing their operator flights
+          isOperatorOwned = true;
           isSuperAdmin = true;
-          // Get the operator_id for super-admin if they want to see their own flights too
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = $1', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
@@ -83,64 +84,51 @@ router.get('/', [
     // Build WHERE conditions
     let whereConditions = [];
     let params = [];
-    let paramIndex = 1;
 
-    // Status filtering based on role
-    if (statusFilter && !isOperatorOwned && !isSuperAdmin) {
-      whereConditions.push(`f.status = $${paramIndex}`);
+    // Status filtering based on role and query parameter
+    if (statusFilter) {
+      whereConditions.push(`f.status = ?`);
       params.push(statusFilter);
-      paramIndex++;
     }
 
-    // Only show future flights for customers
-    if (!isOperatorOwned && !isSuperAdmin && statusFilter) {
+    // Only show future flights for customers (when not viewing operator-specific flights)
+    if (!isOperatorOwned && !isSuperAdmin && req.user && req.user.role === 'customer') {
       whereConditions.push(`f.departure_datetime > datetime('now')`);
     }
 
     // Passenger capacity filter
-    whereConditions.push(`f.available_seats >= $${paramIndex}`);
+    whereConditions.push(`f.available_seats >= ?`);
     params.push(parseInt(passengers));
-    paramIndex++;
 
     if (origin) {
-      whereConditions.push(`(f.origin_code ILIKE $${paramIndex} OR f.origin_city ILIKE $${paramIndex})`);
-      params.push(`%${origin}%`);
-      paramIndex++;
+      whereConditions.push(`(f.origin_code LIKE ? OR f.origin_city LIKE ?)`);
+      params.push(`%${origin}%`, `%${origin}%`);
     }
 
     if (destination) {
-      whereConditions.push(`(f.destination_code ILIKE $${paramIndex} OR f.destination_city ILIKE $${paramIndex})`);
-      params.push(`%${destination}%`);
-      paramIndex++;
+      whereConditions.push(`(f.destination_code LIKE ? OR f.destination_city LIKE ?)`);
+      params.push(`%${destination}%`, `%${destination}%`);
     }
 
     if (departure_date) {
-      const startDate = new Date(departure_date);
-      const endDate = new Date(startDate);
-      endDate.setHours(23, 59, 59, 999);
-      
-      whereConditions.push(`f.departure_datetime BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
-      params.push(startDate, endDate);
-      paramIndex += 2;
+      whereConditions.push(`DATE(f.departure_datetime) = ?`);
+      params.push(departure_date);
     }
 
     if (max_price) {
-      whereConditions.push(`f.empty_leg_price <= $${paramIndex}`);
+      whereConditions.push(`f.empty_leg_price <= ?`);
       params.push(parseFloat(max_price));
-      paramIndex++;
     }
 
     if (aircraft_type) {
-      whereConditions.push(`a.aircraft_type ILIKE $${paramIndex}`);
+      whereConditions.push(`a.aircraft_type LIKE ?`);
       params.push(`%${aircraft_type}%`);
-      paramIndex++;
     }
 
     if (operatorId && isOperatorOwned) {
       // For operators viewing their own flights
-      whereConditions.push(`f.operator_id = $${paramIndex}`);
+      whereConditions.push(`f.operator_id = ?`);
       params.push(operatorId);
-      paramIndex++;
     }
 
     // Build ORDER BY clause
@@ -191,7 +179,7 @@ router.get('/', [
       JOIN operators o ON f.operator_id = o.id
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${orderBy}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      LIMIT ? OFFSET ?
     `;
 
     params.push(parseInt(limit), offset);
@@ -764,7 +752,7 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     const flightId = req.params.id;
     
     // Check if flight exists and is pending
-    const flight = await db.query('SELECT * FROM flights WHERE id = $1', [flightId]);
+    const flight = await db.query('SELECT * FROM flights WHERE id = ?', [flightId]);
     
     if (flight.rows.length === 0) {
       return res.status(404).json({
@@ -781,8 +769,8 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     // Update flight status
     const result = await db.query(`
       UPDATE flights 
-      SET status = $1, updated_at = datetime('now')
-      WHERE id = $2
+      SET status = ?, updated_at = datetime('now')
+      WHERE id = ?
       RETURNING *
     `, [status, flightId]);
 
