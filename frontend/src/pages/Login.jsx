@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
   const { login, isLoading, error } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -34,8 +36,8 @@ export default function Login() {
         <div className="max-w-md w-full">
           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
-              <p className="text-gray-600">Sign in to your ChanceFly account</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.login.title')}</h2>
+              <p className="text-gray-600">{t('auth.login.subtitle')}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -47,7 +49,7 @@ export default function Login() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email address
+                  {t('auth.login.emailLabel')}
                 </label>
                 <input
                   type="email"
@@ -55,13 +57,13 @@ export default function Login() {
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.login.emailPlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  {t('auth.login.passwordLabel')}
                 </label>
                 <div className="relative">
                   <input
@@ -70,7 +72,7 @@ export default function Login() {
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your password"
+                    placeholder={t('auth.login.passwordPlaceholder')}
                   />
                   <button
                     type="button"
@@ -91,18 +93,18 @@ export default function Login() {
                 disabled={isLoading}
                 className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                Don't have an account?{' '}
+                {t('auth.login.noAccount')}{' '}
                 <button 
                   onClick={() => navigate('/signup')}
                   className="text-blue-600 font-semibold hover:text-blue-700"
                 >
-                  Sign up
+                  {t('auth.login.signUp')}
                 </button>
               </p>
             </div>

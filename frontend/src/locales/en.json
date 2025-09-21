@@ -11,6 +11,43 @@
     "welcome": "Welcome",
     "language": "Language"
   },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your ChanceFly account",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "signInButton": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "signup": {
+      "title": "Join ChanceFly",
+      "subtitle": "Create your account to start booking flights",
+      "accountTypeLabel": "Account Type",
+      "customerLabel": "Customer",
+      "customerDescription": "Book private flights",
+      "operatorLabel": "Operator",
+      "operatorDescription": "List your aircraft",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "First name",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "Last name",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "createAccountButton": "Create Account",
+      "createCustomerAccount": "Create Customer Account",
+      "createOperatorAccount": "Create Operator Account",
+      "creatingAccount": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    }
+  },
   "hero": {
     "title": "Fly Private for Less",
     "subtitle": "Book empty-leg private jet flights at up to 95% off regular charter prices. Luxury travel made accessible.",

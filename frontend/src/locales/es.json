@@ -11,6 +11,43 @@
     "welcome": "Bienvenido",
     "language": "Idioma"
   },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta de ChanceFly",
+      "emailLabel": "Dirección de correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "signInButton": "Iniciar Sesión",
+      "signingIn": "Iniciando sesión...",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate"
+    },
+    "signup": {
+      "title": "Únete a ChanceFly",
+      "subtitle": "Crea tu cuenta para comenzar a reservar vuelos",
+      "accountTypeLabel": "Tipo de Cuenta",
+      "customerLabel": "Cliente",
+      "customerDescription": "Reservar vuelos privados",
+      "operatorLabel": "Operador",
+      "operatorDescription": "Registrar tu aeronave",
+      "firstNameLabel": "Nombre",
+      "firstNamePlaceholder": "Nombre",
+      "lastNameLabel": "Apellido",
+      "lastNamePlaceholder": "Apellido",
+      "emailLabel": "Dirección de correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Crea una contraseña",
+      "createAccountButton": "Crear Cuenta",
+      "createCustomerAccount": "Crear Cuenta de Cliente",
+      "createOperatorAccount": "Crear Cuenta de Operador",
+      "creatingAccount": "Creando cuenta...",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión"
+    }
+  },
   "hero": {
     "title": "Vuela Privado por Menos",
     "subtitle": "Reserva vuelos en jets privados vacíos hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles.",
