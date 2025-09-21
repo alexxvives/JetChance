@@ -42,8 +42,7 @@ export default function LanguageSelector() {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 text-white/90 hover:text-white group"
         >
-          <span className="text-sm">{currentLanguageData?.flag}</span>
-          <span className="text-sm font-medium">{currentLanguageData?.code.toUpperCase()}</span>
+          <span className="text-lg">{currentLanguageData?.flag}</span>
           <svg 
             className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} group-hover:text-violet-300`} 
             fill="none" 

@@ -123,7 +123,6 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
             ) : (
               // Guest User Actions
               <div className="flex items-center space-x-3">
-                <LanguageSelector />
                 <Link
                   to="/login"
                   className="text-white/90 hover:text-violet-300 px-4 py-2 rounded-lg font-medium transition-colors"
@@ -136,6 +135,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                 >
                   Join Now
                 </Link>
+                <LanguageSelector />
               </div>
             )}
           </div>
