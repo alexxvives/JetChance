@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
@@ -122,6 +123,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
             ) : (
               // Guest User Actions
               <div className="flex items-center space-x-3">
+                <LanguageSelector />
                 <Link
                   to="/login"
                   className="text-white/90 hover:text-violet-300 px-4 py-2 rounded-lg font-medium transition-colors"
@@ -243,6 +245,13 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    {/* Language Settings for Non-authenticated Users */}
+                    <div className="border-b border-violet-300/20 pb-3 mb-3">
+                      <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
+                      <div className="px-4 py-2">
+                        <LanguageSelector />
+                      </div>
+                    </div>
                     <Link
                       to="/login"
                       onClick={() => setIsMenuOpen(false)}
