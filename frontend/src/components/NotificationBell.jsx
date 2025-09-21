@@ -220,11 +220,6 @@ const NotificationBell = () => {
                       <p className="text-sm text-gray-600 mt-0.5">
                         {notification.message}
                       </p>
-                      {notification.origin_code && notification.destination_code && (
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {notification.origin_code} → {notification.destination_code}
-                        </p>
-                      )}
                       <p className="text-xs text-gray-400 mt-1">
                         {formatTime(notification.created_at)}
                       </p>

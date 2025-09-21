@@ -27,7 +27,7 @@ router.get('/', [
   try {
     console.log('=== FLIGHTS API CALLED ===');
     console.log('Query params:', req.query);
-    console.log('User:', req.user);
+    console.log('User:', req.user ? `${req.user.id} (${req.user.role})` : 'Public (not authenticated)');
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -172,9 +172,13 @@ router.get('/', [
         f.description,
         f.aircraft_name,
         f.aircraft_image_url,
-        o.company_name as operator_name
+        o.company_name as operator_name,
+        o.id as operator_id,
+        u.first_name as operator_first_name,
+        u.last_name as operator_last_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
+      JOIN users u ON o.user_id = u.id
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
@@ -189,6 +193,7 @@ router.get('/', [
       SELECT COUNT(*) as total
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
+      JOIN users u ON o.user_id = u.id
       WHERE ${whereConditions.join(' AND ')}
     `;
 
@@ -247,6 +252,9 @@ router.get('/', [
       },
       operator: {
         name: flight.operator_name,
+        firstName: flight.operator_first_name,
+        lastName: flight.operator_last_name,
+        operatorId: flight.operator_id,
         rating: parseFloat(flight.operator_rating) || 0,
         logo: flight.operator_logo
       },
@@ -532,7 +540,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
         req.user.id, // The operator's user ID
         'flight_submitted',
         'Flight Submitted for Review',
-        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review. You will be notified once it's approved.`,
+        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review.`,
         newFlight.id
       );
       console.log(`✅ Created submission notification for user ${req.user.id} and flight ${newFlight.id}`);

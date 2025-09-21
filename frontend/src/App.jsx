@@ -16,6 +16,7 @@ import PendingFlightsPage from './pages/PendingFlightsPage';
 import OperatorsPage from './pages/OperatorsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function AppContent() {
@@ -108,6 +109,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <PendingFlightsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 } 
               />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
@@ -11,7 +11,6 @@ export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
   const [pendingFlights, setPendingFlights] = useState([]);
-  const [allFlights, setAllFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [processingFlights, setProcessingFlights] = useState(new Set());
   const [deleteModal, setDeleteModal] = useState({ 
@@ -49,25 +48,6 @@ export default function AdminDashboard({ user }) {
     }
   };
 
-  // Fetch all flights for management
-  const fetchAllFlights = async () => {
-    try {
-      setIsLoading(true);
-      console.log('🔄 Admin fetching all flights...');
-      
-      if (shouldUseRealAPI()) {
-        const response = await flightsAPI.getAllFlights({});
-        console.log('📡 Admin all flights:', response);
-        setAllFlights(response.flights || []);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching all flights:', error);
-      setAllFlights([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Delete flight functionality
   const handleDeleteFlight = async (flightId, operatorName, route) => {
     setDeleteModal({
@@ -83,7 +63,6 @@ export default function AdminDashboard({ user }) {
     
     // Store the original flight data in case we need to restore it
     const originalPendingFlight = pendingFlights.find(f => f.id === flightId);
-    const originalAllFlight = allFlights.find(f => f.id === flightId);
     
     try {
       setProcessingFlights(prev => new Set(prev).add(flightId));
@@ -91,16 +70,10 @@ export default function AdminDashboard({ user }) {
       // Optimistically remove the flight from UI immediately
       console.log('🗑️ Removing flight from UI state. Flight ID:', flightId, typeof flightId);
       console.log('📋 Current pending flights count:', pendingFlights.length);
-      console.log('📋 Current all flights count:', allFlights.length);
       
       setPendingFlights(prev => {
         const filtered = prev.filter(flight => String(flight.id) !== String(flightId));
         console.log('📋 Pending flights after filter:', filtered.length, 'removed:', prev.length - filtered.length);
-        return filtered;
-      });
-      setAllFlights(prev => {
-        const filtered = prev.filter(flight => String(flight.id) !== String(flightId));
-        console.log('📋 All flights after filter:', filtered.length, 'removed:', prev.length - filtered.length);
         return filtered;
       });
       
@@ -159,9 +132,6 @@ export default function AdminDashboard({ user }) {
       if (originalPendingFlight) {
         setPendingFlights(prev => [...prev, originalPendingFlight]);
       }
-      if (originalAllFlight) {
-        setAllFlights(prev => [...prev, originalAllFlight]);
-      }
       
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         alert(`Network error: Unable to connect to server. Please check if the backend is running.`);
@@ -187,7 +157,6 @@ export default function AdminDashboard({ user }) {
       if (shouldUseRealAPI()) {
         await flightsAPI.updateFlightStatus(flightId, 'approved');
         await fetchPendingFlights(); // Refresh the list
-        await fetchAllFlights(); // Refresh the all flights list
         console.log(`✅ Flight ${flightId} approved successfully`);
       }
     } catch (error) {
@@ -203,7 +172,6 @@ export default function AdminDashboard({ user }) {
       if (shouldUseRealAPI()) {
         await flightsAPI.updateFlightStatus(flightId, 'denied');
         await fetchPendingFlights(); // Refresh the list
-        await fetchAllFlights(); // Refresh the all flights list
         console.log(`❌ Flight ${flightId} denied successfully`);
       }
     } catch (error) {
@@ -214,15 +182,12 @@ export default function AdminDashboard({ user }) {
   useEffect(() => {
     if (activeTab === 'approvals') {
       fetchPendingFlights();
-    } else if (activeTab === 'management') {
-      fetchAllFlights();
     }
   }, [activeTab]);
 
   const tabs = [
     { id: 'catalog', name: 'Flight Catalog', icon: EyeIcon },
     { id: 'approvals', name: 'Flight Approvals', icon: CheckIcon, badge: pendingFlights.length },
-    { id: 'management', name: 'All Flights', icon: Cog6ToothIcon },
     { id: 'create', name: 'Create Flight', icon: PlusIcon }
   ];
 
@@ -320,8 +285,11 @@ export default function AdminDashboard({ user }) {
                             </div>
                             <div>
                               <h4 className="font-semibold text-lg text-gray-900">Flight {flight.id}</h4>
-                              <p className="text-sm text-gray-500">
-                                {flight.aircraft?.manufacturer} {flight.aircraft?.model} • {flight.operator?.name}
+                              <p className="text-sm text-blue-600 font-medium">
+                                {flight.operator?.firstName && flight.operator?.lastName && flight.operator?.operatorId
+                                  ? `${flight.operator.firstName} ${flight.operator.lastName} (${flight.operator.operatorId})`
+                                  : 'Unknown Operator'
+                                }
                               </p>
                             </div>
                             <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
@@ -357,12 +325,14 @@ export default function AdminDashboard({ user }) {
                             </div>
                           </div>
 
-                          {flight.description && (
-                            <div className="mb-4">
-                              <p className="text-sm font-medium text-gray-600">Description</p>
+                          <div className="mb-4">
+                            <p className="text-sm font-medium text-gray-600">Description</p>
+                            {flight.description && flight.description.trim() && flight.description !== 'Private Jet flight' ? (
                               <p className="text-sm text-gray-900">{flight.description}</p>
-                            </div>
-                          )}
+                            ) : (
+                              <p className="text-sm text-gray-500 italic">No description</p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex space-x-3 ml-6">
@@ -384,133 +354,6 @@ export default function AdminDashboard({ user }) {
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'management' && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6">All Flights Management</h2>
-              <p className="text-gray-600 mb-6">Manage all flights in the system - approve, deny, or delete any flight</p>
-              
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading all flights...</p>
-                </div>
-              ) : allFlights.length === 0 ? (
-                <div className="text-center py-8">
-                  <EyeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Flights Found</h3>
-                  <p className="text-gray-600">No flights in the system yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {allFlights.map((flight) => {
-                    const getStatusBadge = (status) => {
-                      switch (status) {
-                        case 'pending':
-                          return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">⏳ Pending</span>;
-                        case 'approved':
-                          return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✅ Approved</span>;
-                        case 'declined':
-                          return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">❌ Declined</span>;
-                        default:
-                          return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Unknown</span>;
-                      }
-                    };
-
-                    return (
-                      <div key={flight.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {flight.origin_code} → {flight.destination_code}
-                              </h3>
-                              {getStatusBadge(flight.status)}
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              Flight ID: {flight.id} • Operator: {flight.operator_name || 'Unknown'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm font-medium text-gray-600">Departure</p>
-                            <p className="text-sm text-gray-900">
-                              {flight.departure_datetime ? new Date(flight.departure_datetime).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              }) : 'TBD'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-600">Aircraft</p>
-                            <p className="text-sm text-gray-900">{flight.aircraft_type || 'Not specified'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-600">Price</p>
-                            <p className="text-sm text-gray-900">
-                              {flight.empty_leg_price ? new Intl.NumberFormat('en-US', {
-                                style: 'currency',
-                                currency: 'USD'
-                              }).format(flight.empty_leg_price) : 'TBD'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-600">Seats</p>
-                            <p className="text-sm text-gray-900">{flight.available_seats || 'N/A'} available</p>
-                          </div>
-                        </div>
-
-                        {flight.description && (
-                          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm font-medium text-gray-600 mb-1">Description</p>
-                            <p className="text-sm text-gray-900">{flight.description}</p>
-                          </div>
-                        )}
-
-                        <div className="flex flex-wrap gap-3">
-                          {flight.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => approveFlight(flight.id)}
-                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                              >
-                                <CheckIcon className="h-4 w-4 mr-2" />
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => denyFlight(flight.id)}
-                                className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
-                              >
-                                <XMarkIcon className="h-4 w-4 mr-2" />
-                                Deny
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleDeleteFlight(
-                              flight.id,
-                              flight.operator_name || 'Unknown',
-                              `${flight.origin_code} → ${flight.destination_code}`
-                            )}
-                            disabled={processingFlights.has(flight.id)}
-                            className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <TrashIcon className="h-4 w-4 mr-2" />
-                            {processingFlights.has(flight.id) ? 'Deleting...' : 'Delete Flight'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               )}
             </div>

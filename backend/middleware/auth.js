@@ -3,11 +3,14 @@ const db = require('../config/database-sqlite');
 
 const authenticate = async (req, res, next) => {
   try {
-    console.log(`🔐 Auth middleware - ${req.method} ${req.path}`);
+    // Only log non-polling requests to reduce console noise
+    if (!req.path.includes('unread-count')) {
+      console.log(`🔐 Auth middleware - ${req.method} ${req.path}`);
+    }
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
-      console.log('❌ No token provided');
+      console.log('❌ No token provided for', req.path);
       return res.status(401).json({
         error: 'Access denied',
         message: 'No token provided'
@@ -23,6 +26,7 @@ const authenticate = async (req, res, next) => {
     );
 
     if (result.rows.length === 0) {
+      console.log('❌ User not found for token:', decoded.userId);
       // User not found - likely old UUID from before migration
       // Treat as invalid token to force re-login
       return res.status(401).json({
@@ -32,6 +36,9 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = result.rows[0];
+    if (!req.path.includes('unread-count')) {
+      console.log('✅ User authenticated:', req.user.id, req.user.email);
+    }
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
