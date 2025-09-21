@@ -21,8 +21,8 @@ export const useTranslation = () => {
 
 export const TranslationProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
-    // Get saved language from localStorage or default to 'en'
-    return localStorage.getItem('chancefly-language') || 'en';
+    // Get saved language from localStorage or default to 'es' (Spanish)
+    return localStorage.getItem('chancefly-language') || 'es';
   });
 
   // Save language preference to localStorage whenever it changes

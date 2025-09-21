@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
-import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
@@ -103,9 +102,6 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
             
           {/* User Actions & Settings - Right */}
           <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
-            {/* Language Selector */}
-            <LanguageSelector />
-            
             {isAuthenticated ? (
               // Authenticated User Actions
               <>
@@ -228,14 +224,6 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     </Link>
                   </>
                 )}
-              </div>
-              
-              {/* Settings Section */}
-              <div className="border-t border-violet-300/20 pt-4 mt-4">
-                <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
-                <div className="px-4 py-2">
-                  <LanguageSelector />
-                </div>
               </div>
               
               {/* User Section */}

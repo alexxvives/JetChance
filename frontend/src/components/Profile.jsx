@@ -9,8 +9,10 @@ import {
   Shield,
   Bell,
   Lock,
-  Save
+  Save,
+  Globe
 } from 'lucide-react';
+import LanguageSelector from './LanguageSelector';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -329,6 +331,22 @@ const Profile = () => {
                     placeholder="Confirm new password"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Preferences Settings */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <Globe className="h-5 w-5 mr-2 text-blue-600" />
+                Preferences
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Language
+                  </label>
+                  <LanguageSelector />
                 </div>
               </div>
             </div>
