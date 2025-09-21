@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from './contexts/AuthContext';
 import AircraftImageFallback from './components/AircraftImageFallback';
 
 // Function to get high-quality private jet images based on aircraft type
@@ -65,17 +67,45 @@ const getDefaultAircraftImage = (aircraftType) => {
   }
 
   // Default fallback - high-quality private jet image
-  return 'https://images.unsplash.com/photo-1583094447810-64e19c025d70?w=400&h=200&fit=crop&crop=center';
+  return 'https://img.icons8.com/ios-filled/400/airplane-mode-on.png';
 };
 
-export default function FlightCard({ flight }) {
+export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  const savings = flight.original_price - flight.price;
-  const savingsPercent = Math.round((savings / flight.original_price) * 100);
+  // Check if user is super admin
+  const isSuperAdmin = user?.role === 'super-admin';
+  const showAdminActions = isAdminView && isSuperAdmin;
+  // Handle the new nested API response structure
+  const price = flight.pricing?.emptyLegPrice || flight.empty_leg_price || flight.price || 0;
+  const originalPrice = flight.pricing?.originalPrice || flight.original_price || 0;
+  const savings = flight.pricing?.savings || (originalPrice - price) || 0;
+  const savingsPercent = flight.pricing?.savingsPercent || (originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0);
+  
+  // Handle field name mapping for both new nested and old flat structures
+  const origin = flight.origin?.code || flight.origin_code || flight.origin || '';
+  const destination = flight.destination?.code || flight.destination_code || flight.destination || '';
+  const departureTime = flight.schedule?.departure || flight.departure_time || flight.departure_datetime || '';
+  
+  // Prioritize aircraft_name from backend, fallback to constructed name or default
+  const aircraftName = flight.aircraft_name || flight.aircraft?.name;
+  const aircraftType = flight.aircraft?.type || flight.aircraft_type || 'Private Jet';
+  const aircraftModel = flight.aircraft?.model || flight.model || '';
+  const aircraftManufacturer = flight.aircraft?.manufacturer || flight.manufacturer || '';
+  const fullAircraftName = aircraftName || (aircraftManufacturer && aircraftModel ? `${aircraftManufacturer} ${aircraftModel}` : aircraftType);
+  
+  const operatorName = flight.operator?.name || flight.operator_name || flight.operator || 'Private Operator';
+  const seatsAvailable = flight.capacity?.availableSeats || flight.seats_available || flight.available_seats || 0;
 
   const handleViewDetails = () => {
     navigate(`/flight/${flight.id}`);
+  };
+
+  const handleDeleteFlight = async () => {
+    if (onDelete) {
+      onDelete(flight.id, operatorName, `${origin} → ${destination}`);
+    }
   };
 
   return (
@@ -83,39 +113,66 @@ export default function FlightCard({ flight }) {
       <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-100">
         {/* Aircraft Image */}
         <div className="relative h-48 overflow-hidden">
-          {(flight.aircraft_image || getDefaultAircraftImage(flight.aircraft_type)) ? (
+          {(flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image) ? (
+            // Use provided aircraft image
             <>
               <img 
-                src={flight.aircraft_image || getDefaultAircraftImage(flight.aircraft_type)}
-                alt={flight.aircraft_type}
+                src={flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image}
+                alt={fullAircraftName}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // If image fails to load, show the animated fallback
+                  // If custom image fails, fall back to animated plane scene
                   e.target.style.display = 'none';
-                  const fallbackElement = e.target.parentElement.querySelector('.aircraft-fallback');
-                  if (fallbackElement) {
-                    fallbackElement.style.display = 'block';
+                  const fallbackDiv = e.target.parentElement.querySelector('.fallback-scene');
+                  if (fallbackDiv) {
+                    fallbackDiv.style.display = 'flex';
                   }
                 }}
               />
-              {/* Hidden fallback that shows on error */}
-              <div className="aircraft-fallback hidden">
-                <AircraftImageFallback 
-                  aircraftType={flight.aircraft_type}
-                  className="w-full h-full"
-                />
+              {/* Hidden fallback scene */}
+              <div className="fallback-scene hidden w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 items-center justify-center relative overflow-hidden">
+                <div className="animate-bounce" style={{animationDuration: '3s'}}>
+                  <svg className="w-24 h-24 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                  </svg>
+                </div>
+                {/* Animated clouds */}
+                <div className="absolute top-4 left-0 animate-pulse opacity-30" style={{animationDuration: '4s'}}>
+                  <svg className="w-16 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                  </svg>
+                </div>
+                <div className="absolute top-8 right-4 animate-pulse opacity-20" style={{animationDelay: '2s', animationDuration: '5s'}}>
+                  <svg className="w-12 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                  </svg>
+                </div>
               </div>
             </>
           ) : (
-            /* Show animated fallback when no image available */
-            <AircraftImageFallback 
-              aircraftType={flight.aircraft_type}
-              className="w-full h-full"
-            />
+            // No custom image provided - use animated plane scene with SVG
+            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center relative overflow-hidden">
+              <div className="animate-bounce" style={{animationDuration: '3s'}}>
+                <svg className="w-24 h-24 text-blue-600 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                </svg>
+              </div>
+              {/* Animated clouds */}
+              <div className="absolute top-4 left-0 animate-pulse opacity-30" style={{animationDuration: '4s'}}>
+                <svg className="w-16 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+              </div>
+              <div className="absolute top-8 right-4 animate-pulse opacity-20" style={{animationDelay: '2s', animationDuration: '5s'}}>
+                <svg className="w-12 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+              </div>
+            </div>
           )}
 
           <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm z-10">
-            {flight.aircraft_type}
+            {fullAircraftName}
           </div>
         </div>
         
@@ -123,17 +180,17 @@ export default function FlightCard({ flight }) {
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="font-bold text-xl text-gray-900 mb-1">
-                {flight.origin} → {flight.destination}
+                {origin} → {destination}
               </h3>
-              <p className="text-sm text-gray-500">{flight.operator}</p>
+              <p className="text-sm text-gray-500">{operatorName}</p>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-blue-600">
-                ${flight.price ? flight.price.toLocaleString() : '0'}
+                ${price ? price.toLocaleString() : '0'}
               </div>
-              {flight.original_price && (
+              {originalPrice && originalPrice > 0 && (
                 <div className="text-sm text-gray-400 line-through">
-                  ${flight.original_price.toLocaleString()}
+                  ${originalPrice.toLocaleString()}
                 </div>
               )}
             </div>
@@ -141,23 +198,25 @@ export default function FlightCard({ flight }) {
 
         <div className="space-y-2 mb-4">
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Departure:</span> {new Date(flight.departure_time).toLocaleDateString()} at {new Date(flight.departure_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            <span className="font-medium">Departure:</span> {departureTime ? new Date(departureTime).toLocaleDateString() : 'TBD'} at {departureTime ? new Date(departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Operator:</span> {flight.operator_name || flight.operator || 'Private Operator'}
+            <span className="font-medium">Operator:</span> {operatorName}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Aircraft:</span> {flight.aircraft_type}
+            <span className="font-medium">Aircraft:</span> {fullAircraftName}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Available Seats:</span> {flight.seats_available}
+            <span className="font-medium">Available Seats:</span> {seatsAvailable}
           </div>
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <div className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
-            Save ${savings.toLocaleString()} ({savingsPercent}% off)
-          </div>
+          {savings > 0 && (
+            <div className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
+              Save ${savings.toLocaleString()} ({savingsPercent}% off)
+            </div>
+          )}
         </div>
 
           <button 
@@ -166,6 +225,19 @@ export default function FlightCard({ flight }) {
           >
             View Details & Book
           </button>
+
+          {/* Admin Actions - Only visible to super admins in admin view */}
+          {showAdminActions && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <button
+                onClick={handleDeleteFlight}
+                className="w-full flex items-center justify-center py-1.5 px-3 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors"
+              >
+                <TrashIcon className="h-3 w-3 mr-1.5" />
+                Delete Flight
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

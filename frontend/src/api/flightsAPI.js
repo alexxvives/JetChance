@@ -1,5 +1,5 @@
 // Real flights API for database operations
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 class FlightsAPI {
   async getAuthHeaders() {
@@ -111,6 +111,45 @@ class FlightsAPI {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Failed to delete flight: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  // Get all flights with admin filtering (for admin dashboard)
+  async getAllFlights(filters = {}) {
+    const queryParams = new URLSearchParams();
+    
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== '') {
+        queryParams.append(key, filters[key]);
+      }
+    });
+
+    const url = `${API_BASE_URL}/flights${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    
+    const response = await fetch(url, {
+      headers: await this.getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch all flights: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  // Update flight status (for admin approval/denial)
+  async updateFlightStatus(flightId, status) {
+    const response = await fetch(`${API_BASE_URL}/flights/${flightId}/approve`, {
+      method: 'PUT',
+      headers: await this.getAuthHeaders(),
+      body: JSON.stringify({ status })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || `Failed to update flight status: ${response.statusText}`);
     }
 
     return await response.json();

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import LanguageSelector from './LanguageSelector';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -99,6 +100,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
               
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
+                  <NotificationBell />
                   <div className="text-sm text-white/80">
                     {t('nav.welcome')}, <span className="font-semibold text-violet-300">{user?.firstName} - ({user?.id})</span>
                   </div>

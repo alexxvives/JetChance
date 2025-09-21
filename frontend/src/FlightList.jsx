@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import FlightCard from './FlightCard';
 import { mockFlightAPI } from './utils/mockFlightAPI';
+import { flightsAPI, shouldUseRealAPI } from './api/flightsAPI';
 
-export default function FlightList({ filters = {} }) {
+export default function FlightList({ filters = {}, isAdminView = false, onDeleteFlight }) {
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -10,12 +11,26 @@ export default function FlightList({ filters = {} }) {
     const loadFlights = async () => {
       try {
         setLoading(true);
-        const response = await mockFlightAPI.getFlights();
-        // mockFlightAPI returns { flights: [], total: number }
-        const flightData = response.flights || [];
+        console.log('🔄 Loading flights for customer view...');
+        
+        let flightData = [];
+        
+        if (shouldUseRealAPI()) {
+          console.log('📡 Using Real API for customer flights...');
+          // For customers, get all approved flights (no user_id filter)
+          const response = await flightsAPI.getFlights(filters);
+          console.log('📡 Customer API response:', response);
+          flightData = response.flights || response || [];
+        } else {
+          console.log('🧪 Using Mock API for customer flights...');
+          const response = await mockFlightAPI.getFlights();
+          flightData = response.flights || [];
+        }
+        
+        console.log(`✅ Loaded ${flightData.length} flights for customer`);
         setFlights(Array.isArray(flightData) ? flightData : []);
       } catch (error) {
-        console.error('Error loading flights:', error);
+        console.error('❌ Error loading flights:', error);
         setFlights([]);
       } finally {
         setLoading(false);
@@ -44,7 +59,7 @@ export default function FlightList({ filters = {} }) {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('flightUpdate', handleFlightUpdate);
     };
-  }, []);
+  }, [filters]); // Add filters as dependency
 
   // Show loading state
   if (loading) {
@@ -87,7 +102,12 @@ export default function FlightList({ filters = {} }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       {filteredFlights.map(flight => (
-        <FlightCard key={flight.id} flight={flight} />
+        <FlightCard 
+          key={flight.id} 
+          flight={flight} 
+          isAdminView={isAdminView}
+          onDelete={onDeleteFlight}
+        />
       ))}
       {filteredFlights.length === 0 && flightsArray.length === 0 && (
         <div className="col-span-full text-center py-12">

@@ -3,9 +3,11 @@ const db = require('../config/database-sqlite');
 
 const authenticate = async (req, res, next) => {
   try {
+    console.log(`🔐 Auth middleware - ${req.method} ${req.path}`);
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({
         error: 'Access denied',
         message: 'No token provided'

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, CheckIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CheckIcon, XMarkIcon, ClockIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { flightsAPI } from '../api/flightsAPI';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function PendingFlightsPage() {
   const navigate = useNavigate();
@@ -10,6 +11,12 @@ export default function PendingFlightsPage() {
   const [pendingFlights, setPendingFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingFlights, setProcessingFlights] = useState(new Set());
+  const [deleteModal, setDeleteModal] = useState({ 
+    isOpen: false, 
+    flightId: null, 
+    operatorName: '', 
+    route: '' 
+  });
 
   useEffect(() => {
     // Check if user is super-admin
@@ -63,6 +70,62 @@ export default function PendingFlightsPage() {
     } catch (error) {
       console.error(`Error ${action}ing flight:`, error);
       alert(`Failed to ${action} flight. Please try again.`);
+    } finally {
+      setProcessingFlights(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(flightId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDeleteFlight = async (flightId, operatorName, route) => {
+    setDeleteModal({
+      isOpen: true,
+      flightId,
+      operatorName,
+      route
+    });
+  };
+
+  const confirmDeleteFlight = async () => {
+    const { flightId, operatorName, route } = deleteModal;
+    
+    // Store the original flight data in case we need to restore it
+    const originalFlight = pendingFlights.find(f => f.id === flightId);
+    
+    try {
+      setProcessingFlights(prev => new Set(prev).add(flightId));
+      
+      // Optimistically remove the flight from UI immediately
+      setPendingFlights(prev => prev.filter(flight => String(flight.id) !== String(flightId)));
+      
+      const response = await fetch(`/api/flights/${flightId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete flight');
+      }
+      
+      console.log('Flight deleted successfully');
+      // Note: No alert needed - the UI update is sufficient feedback
+      
+      // Notify other components to refresh
+      window.dispatchEvent(new CustomEvent('flightUpdate'));
+    } catch (error) {
+      console.error('Error deleting flight:', error);
+      
+      // Restore the flight to the UI since deletion failed
+      if (originalFlight) {
+        setPendingFlights(prev => [...prev, originalFlight]);
+      }
+      
+      alert(`Failed to delete flight: ${error.message}`);
     } finally {
       setProcessingFlights(prev => {
         const newSet = new Set(prev);
@@ -184,6 +247,18 @@ export default function PendingFlightsPage() {
 
                     <div className="flex space-x-3 ml-6">
                       <button
+                        onClick={() => handleDeleteFlight(
+                          flight.id, 
+                          flight.operator_name || 'Unknown',
+                          `${flight.origin_code} → ${flight.destination_code}`
+                        )}
+                        disabled={processingFlights.has(flight.id)}
+                        className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <TrashIcon className="h-4 w-4 mr-2" />
+                        {processingFlights.has(flight.id) ? 'Processing...' : 'Delete'}
+                      </button>
+                      <button
                         onClick={() => handleFlightAction(flight.id, 'decline')}
                         disabled={processingFlights.has(flight.id)}
                         className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -207,6 +282,19 @@ export default function PendingFlightsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, flightId: null, operatorName: '', route: '' })}
+        onConfirm={confirmDeleteFlight}
+        title="Delete Flight"
+        message="Are you sure you want to permanently delete this flight?"
+        route={deleteModal.route}
+        operatorName={deleteModal.operatorName}
+        confirmText="Delete Flight"
+        type="danger"
+      />
     </div>
   );
 }

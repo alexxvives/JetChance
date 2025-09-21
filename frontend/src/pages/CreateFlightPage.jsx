@@ -86,7 +86,6 @@ export default function CreateFlightPage() {
     price: '',
     originalPrice: '',
     seatsAvailable: '',
-    duration: '',
     aircraftImage: null,
     description: '',
     // Store selected airport objects
@@ -280,10 +279,38 @@ export default function CreateFlightPage() {
     setIsSubmitting(true);
     
     try {
+      let uploadedImageUrl = null;
+      
+      // First, upload the image if one was selected
+      if (formData.aircraftImage) {
+        const formDataForUpload = new FormData();
+        formDataForUpload.append('aircraftImage', formData.aircraftImage);
+        
+        const uploadResponse = await fetch('http://localhost:4000/api/upload/aircraft-image', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
+          body: formDataForUpload
+        });
+        
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          // Handle both relative and absolute URLs
+          uploadedImageUrl = uploadResult.imageUrl.startsWith('http') 
+            ? uploadResult.imageUrl 
+            : `http://localhost:4000${uploadResult.imageUrl}`;
+          console.log('✅ Image uploaded successfully:', uploadedImageUrl);
+        } else {
+          const errorText = await uploadResponse.text();
+          console.error('❌ Image upload failed:', uploadResponse.status, errorText);
+          console.warn('⚠️ Image upload failed, continuing without image');
+        }
+      }
+      
       // Prepare flight data
       const flightData = {
         // Required backend fields
-        // aircraftId: not needed - backend will create default aircraft
         aircraftType: formData.aircraftType,
         originCode: formData.originCode,
         destinationCode: formData.destinationCode,
@@ -301,7 +328,6 @@ export default function CreateFlightPage() {
         destinationCity: formData.destination,
         destinationCountry: 'US', // Default for now
         arrivalDateTime: formData.arrivalTime,
-        estimatedDuration: formData.duration,
         description: formData.description,
         
         // Additional frontend fields for display
@@ -309,9 +335,8 @@ export default function CreateFlightPage() {
         destination: formData.destination,
         price: parseFloat(formData.price),
         seatsAvailable: parseInt(formData.seatsAvailable),
-        duration: formData.duration,
-        aircraft_image: formData.aircraftImage ? URL.createObjectURL(formData.aircraftImage) : getDefaultAircraftImage(formData.aircraftType),
-        images: formData.aircraftImage ? [URL.createObjectURL(formData.aircraftImage)] : []
+        aircraft_image: uploadedImageUrl || getDefaultAircraftImage(formData.aircraftType),
+        images: uploadedImageUrl ? [uploadedImageUrl] : []
       };
       
       // Use real API to save to database, fallback to mock API if needed
@@ -327,11 +352,10 @@ export default function CreateFlightPage() {
       
       // Navigate back to dashboard
       navigate('/dashboard', { 
-        state: { message: 'Flight created successfully!' } 
+        state: { message: 'Flight submitted for review successfully! You will be notified once it is approved.' } 
       });
     } catch (error) {
       console.error('Error creating flight:', error);
-      console.error('Flight data sent:', flightData);
       
       // Show more specific error message
       const errorMessage = error.message || 'Unknown error occurred';
@@ -386,13 +410,13 @@ export default function CreateFlightPage() {
                         browse files
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
                           onChange={(e) => handleImageUpload(e.target.files[0])}
                           className="sr-only"
                         />
                       </label>
                     </p>
-                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
+                    <p className="text-sm text-gray-500">PNG, JPG, WebP, GIF, SVG up to 5MB</p>
                   </div>
                 </div>
               ) : (
@@ -485,6 +509,24 @@ export default function CreateFlightPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Arrival Time *
+                  {formData.departureTime && formData.arrivalTime && (() => {
+                    const departure = new Date(formData.departureTime);
+                    const arrival = new Date(formData.arrivalTime);
+                    const departureDate = departure.toDateString();
+                    const arrivalDate = arrival.toDateString();
+                    
+                    if (departureDate !== arrivalDate) {
+                      const timeDiff = arrival.getTime() - departure.getTime();
+                      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                      
+                      if (daysDiff === 1) {
+                        return <sup className="text-xs text-red-500 font-bold">+1</sup>;
+                      } else if (daysDiff > 1) {
+                        return <sup className="text-xs text-red-500 font-bold">+{daysDiff}</sup>;
+                      }
+                    }
+                    return null;
+                  })()}
                 </label>
                 <input
                   type="datetime-local"
@@ -495,20 +537,84 @@ export default function CreateFlightPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Flight Duration *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) => setFormData({...formData, duration: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="5h 30m"
-                />
-              </div>
+              {/* Duration will be calculated automatically from departure and arrival times */}
+              {formData.departureTime && formData.arrivalTime && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Calculated Duration
+                  </label>
+                  <div className={`w-full px-4 py-3 border border-gray-300 rounded-xl ${
+                    (() => {
+                      const departure = new Date(formData.departureTime);
+                      const arrival = new Date(formData.arrivalTime);
+                      const durationMs = arrival - departure;
+                      
+                      if (durationMs <= 0) {
+                        return "bg-red-100 text-red-700";
+                      } else {
+                        return "bg-gray-100 text-gray-700";
+                      }
+                    })()
+                  }`}>
+                    {(() => {
+                      const departure = new Date(formData.departureTime);
+                      const arrival = new Date(formData.arrivalTime);
+                      const durationMs = arrival - departure;
+                      const durationMinutes = Math.round(durationMs / (1000 * 60));
+                      const hours = Math.floor(durationMinutes / 60);
+                      const minutes = durationMinutes % 60;
+                      
+                      if (durationMs <= 0) {
+                        return "Invalid: Arrival must be after departure";
+                      } else if (hours >= 24) {
+                        const days = Math.floor(hours / 24);
+                        const remainingHours = hours % 24;
+                        return days > 0 
+                          ? (remainingHours > 0 
+                              ? `${days}d ${remainingHours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
+                              : `${days}d ${minutes > 0 ? `${minutes}m` : ''}`.trim())
+                          : (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`);
+                      } else if (hours > 0) {
+                        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+                      } else {
+                        return `${minutes}m`;
+                      }
+                    })()}
+                  </div>
+                  {(() => {
+                    const departure = new Date(formData.departureTime);
+                    const arrival = new Date(formData.arrivalTime);
+                    const durationMs = arrival - departure;
+                    const durationMinutes = Math.round(durationMs / (1000 * 60));
+                    const hours = Math.floor(durationMinutes / 60);
+                    
+                    if (durationMs > 0 && hours >= 24) {
+                      return null; // Warning moved to bottom of card
+                    }
+                    return null;
+                  })()}
+                </div>
+              )}
             </div>
+            
+            {/* Warning at bottom of Schedule card */}
+            {formData.departureTime && formData.arrivalTime && (() => {
+              const departure = new Date(formData.departureTime);
+              const arrival = new Date(formData.arrivalTime);
+              const durationMs = arrival - departure;
+              const durationMinutes = Math.round(durationMs / (1000 * 60));
+              const hours = Math.floor(durationMinutes / 60);
+              
+              if (durationMs > 0 && hours >= 24) {
+                return (
+                  <p className="text-xs text-gray-500 mt-4 flex items-center">
+                    <span className="mr-1">⚠</span>
+                    Unusually long flight duration. Please verify your dates.
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           {/* Aircraft Details */}

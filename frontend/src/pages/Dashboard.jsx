@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import FlightFilters from '../components/FlightFilters';
 import FlightList from '../FlightList';
 import SafeOperatorDashboard from '../components/SafeOperatorDashboard';
+import AdminDashboard from '../components/AdminDashboard';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function Dashboard({ user, onNavigate, onLogout }) {
@@ -16,8 +17,17 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
     passengers: 1
   });
 
-  // Show operator dashboard for operators and super-admins
-  if (currentUser?.role === 'operator' || currentUser?.role === 'super-admin') {
+  // Show admin dashboard for super-admins
+  if (currentUser?.role === 'super-admin') {
+    return (
+      <ErrorBoundary>
+        <AdminDashboard user={currentUser} />
+      </ErrorBoundary>
+    );
+  }
+
+  // Show operator dashboard for operators only
+  if (currentUser?.role === 'operator') {
     return (
       <ErrorBoundary>
         <SafeOperatorDashboard user={currentUser} />

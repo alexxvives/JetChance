@@ -32,6 +32,12 @@ class SimpleIDGenerator {
     return `BK${timestamp}`;
   }
 
+  // Generate simple notification ID: NOT001, NOT002, etc.
+  static generateNotificationId() {
+    const timestamp = Date.now().toString().slice(-6);
+    return `NOT${timestamp}`;
+  }
+
   // Generate random 6-character alphanumeric ID
   static generateRandomId(prefix = '') {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

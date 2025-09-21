@@ -9,6 +9,7 @@ const userRoutes = require('./routes/users');
 const flightRoutes = require('./routes/flights');
 const bookingRoutes = require('./routes/bookings');
 const uploadRoutes = require('./routes/upload-hybrid');
+const { router: notificationRoutes } = require('./routes/notifications');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

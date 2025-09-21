@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
+import ConfirmationModal from './ConfirmationModal';
 
 export default function OperatorDashboard({ user }) {
   // Immediate safety check before any hooks
@@ -21,6 +22,11 @@ export default function OperatorDashboard({ user }) {
   const location = useLocation();
   const [flights, setFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ 
+    isOpen: false, 
+    flightId: null,
+    flightRoute: ''
+  });
 
   // Debug: Log user object
   console.log('OperatorDashboard - User object:', user);
@@ -39,19 +45,33 @@ export default function OperatorDashboard({ user }) {
     }
   }, [user]);
 
-  // Refresh flights when returning from create flight page
+  // Refresh flights when returning from create flight page or when user changes
   useEffect(() => {
     try {
-      if (location.state?.message && user && user.id) {
-        // Show success message briefly
-        setTimeout(() => {
-          fetchOperatorFlights();
-        }, 500);
+      if (user && user.id) {
+        // Always refresh when component mounts or user changes
+        fetchOperatorFlights();
       }
     } catch (error) {
       console.error('Error in OperatorDashboard refresh useEffect:', error);
     }
-  }, [location.state, user]);
+  }, [location.pathname, user?.id]); // Refresh when navigation or user changes
+
+  // Show success message when returning from create flight page  
+  useEffect(() => {
+    try {
+      if (location.state?.message) {
+        console.log('🎉 Success message detected:', location.state.message);
+        // Force a refresh after a short delay to ensure backend has processed the creation
+        setTimeout(() => {
+          console.log('🔄 Auto-refreshing flights after creation...');
+          fetchOperatorFlights();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error in success message handler:', error);
+    }
+  }, [location.state?.message]);
 
   // Safety check for user object
   if (!user) {
@@ -136,23 +156,43 @@ export default function OperatorDashboard({ user }) {
     }
   };
 
-  const handleDeleteFlight = async (flightId) => {
-    if (window.confirm('Are you sure you want to delete this flight?')) {
-      try {
-        if (shouldUseRealAPI()) {
-          await flightsAPI.deleteFlight(flightId);
-        } else if (shouldUseMockFlightAPI()) {
-          await mockFlightAPI.deleteFlight(flightId);
-        } else {
-          throw new Error('No API available');
-        }
-        
-        // Remove from local state
-        setFlights(flights.filter(f => f.id !== flightId));
-      } catch (error) {
-        console.error('Error deleting flight:', error);
-        alert('Error deleting flight. Please try again.');
+  const handleDeleteFlight = async (flightId, flightRoute) => {
+    setDeleteModal({
+      isOpen: true,
+      flightId,
+      flightRoute
+    });
+  };
+
+  const confirmDeleteFlight = async () => {
+    const { flightId } = deleteModal;
+    
+    // Store the original flight data in case we need to restore it
+    const originalFlight = flights.find(f => f.id === flightId);
+    
+    try {
+      // Optimistically remove from local state immediately
+      setFlights(flights.filter(f => String(f.id) !== String(flightId)));
+      
+      if (shouldUseRealAPI()) {
+        await flightsAPI.deleteFlight(flightId);
+      } else if (shouldUseMockFlightAPI()) {
+        await mockFlightAPI.deleteFlight(flightId);
+      } else {
+        throw new Error('No API available');
       }
+      
+      // Notify other components to refresh
+      window.dispatchEvent(new CustomEvent('flightUpdate'));
+    } catch (error) {
+      console.error('Error deleting flight:', error);
+      
+      // Restore the flight to the UI since deletion failed
+      if (originalFlight) {
+        setFlights(prev => [...prev, originalFlight]);
+      }
+      
+      alert('Error deleting flight. Please try again.');
     }
   };
 
@@ -190,6 +230,17 @@ export default function OperatorDashboard({ user }) {
               </p>
             </div>
             <div className="flex space-x-3">
+              <button
+                onClick={fetchOperatorFlights}
+                disabled={isLoading}
+                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                title="Refresh flights list"
+              >
+                <svg className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {isLoading ? 'Refreshing...' : 'Refresh'}
+              </button>
               <button
                 onClick={() => navigate('/create-flight')}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -299,11 +350,18 @@ export default function OperatorDashboard({ user }) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-3 py-2 text-sm font-semibold rounded-full ${
-                          flight.status === 'active'
+                          flight.status === 'approved'
                             ? 'bg-green-100 text-green-800'
+                            : flight.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : flight.status === 'declined'
+                            ? 'bg-red-100 text-red-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {flight.status}
+                          {flight.status === 'approved' ? '✅ Approved' :
+                           flight.status === 'pending' ? '⏳ Pending' :
+                           flight.status === 'declined' ? '❌ Declined' :
+                           flight.status || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -323,7 +381,7 @@ export default function OperatorDashboard({ user }) {
                             <PencilIcon className="h-5 w-5" />
                           </button>
                           <button 
-                            onClick={() => handleDeleteFlight(flight.id)}
+                            onClick={() => handleDeleteFlight(flight.id, `${flight.origin_code} → ${flight.destination_code}`)}
                             className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
                             title="Delete Flight"
                           >
@@ -339,6 +397,19 @@ export default function OperatorDashboard({ user }) {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, flightId: null, flightRoute: '' })}
+        onConfirm={confirmDeleteFlight}
+        title="Delete Flight"
+        message="Are you sure you want to delete this flight?"
+        route={deleteModal.flightRoute}
+        operatorName={user?.company_name || user?.name || 'Your company'}
+        confirmText="Delete Flight"
+        type="danger"
+      />
     </div>
   );
 }

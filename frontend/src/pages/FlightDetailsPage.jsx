@@ -16,18 +16,22 @@ export default function FlightDetailsPage() {
     // Find flight by ID using appropriate API
     const loadFlight = async () => {
       try {
+        console.log('🔍 Loading flight with ID:', id);
         if (shouldUseRealAPI()) {
           const foundFlight = await flightsAPI.getFlightById(id);
+          console.log('✅ Real API flight data:', foundFlight);
           setFlight(foundFlight);
         } else if (shouldUseMockFlightAPI()) {
           const response = await mockFlightAPI.getFlights();
           const foundFlight = response.flights.find(f => f.id === parseInt(id) || f.id === id);
+          console.log('✅ Mock API flight data:', foundFlight);
           setFlight(foundFlight);
         } else {
+          console.log('❌ No API configured');
           setFlight(null);
         }
       } catch (error) {
-        console.error('Error loading flight:', error);
+        console.error('❌ Error loading flight:', error);
         setFlight(null);
       } finally {
         setLoading(false);
@@ -65,10 +69,17 @@ export default function FlightDetailsPage() {
   }
 
   // Add safety checks for calculations
+  console.log('🛩️ Flight object:', flight);
+  console.log('🖼️ Flight images:', flight.images);
+  console.log('🖼️ Aircraft image URL:', flight.aircraft_image_url);
+  console.log('⏰ Departure time:', flight.departure_time);
+  console.log('⏰ Arrival time:', flight.arrival_time);
+  console.log('⏱️ Duration:', flight.duration);
   const price = flight.price || flight.empty_leg_price || 0;
   const originalPrice = flight.original_price || price;
   const savings = originalPrice - price;
   const savingsPercentage = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
+  console.log('💰 Price calculations:', { price, originalPrice, savings, savingsPercentage });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -112,6 +123,24 @@ export default function FlightDetailsPage() {
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900">
                   {flight.arrival_time ? new Date(flight.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
+                  {flight.departure_time && flight.arrival_time && (() => {
+                    const departure = new Date(flight.departure_time);
+                    const arrival = new Date(flight.arrival_time);
+                    const departureDate = departure.toDateString();
+                    const arrivalDate = arrival.toDateString();
+                    
+                    if (departureDate !== arrivalDate) {
+                      const timeDiff = arrival.getTime() - departure.getTime();
+                      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                      
+                      if (daysDiff === 1) {
+                        return <sup className="text-xs text-red-500 font-bold">+1</sup>;
+                      } else if (daysDiff > 1) {
+                        return <sup className="text-xs text-red-500 font-bold">+{daysDiff}</sup>;
+                      }
+                    }
+                    return null;
+                  })()}
                 </div>
                 <div className="text-sm text-gray-600 font-medium">{flight.destinationCode || flight.destination_code || 'TBD'}</div>
                 <div className="text-xs text-gray-500">{flight.destination || flight.destination_city || 'TBD'}</div>
@@ -140,17 +169,17 @@ export default function FlightDetailsPage() {
             
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600">Flight Time</div>
-              <div className="font-semibold text-gray-900">{flight.duration}</div>
+              <div className="font-semibold text-gray-900">{flight.duration || 'TBD'}</div>
             </div>
             
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600">Aircraft</div>
-              <div className="font-semibold text-gray-900">{flight.aircraft_type}</div>
+              <div className="font-semibold text-gray-900">{flight.aircraft_type || flight.aircraft_name || 'TBD'}</div>
             </div>
             
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600">Operator</div>
-              <div className="font-semibold text-gray-900">{flight.operator}</div>
+              <div className="font-semibold text-gray-900">{flight.operator || 'TBD'}</div>
             </div>
           </div>
         </div>
@@ -160,11 +189,11 @@ export default function FlightDetailsPage() {
           {/* Left Panel - Flight Route */}
           <div className="space-y-6">
             {/* Flight Route */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden h-full">
               <div className="p-6 border-b">
                 <h2 className="text-xl font-bold text-gray-900">Flight Route</h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  {flight.origin} to {flight.destination} • {flight.duration}
+                  {flight.origin || flight.origin_city || 'TBD'} to {flight.destination || flight.destination_city || 'TBD'} • {flight.duration || 'TBD'}
                 </p>
               </div>
               <div className="relative">
@@ -175,15 +204,45 @@ export default function FlightDetailsPage() {
 
           {/* Right Panel - Pricing */}
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Pricing</h2>
-              
+            <div className="bg-white rounded-2xl shadow-sm p-6 h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Pricing</h2>
+              </div>
+
+              {/* Price Comparison Cards */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {/* Charter Price Card */}
+                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-xs text-blue-600 font-medium mb-1">CHARTER PRICE</div>
+                  <div className="text-2xl font-bold text-blue-700">${price.toLocaleString()}</div>
+                  <div className="text-xs text-blue-600 mt-1">Empty Leg Deal</div>
+                </div>
+
+                {/* Market Price Card */}
+                {originalPrice > price ? (
+                  <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg relative">
+                    <div className="text-xs text-red-600 font-medium mb-1">MARKET RATE</div>
+                    <div className="text-2xl font-bold text-red-400 line-through">${originalPrice.toLocaleString()}</div>
+                    <div className="text-xs text-red-600 mt-1">Standard Pricing</div>
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full rotate-12">
+                      -{savingsPercentage}%
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="text-xs text-gray-600 font-medium mb-1">GREAT VALUE</div>
+                    <div className="text-2xl font-bold text-gray-700">${price.toLocaleString()}</div>
+                    <div className="text-xs text-gray-600 mt-1">Competitive Rate</div>
+                  </div>
+                )}
+              </div>
+
               {/* Passenger Selection */}
               <div className="mb-6 p-4 bg-gray-50 rounded-xl">
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-semibold text-gray-900">Passengers</h3>
-                    <p className="text-sm text-gray-600">Select number of passengers</p>
+                    <p className="text-sm text-gray-600">{flight.seats_available || 8} seats available</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
@@ -194,66 +253,36 @@ export default function FlightDetailsPage() {
                     </button>
                     <span className="font-semibold text-lg w-8 text-center">{selectedPassengers}</span>
                     <button
-                      onClick={() => setSelectedPassengers(Math.min(flight.seats_available, selectedPassengers + 1))}
+                      onClick={() => setSelectedPassengers(Math.min(flight.seats_available || 8, selectedPassengers + 1))}
                       className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
                     >
                       <span className="text-lg">+</span>
                     </button>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Available seats: {flight.seats_available}
-                </p>
               </div>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Charter price (total)</span>
-                  <span className="text-gray-900 font-semibold">${price.toLocaleString()}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Price per passenger</span>
-                  <span className="text-lg font-bold text-blue-600">
+
+              {/* Simple Summary */}
+              <div className="border-t border-gray-200 pt-4 mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-lg font-semibold text-gray-900">Total per person</span>
+                  <span className="text-2xl font-bold text-blue-600">
                     ${Math.round(price / selectedPassengers).toLocaleString()}
                   </span>
                 </div>
-                
-                {originalPrice > price && (
-                  <>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Original charter price</span>
-                      <span className="text-gray-400 line-through">${originalPrice.toLocaleString()}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">You Save (total)</span>
-                      <span className="text-green-600 font-semibold">${savings.toLocaleString()}</span>
-                    </div>
-                  </>
-                )}
-                
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">
-                      Total Charter Price
-                    </span>
-                    <span className="text-2xl font-bold text-blue-600">
-                      ${price.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-600 mt-1">
-                    <span>Split between {selectedPassengers} passenger{selectedPassengers !== 1 ? 's' : ''}</span>
-                    <span className="font-semibold">
-                      ${Math.round(flight.price / selectedPassengers).toLocaleString()} each
-                    </span>
-                  </div>
+                <div className="text-sm text-gray-600 text-right">
+                  {selectedPassengers} passenger{selectedPassengers !== 1 ? 's' : ''} • ${price.toLocaleString()} total charter
                 </div>
               </div>
-              
-              <button className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
-                Book Charter - ${Math.round(flight.price / selectedPassengers).toLocaleString()} per person
+
+              {/* Action Button */}
+              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                Book Charter - ${Math.round(price / selectedPassengers).toLocaleString()} per person
               </button>
+              
+              <p className="text-xs text-gray-500 text-center mt-3">
+                Final price confirmed before payment
+              </p>
             </div>
           </div>
         </div>
@@ -266,7 +295,11 @@ export default function FlightDetailsPage() {
               {flight.images.map((image, index) => (
                 <div key={index} className="group relative overflow-hidden rounded-xl bg-gray-100 aspect-[4/3]">
                   <img
-                    src={image.url || image}
+                    src={
+                      (image.url || image).startsWith('http') 
+                        ? (image.url || image) 
+                        : `http://localhost:4000${image.url || image}`
+                    }
                     alt={`Aircraft ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />

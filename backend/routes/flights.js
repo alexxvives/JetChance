@@ -3,6 +3,7 @@ const { body, query, validationResult } = require('express-validator');
 const SimpleIDGenerator = require('../utils/idGenerator');
 const db = require('../config/database-sqlite');
 const { authenticate, authorize } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
@@ -63,16 +64,18 @@ router.get('/', [
       if (userResult.rows.length > 0) {
         const userRole = userResult.rows[0].role;
         if (userRole === 'operator') {
-          // Operator viewing their own flights
+          // Operator viewing their own flights - show ALL statuses (pending, approved, declined)
           isOperatorOwned = true;
+          statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
           const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
         } else if (userRole === 'super-admin') {
-          // Super-admin viewing their operator flights
+          // Super-admin viewing their operator flights - show ALL statuses
           isOperatorOwned = true;
           isSuperAdmin = true;
+          statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
           const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
@@ -227,6 +230,7 @@ router.get('/', [
         totalSeats: flight.total_seats,
         availableSeats: flight.available_seats
       },
+      status: flight.status,
       aircraft: {
         name: flight.aircraft_name || 'Private Jet',
         type: flight.aircraft_name || 'Private Jet',
@@ -521,6 +525,22 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     const newFlight = result.rows[0];
 
+    // Create notification for the operator about successful flight submission
+    try {
+      await createNotification(
+        db,
+        req.user.id, // The operator's user ID
+        'flight_submitted',
+        'Flight Submitted for Review',
+        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review. You will be notified once it's approved.`,
+        newFlight.id
+      );
+      console.log(`✅ Created submission notification for user ${req.user.id} and flight ${newFlight.id}`);
+    } catch (notificationError) {
+      console.error('❌ Failed to create submission notification:', notificationError);
+      // Don't fail the flight creation if notification fails
+    }
+
     res.status(201).json({
       message: 'Flight created successfully',
       flight: {
@@ -632,74 +652,6 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
   }
 });
 
-// @route   DELETE /api/flights/:id
-// @desc    Delete/cancel flight (operators only)
-// @access  Private (Operator)
-router.delete('/:id', authenticate, authorize(['operator', 'admin', 'super-admin']), async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Get operator ID
-    const operatorResult = await db.query(
-      'SELECT id FROM operators WHERE user_id = $1',
-      [req.user.id]
-    );
-
-    if (operatorResult.rows.length === 0 && req.user.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Access denied'
-      });
-    }
-
-    const operatorId = operatorResult.rows[0]?.id;
-
-    // Check for existing bookings
-    const bookingCheck = await db.query(
-      'SELECT COUNT(*) as count FROM bookings WHERE flight_id = $1 AND status IN ($2, $3)',
-      [id, 'confirmed', 'paid']
-    );
-
-    if (parseInt(bookingCheck.rows[0].count) > 0) {
-      // Can't delete, but can cancel
-      await db.query(
-        "UPDATE flights SET status = $1, updated_at = datetime('now') WHERE id = $2",
-        ['cancelled', id]
-      );
-
-      return res.json({
-        message: 'Flight cancelled due to existing bookings'
-      });
-    }
-
-    // Delete flight if no bookings
-    let deleteResult;
-    if (req.user.role === 'admin') {
-      deleteResult = await db.query('DELETE FROM flights WHERE id = $1 RETURNING id', [id]);
-    } else {
-      deleteResult = await db.query(
-        'DELETE FROM flights WHERE id = $1 AND operator_id = $2 RETURNING id',
-        [id, operatorId]
-      );
-    }
-
-    if (deleteResult.rows.length === 0) {
-      return res.status(404).json({
-        error: 'Flight not found'
-      });
-    }
-
-    res.json({
-      message: 'Flight deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Flight deletion error:', error);
-    res.status(500).json({
-      error: 'Failed to delete flight'
-    });
-  }
-});
-
 // @route   PUT /api/flights/:id/approve
 // @desc    Approve or decline a pending flight (admin/super-admin only)
 // @access  Admin/Super-Admin
@@ -739,6 +691,45 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
       RETURNING *
     `, [status, flightId]);
 
+    // Get operator details to send notification
+    const operatorSql = `
+      SELECT u.id as user_id, u.email, o.company_name
+      FROM flights f
+      JOIN operators o ON f.operator_id = o.id
+      JOIN users u ON o.user_id = u.id
+      WHERE f.id = ?
+    `;
+    
+    const operatorResult = await db.query(operatorSql, [flightId]);
+    
+    if (operatorResult.rows.length > 0) {
+      const operator = operatorResult.rows[0];
+      const flightInfo = result.rows[0];
+      
+      // Create notification for the operator
+      try {
+        const notificationType = status === 'approved' ? 'flight_approved' : 'flight_declined';
+        const notificationTitle = status === 'approved' ? 'Flight Approved! ✅' : 'Flight Declined ❌';
+        const notificationMessage = status === 'approved' 
+          ? `Great news! Your flight ${flightInfo.origin_code} → ${flightInfo.destination_code} has been approved and is now live for customers to book.`
+          : `Your flight ${flightInfo.origin_code} → ${flightInfo.destination_code} was declined. ${reason ? `Reason: ${reason}` : 'Please contact admin for details.'}`;
+        
+        await createNotification(
+          db,
+          operator.user_id,
+          notificationType,
+          notificationTitle,
+          notificationMessage,
+          flightId
+        );
+        
+        console.log(`✅ Created ${status} notification for operator ${operator.email}`);
+      } catch (notificationError) {
+        console.error('❌ Failed to create approval notification:', notificationError);
+        // Don't fail the approval if notification fails
+      }
+    }
+
     console.log(`Flight ${flightId} ${status} by admin ${req.user.email}`);
 
     res.json({
@@ -750,6 +741,88 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     console.error('Flight approval error:', error);
     res.status(500).json({
       error: 'Failed to update flight status'
+    });
+  }
+});
+
+// @route   DELETE /api/flights/:id
+// @desc    Delete a flight (Super Admin can delete any, Operators can delete their own)
+// @access  Private (Super Admin, Operator)
+router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`🗑️ Delete flight request for ID: ${id} by user: ${req.user.email}`);
+
+    // First, get the flight details to notify the operator
+    const getFlightSql = `
+      SELECT f.*, o.id as operator_id, u.id as user_id, u.email as operator_email, o.company_name
+      FROM flights f
+      JOIN operators o ON f.operator_id = o.id
+      JOIN users u ON o.user_id = u.id
+      WHERE f.id = ?
+    `;
+
+    const flightResult = await db.query(getFlightSql, [id]);
+    const flight = flightResult.rows[0];
+
+    if (!flight) {
+      return res.status(404).json({ error: 'Flight not found' });
+    }
+
+    // Authorization check: Operators can only delete their own flights
+    if (req.user.role === 'operator') {
+      if (flight.operator_email !== req.user.email) {
+        return res.status(403).json({ error: 'You can only delete your own flights' });
+      }
+    }
+
+    // Delete the flight
+    const deleteSql = 'DELETE FROM flights WHERE id = ?';
+    await db.query(deleteSql, [id]);
+
+    // Create notification for the operator (but not if they're deleting their own flight)
+    try {
+      // Check if the flight owner is the same as the person deleting it
+      const isOwnFlight = flight.operator_email === req.user.email;
+      
+      console.log('🔍 Notification debug:');
+      console.log('   - Flight operator email:', flight.operator_email);
+      console.log('   - Current user email:', req.user.email);
+      console.log('   - Is own flight:', isOwnFlight);
+      console.log('   - Flight operator_id:', flight.operator_id);
+      console.log('   - Flight user_id:', flight.user_id);
+      
+      if (!isOwnFlight) {
+        // Only super-admins can delete other people's flights, so this is admin deletion
+        console.log('🔔 Creating admin deletion notification...');
+        await createNotification(
+          db,
+          flight.user_id,  // Use user_id instead of operator_id
+          'flight_deleted',
+          'Flight Deleted by Administration',
+          `Your flight ${flight.origin_code} → ${flight.destination_code} (${flight.id}) has been deleted by administration.`,
+          flight.id
+        );
+        console.log('✅ Admin deletion notification sent to operator:', flight.operator_email);
+      } else {
+        console.log('ℹ️ No notification sent - operator deleted their own flight');
+      }
+    } catch (notificationError) {
+      console.error('❌ Failed to create notification:', notificationError);
+      // Don't fail the delete operation if notification fails
+    }
+
+    console.log('✅ Flight deleted successfully:', id);
+    res.json({ 
+      success: true, 
+      message: 'Flight deleted successfully',
+      deletedFlightId: id
+    });
+
+  } catch (error) {
+    console.error('Flight deletion error:', error);
+    res.status(500).json({
+      error: 'Failed to delete flight'
     });
   }
 });
