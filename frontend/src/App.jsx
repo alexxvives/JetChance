@@ -12,6 +12,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
 import CreateFlightPage from './pages/CreateFlightPage';
+import EditFlightPage from './pages/EditFlightPage';
 import PendingFlightsPage from './pages/PendingFlightsPage';
 import OperatorsPage from './pages/OperatorsPage';
 import AboutPage from './pages/AboutPage';
@@ -101,6 +102,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <CreateFlightPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/edit-flight/:id" 
+                element={
+                  <ProtectedRoute>
+                    <EditFlightPage />
                   </ProtectedRoute>
                 } 
               />
