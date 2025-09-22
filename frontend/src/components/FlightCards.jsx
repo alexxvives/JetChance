@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
+import { getCharterPrice, getMarketPrice, formatPrice } from '../utils/flightDataUtils';
 
 export default function FlightCards() {
   const [flights, setFlights] = useState([]);
@@ -71,11 +72,11 @@ export default function FlightCards() {
       hour12: true 
     });
     
-    // Handle pricing - prefer empty_leg_price (charter price) over original_price
-    const emptyLegPrice = flight.empty_leg_price || flight.pricing?.emptyLegPrice || 0;
-    const originalPrice = flight.original_price || flight.pricing?.originalPrice || emptyLegPrice;
-    const savings = originalPrice - emptyLegPrice;
-    const savingsPercent = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
+    // Handle pricing using centralized utility
+    const charterPrice = getCharterPrice(flight);
+    const marketPrice = getMarketPrice(flight);
+    const savings = marketPrice - charterPrice;
+    const savingsPercent = marketPrice > 0 ? Math.round((savings / marketPrice) * 100) : 0;
     
     // Handle location data
     const originCode = flight.origin_code || flight.origin?.code;
@@ -87,7 +88,7 @@ export default function FlightCards() {
     
     return {
       route: `${originCode} → ${destinationCode}`,
-      price: `$${emptyLegPrice.toLocaleString()}`,
+      price: formatPrice(charterPrice),
       time: `${departureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeString}`,
       aircraft: aircraftType,
       seats: `${availableSeats} seats available`,
