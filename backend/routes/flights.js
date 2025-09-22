@@ -578,6 +578,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin']), async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('🔄 PUT Request - Flight ID:', id);
+    console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
 
     // Get operator ID
     const operatorResult = await db.query(
@@ -609,38 +611,103 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
       });
     }
 
-    const updates = {};
-    const allowedUpdates = [
-      'emptyLegPrice', 'availableSeats', 'description', 'cateringAvailable',
-      'groundTransportAvailable', 'wifiAvailable', 'flexibleDeparture',
-      'specialRequirements', 'cancellationPolicy', 'status'
-    ];
+    // Complete field mapping from DATABASE_SCHEMA.md reference
+    const fieldMapping = {
+      // Basic Info
+      flightNumber: 'flight_number',
+      aircraftName: 'aircraft_name',
+      aircraftImage: 'aircraft_image_url',
+      
+      // Route Info (frontend sends these field names)
+      origin: 'origin_code',
+      originCode: 'origin_code', 
+      originName: 'origin_name',
+      originCity: 'origin_city',
+      originCountry: 'origin_country',
+      destination: 'destination_code',
+      destinationCode: 'destination_code',
+      destinationName: 'destination_name',
+      destinationCity: 'destination_city',
+      destinationCountry: 'destination_country',
+      
+      // Schedule (frontend sends these field names)
+      departureTime: 'departure_datetime',
+      departureDateTime: 'departure_datetime',
+      arrivalTime: 'arrival_datetime',
+      arrivalDateTime: 'arrival_datetime',
+      duration: 'estimated_duration_minutes',
+      bookingDeadline: 'booking_deadline',
+      
+      // Pricing
+      originalPrice: 'original_price',
+      emptyLegPrice: 'empty_leg_price',
+      currency: 'currency',
+      
+      // Capacity
+      availableSeats: 'available_seats',
+      maxPassengers: 'max_passengers',
+      
+      // Services & Policies
+      cateringAvailable: 'catering_available',
+      groundTransportAvailable: 'ground_transport_available',
+      wifiAvailable: 'wifi_available',
+      petsAllowed: 'pets_allowed',
+      smokingAllowed: 'smoking_allowed',
+      flexibleDeparture: 'flexible_departure',
+      flexibleDestination: 'flexible_destination',
+      
+      // Additional
+      maxDelayMinutes: 'max_delay_minutes',
+      cancellationPolicy: 'cancellation_policy',
+      description: 'description',
+      specialRequirements: 'special_requirements',
+      status: 'status'
+    };
 
-    for (const field of allowedUpdates) {
-      if (req.body[field] !== undefined) {
-        const dbField = field.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-        updates[dbField] = req.body[field];
+    const updates = {};
+    
+    // Process all fields from request body
+    for (const [frontendField, value] of Object.entries(req.body)) {
+      if (value !== undefined && fieldMapping[frontendField]) {
+        const dbColumn = fieldMapping[frontendField];
+        updates[dbColumn] = value;
       }
     }
 
+    console.log('🗺️ Mapped updates:', JSON.stringify(updates, null, 2));
+
     if (Object.keys(updates).length === 0) {
+      console.log('❌ No valid updates found');
       return res.status(400).json({
-        error: 'No updates provided'
+        error: 'No valid updates provided'
       });
     }
 
-    updates.updated_at = "datetime('now')";
+    // Add timestamp
+    updates.updated_at = new Date().toISOString();
 
-    const setClause = Object.entries(updates)
-      .map(([key, value], index) => `${key} = $${index + 2}`)
+    const setClause = Object.keys(updates)
+      .map((key) => `${key} = ?`)
       .join(', ');
 
-    const values = [id, ...Object.values(updates)];
+    const values = [...Object.values(updates), id];
 
-    const result = await db.query(
-      `UPDATE flights SET ${setClause} WHERE id = $1 RETURNING *`,
+    console.log('📋 SQL Query:', `UPDATE flights SET ${setClause} WHERE id = ?`);
+    console.log('📋 SQL Values:', values);
+
+    // For SQLite, we need to run the update and then fetch the updated row
+    await db.run(
+      `UPDATE flights SET ${setClause} WHERE id = ?`,
       values
     );
+
+    // Fetch the updated row
+    const result = await db.query(
+      'SELECT * FROM flights WHERE id = ?',
+      [id]
+    );
+
+    console.log('✅ Update result:', result.rows[0]);
 
     res.json({
       message: 'Flight updated successfully',

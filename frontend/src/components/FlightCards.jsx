@@ -62,23 +62,36 @@ export default function FlightCards() {
 
   // Format flight data for display
   const formatFlightForDisplay = (flight) => {
-    const departureDate = new Date(flight.schedule.departure);
+    // Handle different data structures from real API vs mock API
+    const departureDateTime = flight.departure_datetime || flight.schedule?.departure;
+    const departureDate = new Date(departureDateTime);
     const timeString = departureDate.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true 
     });
     
-    const savings = flight.pricing.originalPrice - flight.pricing.emptyLegPrice;
-    const savingsPercent = Math.round((savings / flight.pricing.originalPrice) * 100);
+    // Handle pricing - prefer empty_leg_price (charter price) over original_price
+    const emptyLegPrice = flight.empty_leg_price || flight.pricing?.emptyLegPrice || 0;
+    const originalPrice = flight.original_price || flight.pricing?.originalPrice || emptyLegPrice;
+    const savings = originalPrice - emptyLegPrice;
+    const savingsPercent = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
+    
+    // Handle location data
+    const originCode = flight.origin_code || flight.origin?.code;
+    const destinationCode = flight.destination_code || flight.destination?.code;
+    
+    // Handle aircraft and capacity
+    const aircraftType = flight.aircraft_name || flight.aircraft?.type || 'Aircraft';
+    const availableSeats = flight.available_seats || flight.capacity?.availableSeats || 0;
     
     return {
-      route: `${flight.origin.code} → ${flight.destination.code}`,
-      price: `$${flight.pricing.emptyLegPrice.toLocaleString()}`,
+      route: `${originCode} → ${destinationCode}`,
+      price: `$${emptyLegPrice.toLocaleString()}`,
       time: `${departureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeString}`,
-      aircraft: flight.aircraft.type,
-      seats: `${flight.capacity.availableSeats} seats available`,
-      savings: `Save $${savings.toLocaleString()} (${savingsPercent}% off)`,
+      aircraft: aircraftType,
+      seats: `${availableSeats} seats available`,
+      savings: savings > 0 ? `Save $${savings.toLocaleString()} (${savingsPercent}% off)` : 'Charter Price',
       rotation: Math.random() > 0.5 ? "rotate-1" : "-rotate-1"
     };
   };

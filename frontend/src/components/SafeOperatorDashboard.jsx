@@ -450,7 +450,7 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
           {/* Price square */}
           <div className="bg-white border border-gray-200 rounded-lg p-2 text-center">
             <p className="text-xs text-gray-500 mb-1">Price</p>
-            <p className="font-medium text-gray-900">${flight.pricing?.originalPrice ? flight.pricing.originalPrice.toLocaleString() : 'N/A'}</p>
+            <p className="font-medium text-gray-900">${flight.pricing?.emptyLegPrice ? flight.pricing.emptyLegPrice.toLocaleString() : 'N/A'}</p>
           </div>
         </div>
 

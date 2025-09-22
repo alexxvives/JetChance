@@ -134,7 +134,23 @@ export default function OperatorDashboard({ user }) {
         console.log('📡 Response type:', typeof response);
         console.log('📡 Response.flights:', response.flights);
         console.log('📡 Response.flights length:', response.flights?.length);
-        setFlights(response.flights || response);
+        
+        // Transform API data to match frontend expectations
+        const apiFlights = response.flights || response;
+        const transformedFlights = apiFlights.map(flight => ({
+          ...flight,
+          // Map API fields to frontend expected fields
+          origin: flight.origin_code || flight.origin,
+          destination: flight.destination_code || flight.destination, 
+          departureTime: flight.departure_datetime || flight.departureTime,
+          seatsAvailable: flight.available_seats || flight.seatsAvailable,
+          // Always show charter price (mandatory field)
+          price: flight.pricing?.emptyLegPrice || flight.empty_leg_price,
+          bookings: flight.bookings || 0 // Add default bookings if not present
+        }));
+        
+        console.log('🔄 Transformed flights:', transformedFlights);
+        setFlights(transformedFlights);
       } else if (shouldUseMockFlightAPI()) {
         console.log('🧪 Using Mock API to fetch flights...');
         const response = await mockFlightAPI.getOperatorFlights(user.id);
@@ -197,10 +213,7 @@ export default function OperatorDashboard({ user }) {
   };
 
   const handleEditFlight = (flightId) => {
-    // TODO: Implement edit functionality - could open modal or navigate to edit page
-    console.log('Edit flight:', flightId);
-    // For now, just show an alert
-    alert('Edit functionality will be implemented soon!');
+    navigate(`/edit-flight/${flightId}`);
   };
 
   return (
@@ -275,7 +288,7 @@ export default function OperatorDashboard({ user }) {
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="text-2xl font-bold text-blue-600">
-              ${flights.reduce((sum, f) => sum + (f.price * f.bookings), 0).toLocaleString()}
+              ${flights.reduce((sum, f) => sum + ((f.price || 0) * (f.bookings || 0)), 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Revenue</div>
           </div>
