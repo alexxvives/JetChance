@@ -2,20 +2,48 @@ import React from 'react';
 import { useTranslation } from '../contexts/TranslationContext';
 
 export default function HeroSection({ onNavigate }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   
-  // Function to render title with colored last word
+  // Function to render title with colored specific phrase
   const renderTitle = () => {
     const title = t('hero.title');
-    const words = title.split(' ');
-    const lastWord = words.pop();
-    const firstWords = words.join(' ');
+    console.log('Title:', title, 'Language:', currentLanguage); // Debug log
     
-    return (
-      <span>
-        {firstWords} <span className="text-violet-400">{lastWord}</span>
-      </span>
-    );
+    if (currentLanguage === 'es') {
+      // For Spanish: highlight "volar privado"
+      const regex = /volar privado/i;
+      if (regex.test(title)) {
+        const parts = title.split(regex);
+        const match = title.match(regex);
+        console.log('Spanish match found:', match[0]); // Debug log
+        
+        return (
+          <>
+            {parts[0]}
+            <span className="text-violet-400">{match[0]}</span>
+            {parts[1]}
+          </>
+        );
+      }
+      return title;
+    } else {
+      // For English: highlight "flying private"  
+      const regex = /flying private/i;
+      if (regex.test(title)) {
+        const parts = title.split(regex);
+        const match = title.match(regex);
+        console.log('English match found:', match[0]); // Debug log
+        
+        return (
+          <>
+            {parts[0]}
+            <span className="text-violet-400">{match[0]}</span>
+            {parts[1]}
+          </>
+        );
+      }
+      return title;
+    }
   };
   
   return (

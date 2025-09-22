@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import ConfirmationModal from './ConfirmationModal';
@@ -74,6 +74,8 @@ function ActualOperatorDashboard({ user }) {
   const location = useLocation();
   const [flights, setFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(true); // Collapsed by default
+  const [isUpcomingFlightsCollapsed, setIsUpcomingFlightsCollapsed] = useState(false); // Expanded by default
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     flightId: null,
@@ -252,35 +254,76 @@ function ActualOperatorDashboard({ user }) {
               {/* Upcoming Flights Section */}
               {currentFlights.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Upcoming Flights ({currentFlights.length})
-                    </h3>
+                  <div 
+                    className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200"
+                    onClick={() => setIsUpcomingFlightsCollapsed(!isUpcomingFlightsCollapsed)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Upcoming Flights ({currentFlights.length})
+                      </h3>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                        Active
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">
+                        {isUpcomingFlightsCollapsed ? 'Show' : 'Hide'}
+                      </span>
+                      {isUpcomingFlightsCollapsed ? (
+                        <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-                    {currentFlights.map((flight) => (
-                      <FlightCard key={flight.id} flight={flight} navigate={navigate} onDelete={handleDeleteFlight} />
-                    ))}
-                  </div>
+                  
+                  {/* Collapsible content */}
+                  {!isUpcomingFlightsCollapsed && (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 transition-all duration-300 ease-in-out">
+                      {currentFlights.map((flight) => (
+                        <FlightCard key={flight.id} flight={flight} navigate={navigate} onDelete={handleDeleteFlight} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Past Flights Section */}
               {pastFlights.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Past Flights ({pastFlights.length})
-                    </h3>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                      Completed
-                    </span>
+                  <div 
+                    className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200"
+                    onClick={() => setIsPastFlightsCollapsed(!isPastFlightsCollapsed)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Past Flights ({pastFlights.length})
+                      </h3>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        Completed
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">
+                        {isPastFlightsCollapsed ? 'Show' : 'Hide'}
+                      </span>
+                      {isPastFlightsCollapsed ? (
+                        <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-                    {pastFlights.map((flight) => (
-                      <FlightCard key={flight.id} flight={flight} navigate={navigate} isPast={true} onDelete={handleDeleteFlight} />
-                    ))}
-                  </div>
+                  
+                  {/* Collapsible content */}
+                  {!isPastFlightsCollapsed && (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 transition-all duration-300 ease-in-out">
+                      {pastFlights.map((flight) => (
+                        <FlightCard key={flight.id} flight={flight} navigate={navigate} isPast={true} onDelete={handleDeleteFlight} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

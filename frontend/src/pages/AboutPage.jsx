@@ -3,7 +3,22 @@ import { useTranslation } from '../contexts/TranslationContext';
 import Orb from "../components/Orb";
 
 export default function AboutPage() {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  
+  // Function to render title with line breaks for Spanish
+  const renderTitle = () => {
+    const title = t('about.hero.title');
+    if (currentLanguage === 'es' && title.includes('\n')) {
+      return title.split('\n').map((line, index) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < title.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ));
+    }
+    return title;
+  };
+  
   return (
     <div className="relative bg-gradient-to-br from-black via-black to-violet-900/30">
       {/* Background Orb - Scrolls with content */}
@@ -23,7 +38,7 @@ export default function AboutPage() {
           <section className="min-h-screen flex items-center justify-center px-6 py-20">
               <div className="max-w-4xl mx-auto text-center">
                 <h1 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent leading-tight">
-                  {t('about.hero.title')}
+                  {renderTitle()}
                 </h1>
                 <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed">
                   {t('about.hero.subtitle')}

@@ -15,29 +15,13 @@ export default function FlightCards() {
       }
     };
 
-    // Listen for storage events
+    // Listen for storage events (only for cross-tab updates)
     window.addEventListener('storage', handleStorageChange);
     
-    // Also check periodically for changes (for same-tab updates)
-    const interval = setInterval(() => {
-      const stored = localStorage.getItem('chancefly_mock_flights');
-      if (stored) {
-        try {
-          const parsedFlights = JSON.parse(stored);
-          if (parsedFlights.length !== flights.length) {
-            setLastUpdate(Date.now());
-          }
-        } catch (error) {
-          console.error('Error parsing flights from localStorage:', error);
-        }
-      }
-    }, 2000);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
-  }, [flights.length]);
+  }, []); // Remove flights.length dependency
 
   // Fallback static data - empty since user will create their own
   const fallbackFlightData = [];
@@ -47,19 +31,19 @@ export default function FlightCards() {
       try {
         if (shouldUseRealAPI()) {
           const response = await flightsAPI.getFlights({ limit: 6 });
-          const activeFlights = (response.flights || response)
-            .filter(flight => flight.status === 'active')
+          const approvedFlights = (response.flights || response)
+            .filter(flight => flight.status === 'approved')
             .slice(0, 6);
-          setFlights(activeFlights);
+          setFlights(approvedFlights);
         } else if (shouldUseMockFlightAPI()) {
           const allFlights = await mockFlightAPI.getFlights();
           
-          // Show only active flights and limit to 6 for the landing page
-          const activeFlights = allFlights
-            .filter(flight => flight.status === 'active')
+          // Show only approved flights and limit to 6 for the landing page
+          const approvedFlights = allFlights
+            .filter(flight => flight.status === 'approved' || flight.status === 'active')
             .slice(0, 6);
           
-          setFlights(activeFlights);
+          setFlights(approvedFlights);
         } else {
           // Use fallback data if no API is available
           setFlights(fallbackFlightData);
@@ -78,22 +62,22 @@ export default function FlightCards() {
 
   // Format flight data for display
   const formatFlightForDisplay = (flight) => {
-    const departureDate = new Date(flight.departureTime);
+    const departureDate = new Date(flight.schedule.departure);
     const timeString = departureDate.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true 
     });
     
-    const savings = flight.originalPrice - flight.price;
-    const savingsPercent = Math.round((savings / flight.originalPrice) * 100);
+    const savings = flight.pricing.originalPrice - flight.pricing.emptyLegPrice;
+    const savingsPercent = Math.round((savings / flight.pricing.originalPrice) * 100);
     
     return {
-      route: `${flight.origin} → ${flight.destination}`,
-      price: `$${flight.price.toLocaleString()}`,
+      route: `${flight.origin.code} → ${flight.destination.code}`,
+      price: `$${flight.pricing.emptyLegPrice.toLocaleString()}`,
       time: `${departureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeString}`,
-      aircraft: flight.aircraftType,
-      seats: `${flight.seatsAvailable} seats available`,
+      aircraft: flight.aircraft.type,
+      seats: `${flight.capacity.availableSeats} seats available`,
       savings: `Save $${savings.toLocaleString()} (${savingsPercent}% off)`,
       rotation: Math.random() > 0.5 ? "rotate-1" : "-rotate-1"
     };

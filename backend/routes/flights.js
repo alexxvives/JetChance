@@ -25,13 +25,8 @@ router.get('/', [
   query('sort_order').optional().isIn(['asc', 'desc']),
 ], async (req, res) => {
   try {
-    console.log('=== FLIGHTS API CALLED ===');
-    console.log('Query params:', req.query);
-    console.log('User:', req.user ? `${req.user.id} (${req.user.role})` : 'Public (not authenticated)');
-    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Validation errors:', errors.array());
       return res.status(400).json({
         error: 'Invalid query parameters',
         details: errors.array()

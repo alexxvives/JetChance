@@ -211,14 +211,7 @@ export default function FlightDetailsPage() {
 
               {/* Price Comparison Cards */}
               <div className="grid grid-cols-2 gap-4 mb-6">
-                {/* Charter Price Card */}
-                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="text-xs text-blue-600 font-medium mb-1">CHARTER PRICE</div>
-                  <div className="text-2xl font-bold text-blue-700">${price.toLocaleString()}</div>
-                  <div className="text-xs text-blue-600 mt-1">Empty Leg Deal</div>
-                </div>
-
-                {/* Market Price Card */}
+                {/* Market Price Card - Now on the LEFT */}
                 {originalPrice > price ? (
                   <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg relative">
                     <div className="text-xs text-red-600 font-medium mb-1">MARKET RATE</div>
@@ -235,6 +228,13 @@ export default function FlightDetailsPage() {
                     <div className="text-xs text-gray-600 mt-1">Competitive Rate</div>
                   </div>
                 )}
+
+                {/* Charter Price Card - Now on the RIGHT */}
+                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-xs text-blue-600 font-medium mb-1">CHARTER PRICE</div>
+                  <div className="text-2xl font-bold text-blue-700">${price.toLocaleString()}</div>
+                  <div className="text-xs text-blue-600 mt-1">Empty Leg Deal</div>
+                </div>
               </div>
 
               {/* Passenger Selection */}

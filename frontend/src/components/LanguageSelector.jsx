@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from '../contexts/TranslationContext';
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' }
+  { code: 'en', name: 'English', flag: 'US' },
+  { code: 'es', name: 'Español', flag: 'ES' }
 ];
 
 export default function LanguageSelector() {
@@ -40,17 +40,9 @@ export default function LanguageSelector() {
       <div className="hidden md:block">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 text-white/90 hover:text-white group"
+          className="flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 text-white/90 hover:text-white group min-w-[50px]"
         >
-          <span className="text-lg">{currentLanguageData?.flag}</span>
-          <svg 
-            className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} group-hover:text-violet-300`} 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <span className="text-sm font-bold text-white">{currentLanguageData?.flag}</span>
         </button>
 
         {/* Dropdown */}
@@ -67,7 +59,7 @@ export default function LanguageSelector() {
                       : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <span>{language.flag}</span>
+                  <span className="font-bold text-xs">{language.flag}</span>
                   <span className="font-medium">{language.name}</span>
                   {currentLanguage === language.code && (
                     <svg className="w-4 h-4 ml-auto text-violet-400" fill="currentColor" viewBox="0 0 20 20">
@@ -87,7 +79,7 @@ export default function LanguageSelector() {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 text-white/90 hover:text-white w-full group"
         >
-          <span className="text-sm">{currentLanguageData?.flag}</span>
+          <span className="text-sm font-bold">{currentLanguageData?.flag}</span>
           <span className="text-sm font-medium">{currentLanguageData?.name}</span>
           <svg 
             className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} group-hover:text-violet-300`} 
@@ -113,7 +105,7 @@ export default function LanguageSelector() {
                       : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <span>{language.flag}</span>
+                  <span className="font-bold text-xs">{language.flag}</span>
                   <span className="font-medium">{language.name}</span>
                   {currentLanguage === language.code && (
                     <svg className="w-4 h-4 ml-auto text-violet-400" fill="currentColor" viewBox="0 0 20 20">

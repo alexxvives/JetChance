@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
+import { User } from 'lucide-react';
 
 export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -78,25 +79,8 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   </Link>
                 </>
               ) : (
-                // Authenticated Navigation
-                <>
-                  <Link
-                    to="/dashboard"
-                    className={`${
-                      isActivePage('/dashboard') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
-                    } transition-colors text-sm font-medium`}
-                  >
-                    {t('nav.dashboard')}
-                  </Link>
-                  <Link
-                    to="/profile"
-                    className={`${
-                      isActivePage('/profile') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
-                    } transition-colors text-sm font-medium`}
-                  >
-                    {t('nav.profile')}
-                  </Link>
-                </>
+                // Authenticated Navigation - Dashboard is default, Profile accessible via icon
+                <></>
               )}
             </div>
           </div>
@@ -112,6 +96,13 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     <div className="text-sm font-medium text-violet-300">{user?.firstName} {user?.lastName}</div>
                     <div className="text-xs text-white/60">{user?.role} • {user?.id}</div>
                   </div>
+                  <Link
+                    to="/profile"
+                    className="bg-violet-500/20 backdrop-blur-sm text-white border border-violet-400/30 p-2 rounded-lg hover:bg-violet-500/30 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    title="Profile"
+                  >
+                    <User className="h-4 w-4" />
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="bg-violet-500/20 backdrop-blur-sm text-white border border-violet-400/30 px-4 py-2 rounded-lg font-medium hover:bg-violet-500/30 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -204,27 +195,8 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     </Link>
                   </>
                 ) : (
-                  // Authenticated Navigation
-                  <>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`${
-                        isActivePage('/dashboard') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
-                      } block px-4 py-3 rounded-lg transition-all duration-200`}
-                    >
-                      {t('nav.dashboard')}
-                    </Link>
-                    <Link
-                      to="/profile"
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`${
-                        isActivePage('/profile') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
-                      } block px-4 py-3 rounded-lg transition-all duration-200`}
-                    >
-                      {t('nav.profile')}
-                    </Link>
-                  </>
+                  // Authenticated Navigation - Dashboard is default, Profile accessible via icon
+                  <></>
                 )}
               </div>
               
@@ -236,6 +208,17 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       <div className="text-sm font-medium text-violet-300">{user?.firstName} {user?.lastName}</div>
                       <div className="text-xs text-white/60">{user?.role} • {user?.id}</div>
                     </div>
+                    {/* Profile Icon Button */}
+                    <button
+                      onClick={() => {
+                        navigate('/profile');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-3 text-white/80 hover:text-violet-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
+                    >
+                      <User size={18} className="mr-3" />
+                      {t('nav.profile')}
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-lg transition-all duration-200 font-medium"

@@ -163,17 +163,17 @@ const NotificationBell = () => {
       {/* Bell Icon Button */}
       <button
         onClick={toggleDropdown}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full"
+        className="relative p-2 text-white/80 hover:text-violet-300 hover:bg-violet-500/20 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-transparent rounded-lg transition-all duration-200 backdrop-blur-sm border border-violet-400/20 shadow-lg hover:shadow-xl"
       >
         {unreadCount > 0 ? (
-          <BellSolidIcon className="h-6 w-6 text-blue-600" />
+          <BellSolidIcon className="h-5 w-5 text-violet-300 animate-pulse" />
         ) : (
-          <BellIcon className="h-6 w-6" />
+          <BellIcon className="h-5 w-5" />
         )}
         
         {/* Badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce shadow-lg">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -181,31 +181,35 @@ const NotificationBell = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-violet-200/50 z-50 overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+          <div className="px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+            <h3 className="text-lg font-semibold">Notifications</h3>
           </div>
 
           {/* Notifications List - Scrollable */}
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-500">Loading...</div>
-            ) : notifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-violet-500 mx-auto mb-2"></div>
+                Loading notifications...
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
                 <BellIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                No notifications yet
+                <p className="text-sm">No notifications yet</p>
+                <p className="text-xs text-gray-400 mt-1">We'll notify you when something happens</p>
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 border-b border-gray-100 hover:bg-gray-50 last:border-b-0 ${
-                    !notification.read_at ? 'bg-blue-50 border-l-4 border-l-blue-400' : ''
+                  className={`p-4 border-b border-violet-100/50 hover:bg-violet-50/50 last:border-b-0 transition-colors duration-200 ${
+                    !notification.read_at ? 'bg-violet-50/80 border-l-4 border-l-violet-400' : ''
                   }`}
                 >
                   <div className="flex items-start space-x-3">
-                    <span className="text-lg flex-shrink-0">{getNotificationIcon(notification.type)}</span>
+                    <span className="text-lg flex-shrink-0 p-1 bg-violet-100 rounded-full">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium ${
@@ -214,13 +218,13 @@ const NotificationBell = () => {
                           {notification.title}
                         </p>
                         {!notification.read_at && (
-                          <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0 animate-pulse"></span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 mt-0.5">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-violet-500 mt-1 font-medium">
                         {formatTime(notification.created_at)}
                       </p>
                     </div>

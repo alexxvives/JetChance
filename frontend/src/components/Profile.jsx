@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Phone, 
@@ -10,11 +11,13 @@ import {
   Bell,
   Lock,
   Save,
-  Globe
+  Globe,
+  ArrowLeft
 } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [operator, setOperator] = useState(null);
   const [profileData, setProfileData] = useState({});
@@ -103,10 +106,21 @@ const Profile = () => {
         <div className="bg-white shadow rounded-lg">
           {/* Header */}
           <div className="px-6 py-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage your account information and preferences
-            </p>
+            <div className="flex items-center mb-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center text-gray-600 hover:text-gray-900"
+                title="Back to Dashboard"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                <p className="mt-1 text-sm text-gray-600">
+                  Manage your account information and preferences
+                </p>
+              </div>
+            </div>
             {message && (
               <div className={`mt-4 p-3 rounded-md ${
                 message.includes('successfully') 
