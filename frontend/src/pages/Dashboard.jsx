@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import FlightFilters from '../components/FlightFilters';
 import FlightList from '../FlightList';
 import SafeOperatorDashboard from '../components/SafeOperatorDashboard';
@@ -8,6 +9,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function Dashboard({ user, onNavigate, onLogout }) {
   const { user: authUser } = useAuth();
+  const { t } = useTranslation();
   const currentUser = user || authUser;
   
   const [filters, setFilters] = useState({
@@ -41,10 +43,10 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Available Empty-Leg Flights
+            {t('dashboard.customer.title')}
           </h1>
           <p className="text-xl text-gray-600">
-            Discover luxury flights at unbeatable prices
+            {t('dashboard.customer.subtitle')}
           </p>
         </div>
 

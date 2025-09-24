@@ -100,91 +100,89 @@ export default function FlightDetailsPage() {
 
         {/* Flight Details */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Flight Details</h1>
-          
-          {/* Flight Path Visualization */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-between">
-              {/* Departure */}
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">
-                  {flight.departure_time ? new Date(flight.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
-                </div>
-                <div className="text-sm text-gray-600 font-medium">{flight.originCode || flight.origin_code || 'TBD'}</div>
-                <div className="text-xs text-gray-500">{flight.origin || flight.origin_city || 'TBD'}</div>
-              </div>
-
-              {/* Flight Path */}
-              <div className="flex-1 flex items-center justify-center px-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-0.5 bg-gray-300"></div>
-                  <div className="text-blue-600 text-lg">✈️</div>
-                  <div className="w-8 h-0.5 bg-gray-300"></div>
-                </div>
-                <div className="text-xs text-gray-500 absolute mt-8">{flight.duration || 'TBD'}</div>
-              </div>
-
-              {/* Arrival */}
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">
-                  {flight.arrival_time ? new Date(flight.arrival_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
-                  {flight.departure_time && flight.arrival_time && (() => {
-                    const departure = new Date(flight.departure_time);
-                    const arrival = new Date(flight.arrival_time);
-                    const departureDate = departure.toDateString();
-                    const arrivalDate = arrival.toDateString();
-                    
-                    if (departureDate !== arrivalDate) {
-                      const timeDiff = arrival.getTime() - departure.getTime();
-                      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                      
-                      if (daysDiff === 1) {
-                        return <sup className="text-xs text-red-500 font-bold">+1</sup>;
-                      } else if (daysDiff > 1) {
-                        return <sup className="text-xs text-red-500 font-bold">+{daysDiff}</sup>;
-                      }
-                    }
-                    return null;
-                  })()}
-                </div>
-                <div className="text-sm text-gray-600 font-medium">{flight.destinationCode || flight.destination_code || 'TBD'}</div>
-                <div className="text-xs text-gray-500">{flight.destination || flight.destination_city || 'TBD'}</div>
-              </div>
+          {/* Aircraft Header */}
+          <div className="flex items-start space-x-4 mb-6">
+            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
             </div>
-            
-            {/* Date */}
-            <div className="text-center mt-3 pt-3 border-t border-gray-200">
-              <div className="text-sm text-gray-600">
-                {flight.departure_time ? new Date(flight.departure_time).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                }) : 'Date TBD'}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 truncate">
+                    {flight.aircraft_name || 'Private Jet'}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {flight.departure_time ? new Date(flight.departure_time).toLocaleDateString('en-US', { 
+                      weekday: 'long',
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric'
+                    }) : 'TBD'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Additional Flight Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Distance</div>
-              <div className="font-semibold text-gray-900">~2,400 mi</div>
+
+          {/* Route Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 mb-1">
+                  {flight.originCode || flight.origin_code || 'N/A'}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">
+                  {flight.origin || flight.origin_city || 'Origin'}
+                </div>
+              </div>
+              
+              <div className="flex-1 px-4">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t-2 border-dashed border-gray-300"></div>
+                  </div>
+                  <div className="relative flex items-center">
+                    <div style={{marginLeft: '10%'}}>
+                      <svg className="w-10 h-10 text-blue-500 transform rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 mb-1">
+                  {flight.destinationCode || flight.destination_code || 'N/A'}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">
+                  {flight.destination || flight.destination_city || 'Destination'}
+                </div>
+              </div>
             </div>
-            
+          </div>
+
+          {/* Quick Info Grid */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Flight Time</div>
-              <div className="font-semibold text-gray-900">{flight.duration || 'TBD'}</div>
+              <div className="text-lg font-bold text-gray-900">
+                {flight.seats_available || flight.capacity?.availableSeats || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">Available Seats</div>
             </div>
-            
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Aircraft</div>
-              <div className="font-semibold text-gray-900">{flight.aircraft_type || flight.aircraft_name || 'TBD'}</div>
+              <div className="text-lg font-bold text-gray-900">
+                {flight.operator || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">Operator</div>
             </div>
-            
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Operator</div>
-              <div className="font-semibold text-gray-900">{flight.operator || 'TBD'}</div>
+              <div className="text-lg font-bold text-gray-900">
+                {flight.duration || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">Flight Time</div>
             </div>
           </div>
         </div>
@@ -218,13 +216,10 @@ export default function FlightDetailsPage() {
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {/* Market Price Card - Now on the LEFT */}
                 {originalPrice > price ? (
-                  <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg relative">
+                  <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
                     <div className="text-xs text-red-600 font-medium mb-1">MARKET RATE</div>
                     <div className="text-2xl font-bold text-red-400 line-through">${originalPrice.toLocaleString()}</div>
                     <div className="text-xs text-red-600 mt-1">Standard Pricing</div>
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full rotate-12">
-                      -{savingsPercentage}%
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
@@ -235,10 +230,15 @@ export default function FlightDetailsPage() {
                 )}
 
                 {/* Charter Price Card - Now on the RIGHT */}
-                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg relative">
                   <div className="text-xs text-blue-600 font-medium mb-1">CHARTER PRICE</div>
                   <div className="text-2xl font-bold text-blue-700">${price.toLocaleString()}</div>
                   <div className="text-xs text-blue-600 mt-1">Empty Leg Deal</div>
+                  {originalPrice > price && savingsPercentage > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full rotate-12">
+                      -{savingsPercentage}%
+                    </div>
+                  )}
                 </div>
               </div>
 

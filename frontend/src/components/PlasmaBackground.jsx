@@ -133,7 +133,7 @@ export const Plasma = ({
     const mesh = new Mesh(gl, { geometry, program });
 
     const handleMouseMove = e => {
-      if (!mouseInteractive) return;
+      if (!mouseInteractive || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       mousePos.current.x = e.clientX - rect.left;
       mousePos.current.y = e.clientY - rect.top;
@@ -142,11 +142,13 @@ export const Plasma = ({
       mouseUniform[1] = mousePos.current.y;
     };
 
-    if (mouseInteractive) {
+    if (mouseInteractive && containerRef.current) {
       containerRef.current.addEventListener('mousemove', handleMouseMove);
     }
 
     const setSize = () => {
+      if (!containerRef.current) return;
+      
       const rect = containerRef.current.getBoundingClientRect();
       // Limit maximum resolution for performance
       const maxWidth = Math.min(rect.width, 1920);
@@ -161,7 +163,9 @@ export const Plasma = ({
     };
 
     const ro = new ResizeObserver(setSize);
-    ro.observe(containerRef.current);
+    if (containerRef.current) {
+      ro.observe(containerRef.current);
+    }
     setSize();
 
     let raf = 0;

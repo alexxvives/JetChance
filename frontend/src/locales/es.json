@@ -54,6 +54,134 @@
       "signIn": "Iniciar sesión"
     }
   },
+  "dashboard": {
+    "operator": {
+      "title": "Panel de Operador",
+      "welcome": "¡Bienvenido de vuelta, {{name}}! Gestiona tus vuelos y rastrea su estado.",
+      "createFlight": "Crear Vuelo",
+      "createFirstFlight": "Crea Tu Primer Vuelo",
+      "loading": {
+        "title": "Cargando Panel...",
+        "message": "Por favor espera mientras preparamos tu panel.",
+        "flights": "Cargando vuelos..."
+      },
+      "error": {
+        "title": "Error del Panel",
+        "message": "Ocurrió un error inesperado al cargar tu panel.",
+        "auth": {
+          "title": "Problema de Autenticación",
+          "message": "Tu sesión parece ser inválida."
+        }
+      },
+      "noFlights": {
+        "title": "No Se Encontraron Vuelos",
+        "message": "Aún no has creado ningún vuelo."
+      },
+      "sections": {
+        "upcoming": {
+          "title": "Próximos Vuelos",
+          "status": "Activo"
+        },
+        "past": {
+          "title": "Vuelos Pasados",
+          "status": "Completado"
+        }
+      },
+      "actions": {
+        "show": "Mostrar",
+        "hide": "Ocultar",
+        "viewDetails": "Ver Detalles"
+      },
+      "messages": {
+        "allPastFlights": "Todos tus vuelos han partido. Considera crear nuevos vuelos para próximos viajes."
+      },
+      "delete": {
+        "title": "Eliminar Vuelo",
+        "message": "¿Estás seguro de que quieres eliminar este vuelo?",
+        "confirm": "Eliminar Vuelo"
+      }
+    },
+    "customer": {
+      "title": "Vuelos Vacíos Disponibles",
+      "subtitle": "Descubre vuelos de lujo a precios inmejorables"
+    }
+  },
+  "createFlight": {
+    "title": "Crear Nuevo Vuelo",
+    "subtitle": "Agrega un nuevo vuelo a tu inventario",
+    "backToDashboard": "Volver al Panel",
+    "sections": {
+      "aircraftImages": {
+        "title": "Imágenes de la Aeronave",
+        "uploadArea": {
+          "title": "Arrastra las imágenes de tu aeronave aquí",
+          "subtitle": "o",
+          "browse": "navegar archivos",
+          "formats": "PNG, JPG, WebP, GIF, SVG hasta 5MB cada uno • Múltiples archivos soportados",
+          "dragText": "Suelta los archivos aquí..."
+        }
+      },
+      "routeInformation": {
+        "title": "Información de Ruta",
+        "fields": {
+          "originCity": "Ciudad de Origen",
+          "originAirport": "Aeropuerto de Origen",
+          "destinationCity": "Ciudad de Destino", 
+          "destinationAirport": "Aeropuerto de Destino"
+        },
+        "placeholders": {
+          "originCity": "Bogotá",
+          "originAirport": "BOG - Aeropuerto Internacional El Dorado",
+          "destinationCity": "Ciudad de México",
+          "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
+          "airportsIn": "Aeropuertos en {{city}}"
+        }
+      },
+      "flightSchedule": {
+        "title": "Horario de Vuelo",
+        "departure": "Salida",
+        "arrival": "Llegada",
+        "fields": {
+          "date": "Fecha",
+          "time": "Hora"
+        },
+        "placeholders": {
+          "selectDate": "Seleccionar fecha de salida",
+          "selectArrivalDate": "Seleccionar fecha de llegada"
+        },
+        "warning": "Duración de vuelo inusualmente larga. Por favor verifica tus fechas."
+      },
+      "aircraftDetails": {
+        "title": "Detalles de la Aeronave",
+        "fields": {
+          "aircraftType": "Tipo de Aeronave",
+          "availableSeats": "Asientos Disponibles",
+          "description": "Descripción (Opcional)"
+        },
+        "placeholders": {
+          "aircraftType": "Gulfstream G650",
+          "availableSeats": "12",
+          "description": "Vuelo internacional de lujo de Colombia a México con comodidades premium, Wi-Fi y servicio de catering..."
+        }
+      },
+      "pricing": {
+        "title": "Precios",
+        "fields": {
+          "pricePerSeat": "Precio por Asiento (USD)",
+          "charterPrice": "Precio Charter (USD)"
+        },
+        "placeholders": {
+          "pricePerSeat": "5000",
+          "charterPrice": "60000"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "createFlight": "Crear Vuelo",
+      "creatingFlight": "Creando Vuelo..."
+    }
+  },
   "hero": {
     "title": "¿Y si volar privado fuese tan accesible como un billete comercial?",
     "subtitle": "Reserva vuelos en jets privados vacíos entre Colombia, México y las Américas hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles en toda Latinoamérica.",

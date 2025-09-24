@@ -41,6 +41,9 @@ const destinationIcon = new L.Icon({
 
 export default function FreeFlightMap({ flight }) {
   console.log('🗺️ Flight data for map:', flight);
+  console.log('🗺️ Flight keys:', Object.keys(flight || {}));
+  console.log('🗺️ Origin code:', flight.origin_code);
+  console.log('🗺️ Destination code:', flight.destination_code);
   
   // Airport coordinates lookup (we'll expand this with more airports)
   const airportCoordinates = {
@@ -53,7 +56,9 @@ export default function FreeFlightMap({ flight }) {
     'DFW': { lat: 32.8998, lng: -97.0403, name: 'Dallas/Fort Worth International' },
     'ATL': { lat: 33.6407, lng: -84.4277, name: 'Hartsfield-Jackson Atlanta International' },
     'ORD': { lat: 41.9742, lng: -87.9073, name: 'O\'Hare International' },
-    'SEA': { lat: 47.4502, lng: -122.3088, name: 'Seattle-Tacoma International' }
+    'SEA': { lat: 47.4502, lng: -122.3088, name: 'Seattle-Tacoma International' },
+    'BOG': { lat: 4.7016, lng: -74.1469, name: 'El Dorado International Airport' },
+    'MEX': { lat: 19.4363, lng: -99.0721, name: 'Mexico City International Airport' }
   };
 
   // Get coordinates from airport codes
@@ -77,7 +82,7 @@ export default function FreeFlightMap({ flight }) {
         <div className="text-gray-500 text-center">
           <div>Map unavailable</div>
           <div className="text-sm mt-1">
-            {flight.origin_code || 'Unknown'} → {flight.destination_code || 'Unknown'}
+            {flight.origin_code} → {flight.destination_code}
           </div>
         </div>
       </div>
@@ -92,6 +97,21 @@ export default function FreeFlightMap({ flight }) {
     (originCoords.lat + destinationCoords.lat) / 2,
     (originCoords.lng + destinationCoords.lng) / 2
   ];
+
+  // Calculate midpoint for plane position
+  const planePosition = [
+    originCoords.lat + (destinationCoords.lat - originCoords.lat) * 0.3,
+    originCoords.lng + (destinationCoords.lng - originCoords.lng) * 0.3
+  ];
+  
+  // Calculate angle from origin to destination (in degrees)
+  const deltaLat = destinationCoords.lat - originCoords.lat;
+  const deltaLng = destinationCoords.lng - originCoords.lng;
+  const angle = Math.atan2(deltaLng, deltaLat) * 180 / Math.PI;
+  
+  console.log('✈️ Plane position:', planePosition);
+  console.log('✈️ Delta lat:', deltaLat, 'Delta lng:', deltaLng);
+  console.log('✈️ Flight angle:', angle);
 
   // Flight path coordinates
   const flightPath = [origin, destination];
@@ -140,6 +160,19 @@ export default function FreeFlightMap({ flight }) {
           opacity={0.8}
           dashArray="10, 5"
         />
+
+        {/* Airplane icon on flight path */}
+        <Marker 
+          position={planePosition} 
+          icon={new L.Icon({
+            iconUrl: `data:image/svg+xml;base64,${btoa(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(${angle})"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#000"/></svg>`)}`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            popupAnchor: [0, -18]
+          })}
+        >
+          <Popup>✈️ Flight Path</Popup>
+        </Marker>
       </MapContainer>
     </div>
   );

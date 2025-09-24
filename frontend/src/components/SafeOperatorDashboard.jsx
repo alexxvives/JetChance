@@ -4,17 +4,20 @@ import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, ChevronDownIcon, ChevronUpIco
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { getCharterPrice, formatPrice, transformFlightsArray } from '../utils/flightDataUtils';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from '../contexts/TranslationContext';
 
 // Safe wrapper component
 export default function SafeOperatorDashboard({ user }) {
+  const { t } = useTranslation();
+  
   try {
     // Immediate safety checks
     if (!user) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading Dashboard...</h2>
-            <p className="text-gray-600">Please wait while we prepare your dashboard.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('dashboard.operator.loading.title')}</h2>
+            <p className="text-gray-600">{t('dashboard.operator.loading.message')}</p>
           </div>
         </div>
       );
@@ -24,8 +27,8 @@ export default function SafeOperatorDashboard({ user }) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-red-600 mb-4">Authentication Issue</h2>
-            <p className="text-gray-600 mb-4">Your session appears to be invalid.</p>
+            <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.operator.error.auth.title')}</h2>
+            <p className="text-gray-600 mb-4">{t('dashboard.operator.error.auth.message')}</p>
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg mb-4">
               <p className="text-sm">User data: {JSON.stringify(user, null, 2)}</p>
             </div>
@@ -51,8 +54,8 @@ export default function SafeOperatorDashboard({ user }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Dashboard Error</h2>
-          <p className="text-gray-600 mb-4">An unexpected error occurred while loading your dashboard.</p>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.operator.error.title')}</h2>
+          <p className="text-gray-600 mb-4">{t('dashboard.operator.error.message')}</p>
           <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-4">
             <p className="text-sm">{error.message}</p>
           </div>
@@ -70,6 +73,7 @@ export default function SafeOperatorDashboard({ user }) {
 
 // The actual dashboard component
 function ActualOperatorDashboard({ user }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [flights, setFlights] = useState([]);
@@ -207,9 +211,9 @@ function ActualOperatorDashboard({ user }) {
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Operator Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.operator.title')}</h1>
                 <p className="mt-1 text-sm text-gray-600">
-                  Welcome back, {user.name}! Manage your flights and track their status.
+                  {t('dashboard.operator.welcome', { name: user.name })}
                 </p>
               </div>
               <button
@@ -217,7 +221,7 @@ function ActualOperatorDashboard({ user }) {
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                Create Flight
+                {t('dashboard.operator.createFlight')}
               </button>
             </div>
           </div>
@@ -228,18 +232,18 @@ function ActualOperatorDashboard({ user }) {
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading flights...</p>
+              <p className="text-gray-600">{t('dashboard.operator.loading.flights')}</p>
             </div>
           ) : flights.length === 0 ? (
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Flights Found</h3>
-              <p className="text-gray-600 mb-4">You haven't created any flights yet.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.operator.noFlights.title')}</h3>
+              <p className="text-gray-600 mb-4">{t('dashboard.operator.noFlights.message')}</p>
               <button
                 onClick={() => navigate('/create-flight')}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                Create Your First Flight
+                {t('dashboard.operator.createFirstFlight')}
               </button>
             </div>
           ) : (
@@ -253,15 +257,15 @@ function ActualOperatorDashboard({ user }) {
                   >
                     <div className="flex items-center space-x-3">
                       <h3 className="text-lg font-medium text-gray-900">
-                        Upcoming Flights ({currentFlights.length})
+                        {t('dashboard.operator.sections.upcoming.title')} ({currentFlights.length})
                       </h3>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
-                        Active
+                        {t('dashboard.operator.sections.upcoming.status')}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
-                        {isUpcomingFlightsCollapsed ? 'Show' : 'Hide'}
+                        {isUpcomingFlightsCollapsed ? t('dashboard.operator.actions.show') : t('dashboard.operator.actions.hide')}
                       </span>
                       {isUpcomingFlightsCollapsed ? (
                         <ChevronDownIcon className="h-5 w-5 text-gray-400" />
@@ -291,15 +295,15 @@ function ActualOperatorDashboard({ user }) {
                   >
                     <div className="flex items-center space-x-3">
                       <h3 className="text-lg font-medium text-gray-900">
-                        Past Flights ({pastFlights.length})
+                        {t('dashboard.operator.sections.past.title')} ({pastFlights.length})
                       </h3>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        Completed
+                        {t('dashboard.operator.sections.past.status')}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
-                        {isPastFlightsCollapsed ? 'Show' : 'Hide'}
+                        {isPastFlightsCollapsed ? t('dashboard.operator.actions.show') : t('dashboard.operator.actions.hide')}
                       </span>
                       {isPastFlightsCollapsed ? (
                         <ChevronDownIcon className="h-5 w-5 text-gray-400" />
@@ -324,7 +328,7 @@ function ActualOperatorDashboard({ user }) {
               {currentFlights.length === 0 && pastFlights.length > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-blue-800 text-sm">
-                    All your flights have departed. Consider creating new flights for upcoming trips.
+                    {t('dashboard.operator.messages.allPastFlights')}
                   </p>
                 </div>
               )}
@@ -338,142 +342,171 @@ function ActualOperatorDashboard({ user }) {
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, flightId: null, flightRoute: '' })}
         onConfirm={confirmDeleteFlight}
-        title="Delete Flight"
-        message="Are you sure you want to delete this flight?"
+        title={t('dashboard.operator.delete.title')}
+        message={t('dashboard.operator.delete.message')}
         route={deleteModal.flightRoute}
         type="danger"
-        confirmText="Delete Flight"
+        confirmText={t('dashboard.operator.delete.confirm')}
       />
     </div>
   );
 }
 
-// Flight Card Component
+// Flight Card Component - Modern Design
 function FlightCard({ flight, navigate, isPast = false, onDelete }) {
+  const { t } = useTranslation();
+  
   console.log('🎯 FlightCard flight data:', flight);
+  console.log('🎯 Available seats:', flight.capacity?.availableSeats);
+  console.log('🎯 Original price:', flight.pricing?.originalPrice);
+  console.log('🎯 Flight duration:', flight.duration);
+  console.log('🎯 Schedule duration:', flight.schedule?.duration);
+  console.log('🎯 Estimated duration:', flight.estimated_duration_minutes);
   
   const cardOpacity = isPast ? 'opacity-75' : '';
-  const headerGradient = 'bg-gradient-to-r from-blue-50 to-indigo-50'; // Same blue gradient for all flights
+  
+  // Status styling
+  const getStatusBadge = (status) => {
+    const styles = {
+      'approved': 'bg-green-500 text-white',
+      'pending': 'bg-amber-500 text-white', 
+      'denied': 'bg-red-500 text-white',
+      'available': 'bg-blue-500 text-white',
+      'booked': 'bg-purple-500 text-white',
+      'completed': 'bg-gray-500 text-white'
+    };
+    return styles[status] || 'bg-gray-400 text-white';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Date TBD';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200 hover:border-blue-300 ${cardOpacity}`}>
-      {/* Flight Header with Aircraft & Date */}
-      <div className={`${headerGradient} px-4 py-3 rounded-t-lg border-b border-gray-100`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-500 p-2 rounded-lg shadow-sm">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </div>
-            <div>
-              <h4 className="font-bold text-lg text-gray-900">
-                {flight.aircraft?.name || flight.aircraft?.manufacturer || 'Private Jet'}
-              </h4>
-              <p className="text-sm text-gray-600">
-                {flight.departure_datetime || flight.schedule?.departure ? 
-                  new Date(flight.departure_datetime || flight.schedule.departure).toLocaleDateString('en-US', { 
-                    weekday: 'short',
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                  }) : 'Date TBD'}
-              </p>
-            </div>
-          </div>
-          {isPast && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-              Completed
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Flight Content */}
-      <div className="p-3">
-        {/* Departure Details - Grayed out rectangle */}
-        <div className="bg-gray-100 rounded-lg p-3 mb-3">
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-sm text-gray-600">FROM</p>
-              <p className="text-xl font-bold text-gray-900">{flight.origin?.code || 'N/A'}</p>
-            </div>
-            <svg className="w-5 h-5 text-gray-500 mx-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    <div className={`relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-300 overflow-hidden ${cardOpacity}`}>
+      {/* Main Content */}
+      <div className="p-6">
+        {/* Aircraft Header */}
+        <div className="flex items-start space-x-4 mb-6">
+          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            <div className="text-center">
-              <p className="text-sm text-gray-600">TO</p>
-              <p className="text-xl font-bold text-gray-900">{flight.destination?.code || 'N/A'}</p>
-            </div>
           </div>
-          <div className="text-center mt-2">
-            <p className="text-sm text-gray-600">
-              {flight.departure_datetime || flight.schedule?.departure ? 
-                new Date(flight.departure_datetime || flight.schedule.departure).toLocaleDateString('en-US', { 
-                  weekday: 'short',
-                  month: 'short', 
-                  day: 'numeric',
-                  year: 'numeric'
-                }) : 'Date TBD'}
-            </p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 truncate">
+                  {flight.aircraft?.name || flight.aircraft?.manufacturer || 'Private Jet'}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {formatDate(flight.departure_datetime || flight.schedule?.departure)}
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusBadge(flight.status)}`}>
+                  {flight.status || 'Unknown'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Info squares below */}
-        <div className="grid grid-cols-3 gap-2">
-          {/* Status square */}
-          <div className="bg-white border border-gray-200 rounded-lg p-2 text-center">
-            <p className="text-xs text-gray-500 mb-1">Status</p>
-            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-              flight.status === 'approved' ? 'bg-green-100 text-green-700' :
-              flight.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-              flight.status === 'denied' ? 'bg-red-100 text-red-700' :
-              'bg-gray-100 text-gray-700'
-            }`}>
-              {flight.status || 'Unknown'}
-            </span>
+        {/* Route Section */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {flight.origin?.code || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">
+                {flight.origin?.city || 'Origin'}
+              </div>
+            </div>
+            
+            <div className="flex-1 px-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-dashed border-gray-300"></div>
+                </div>
+                <div className="relative flex items-center">
+                  <div style={{marginLeft: '10%'}}>
+                    <svg className="w-10 h-10 text-blue-500 transform rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {flight.destination?.code || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">
+                {flight.destination?.city || 'Destination'}
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Seats square */}
-          <div className="bg-white border border-gray-200 rounded-lg p-2 text-center">
-            <p className="text-xs text-gray-500 mb-1">Seats</p>
-            <p className="font-medium text-gray-900">{flight.capacity?.availableSeats || 'N/A'}</p>
+        {/* Quick Info Grid */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-lg font-bold text-gray-900">
+              {flight.capacity?.availableSeats}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">Available Seats</div>
           </div>
-
-          {/* Price square */}
-          <div className="bg-white border border-gray-200 rounded-lg p-2 text-center">
-            <p className="text-xs text-gray-500 mb-1">Price</p>
-            <p className="font-medium text-gray-900">{formatPrice(getCharterPrice(flight))}</p>
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-lg font-bold text-gray-900">
+              ${flight.pricing?.emptyLegPrice?.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">Total Price</div>
+          </div>
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-lg font-bold text-gray-900">
+              {flight.schedule?.duration ? `${Math.floor(flight.schedule.duration / 60)}h ${flight.schedule.duration % 60}m` : 'N/A'}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">Flight Time</div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-2">
+        <div className="flex space-x-2">
           <button
-            onClick={() => navigate(`/flight/${flight.id}`)}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-            title="View Details"
+            onClick={() => {
+              console.log('Navigating to flight details:', flight.id);
+              navigate(`/flight/${flight.id}`);
+            }}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
           >
-            <EyeIcon className="h-4 w-4 mr-1" />
-            View
+            <EyeIcon className="h-4 w-4" />
+            <span>{t('dashboard.operator.actions.viewDetails')}</span>
           </button>
+          
           {!isPast && (
             <>
               <button
                 onClick={() => navigate(`/edit-flight/${flight.id}`)}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
                 title="Edit Flight"
               >
-                <PencilIcon className="h-4 w-4 mr-1" />
-                Edit
+                <PencilIcon className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onDelete && onDelete(flight.id, `${flight.origin?.code || 'Unknown'} → ${flight.destination?.code || 'Unknown'}`)}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                className="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
                 title="Delete Flight"
               >
-                <TrashIcon className="h-4 w-4 mr-1" />
-                Delete
+                <TrashIcon className="h-4 w-4" />
               </button>
             </>
           )}

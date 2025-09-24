@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon, CameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import CustomCalendar from '../components/CustomCalendar';
@@ -74,6 +75,7 @@ const getDefaultAircraftImage = (aircraftType) => {
 };
 
 export default function CreateFlightPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -89,9 +91,9 @@ export default function CreateFlightPage() {
     
     if (durationMs > 0 && hours >= 24) {
       return (
-        <p className="text-xs text-gray-500 mt-4 flex items-center">
+        <p className="text-xs text-gray-500 mt-4 flex items-center justify-center">
           <span className="mr-1">⚠</span>
-          Unusually long flight duration. Please verify your dates.
+          {t('createFlight.sections.flightSchedule.warning')}
         </p>
       );
     }
@@ -448,11 +450,11 @@ export default function CreateFlightPage() {
             className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Dashboard
+            {t('createFlight.backToDashboard')}
           </button>
           
-          <h1 className="text-3xl font-bold text-gray-900">Create New Flight</h1>
-          <p className="text-gray-600 mt-1">Add a new flight listing to your inventory</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('createFlight.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('createFlight.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -460,7 +462,7 @@ export default function CreateFlightPage() {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center mb-4">
               <CameraIcon className="w-5 h-5 mr-2 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Aircraft Images</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('createFlight.sections.aircraftImages.title')}</h2>
             </div>
             
             <div className="space-y-4">
@@ -478,12 +480,12 @@ export default function CreateFlightPage() {
                 <CloudArrowUpIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <div className="space-y-2">
                   <p className="text-lg font-medium text-gray-900">
-                    Drop your aircraft images here
+                    {t('createFlight.sections.aircraftImages.uploadArea.title')}
                   </p>
                   <p className="text-gray-600">
-                    or{' '}
+                    {t('createFlight.sections.aircraftImages.uploadArea.subtitle')}{' '}
                     <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-                      browse files
+                      {t('createFlight.sections.aircraftImages.uploadArea.browse')}
                       <input
                         type="file"
                         accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
@@ -493,7 +495,7 @@ export default function CreateFlightPage() {
                       />
                     </label>
                   </p>
-                  <p className="text-sm text-gray-500">PNG, JPG, WebP, GIF, SVG up to 5MB each • Multiple files supported</p>
+                  <p className="text-sm text-gray-500">{t('createFlight.sections.aircraftImages.uploadArea.formats')}</p>
                 </div>
               </div>
 
@@ -533,7 +535,7 @@ export default function CreateFlightPage() {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center mb-6">
               <PaperAirplaneIcon className="w-5 h-5 mr-2 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Route Information</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('createFlight.sections.routeInformation.title')}</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -587,14 +589,14 @@ export default function CreateFlightPage() {
               <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Flight Schedule
+              {t('createFlight.sections.flightSchedule.title')}
             </h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Departure Section */}
               <div className="space-y-4">
                 <div className="flex items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Departure</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{t('createFlight.sections.flightSchedule.departure')}</h3>
                 </div>
                 
                 {/* Departure Date & Time */}
@@ -639,7 +641,7 @@ export default function CreateFlightPage() {
                 </div>
                 
                 {/* Departure Preview */}
-                {formData.departureTime && (
+                {formData.departureTime && formData.departureTime.includes('T') && formData.departureTime.split('T')[1] && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="text-sm text-blue-800 font-medium">
                       {new Date(formData.departureTime).toLocaleDateString('en-US', {
@@ -664,25 +666,7 @@ export default function CreateFlightPage() {
               <div className="space-y-4">
                 <div className="flex items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                    Arrival
-                    {formData.departureTime && formData.arrivalTime && (() => {
-                      const departure = new Date(formData.departureTime);
-                      const arrival = new Date(formData.arrivalTime);
-                      const departureDate = departure.toDateString();
-                      const arrivalDate = arrival.toDateString();
-                      
-                      if (departureDate !== arrivalDate) {
-                        const timeDiff = arrival.getTime() - departure.getTime();
-                        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                        
-                        if (daysDiff === 1) {
-                          return <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">+1 day</span>;
-                        } else if (daysDiff > 1) {
-                          return <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">+{daysDiff} days</span>;
-                        }
-                      }
-                      return null;
-                    })()}
+                    {t('createFlight.sections.flightSchedule.arrival')}
                   </h3>
                 </div>
                 
@@ -730,7 +714,7 @@ export default function CreateFlightPage() {
                 </div>
                 
                 {/* Arrival Preview */}
-                {formData.arrivalTime && (
+                {formData.arrivalTime && formData.arrivalTime.includes('T') && formData.arrivalTime.split('T')[1] && (
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                     <div className="text-sm text-purple-800 font-medium">
                       {new Date(formData.arrivalTime).toLocaleDateString('en-US', {
@@ -752,54 +736,6 @@ export default function CreateFlightPage() {
               </div>
             </div>
 
-            {/* Flight Duration Summary */}
-            {formData.departureTime && formData.arrivalTime && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-center">
-                  <div className={`px-6 py-4 rounded-2xl border-2 ${
-                    (() => {
-                      const departure = new Date(formData.departureTime);
-                      const arrival = new Date(formData.arrivalTime);
-                      const durationMs = arrival - departure;
-                      
-                      if (durationMs <= 0) {
-                        return "bg-red-100 border-red-300 text-red-700";
-                      } else if (durationMs > 24 * 60 * 60 * 1000) {
-                        return "bg-orange-100 border-orange-300 text-orange-700";
-                      } else {
-                        return "bg-blue-100 border-blue-300 text-blue-700";
-                      }
-                    })()
-                  }`}>
-                    <div className="text-center">
-                      <div className="text-sm font-medium opacity-75 mb-1">Flight Duration</div>
-                      <div className="text-2xl font-bold">
-                        {(() => {
-                          const departure = new Date(formData.departureTime);
-                          const arrival = new Date(formData.arrivalTime);
-                          const durationMs = arrival - departure;
-                          const durationMinutes = Math.round(durationMs / (1000 * 60));
-                          const hours = Math.floor(Math.abs(durationMinutes) / 60);
-                          
-                          if (durationMs <= 0) {
-                            return "⚠️ Invalid: Arrival must be after departure";
-                          } else if (hours >= 24) {
-                            const days = Math.floor(hours / 24);
-                            const remainingHours = hours % 24;
-                            return `${days}d ${remainingHours > 0 ? `${remainingHours}h` : ''} ${minutes > 0 ? `${minutes}m` : ''}`.trim();
-                          } else if (hours > 0) {
-                            return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
-                          } else {
-                            return `${minutes}m`;
-                          }
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Warning at bottom of Schedule card */}
             {renderDurationWarning()}
           </div>
@@ -810,13 +746,13 @@ export default function CreateFlightPage() {
               <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
-              Aircraft Details
+              {t('createFlight.sections.aircraftDetails.title')}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aircraft Type <span className="text-red-500">*</span>
+                  {t('createFlight.sections.aircraftDetails.fields.aircraftType')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -830,7 +766,7 @@ export default function CreateFlightPage() {
 
               <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Available Seats <span className="text-red-500">*</span>
+                  {t('createFlight.sections.aircraftDetails.fields.availableSeats')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -846,7 +782,7 @@ export default function CreateFlightPage() {
 
               <div className="md:col-span-2 group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description (Optional)
+                  {t('createFlight.sections.aircraftDetails.fields.description')}
                 </label>
                 <textarea
                   value={formData.description}
@@ -865,7 +801,7 @@ export default function CreateFlightPage() {
               <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Pricing
+              {t('createFlight.sections.pricing.title')}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -925,14 +861,14 @@ export default function CreateFlightPage() {
               onClick={() => navigate(-1)}
               className="px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {t('createFlight.buttons.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
-              {isSubmitting ? 'Creating Flight...' : 'Create Flight'}
+              {isSubmitting ? t('createFlight.buttons.creatingFlight') : t('createFlight.buttons.createFlight')}
             </button>
           </div>
         </form>

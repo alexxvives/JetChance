@@ -312,48 +312,21 @@ router.get('/:id', async (req, res) => {
     const flight = result.rows[0];
     console.log('✅ Found flight:', flight);
 
-    // Calculate actual duration from departure and arrival times
-    let calculatedDuration = null;
-    if (flight.departure_datetime && flight.arrival_datetime) {
-      try {
-        const departureTime = new Date(flight.departure_datetime);
-        const arrivalTime = new Date(flight.arrival_datetime);
-        
-        console.log('📅 Calculating duration:');
-        console.log('  Departure:', flight.departure_datetime, '→', departureTime);
-        console.log('  Arrival:', flight.arrival_datetime, '→', arrivalTime);
-        
-        // Check if dates are valid
-        if (!isNaN(departureTime.getTime()) && !isNaN(arrivalTime.getTime())) {
-          const durationMs = arrivalTime - departureTime;
-          console.log('  Duration MS:', durationMs);
-          
-          if (durationMs > 0) {
-            const durationMinutes = Math.round(durationMs / (1000 * 60));
-            const hours = Math.floor(durationMinutes / 60);
-            const minutes = durationMinutes % 60;
-            
-            console.log('  Duration minutes:', durationMinutes, 'Hours:', hours, 'Minutes:', minutes);
-            
-            if (hours > 0) {
-              calculatedDuration = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-            } else {
-              calculatedDuration = `${minutes}m`;
-            }
-          } else {
-            calculatedDuration = 'Invalid: Arrival before departure';
-          }
-        } else {
-          console.log('  ❌ Invalid date format');
-          calculatedDuration = null;
-        }
-      } catch (error) {
-        console.error('❌ Duration calculation error:', error);
-        calculatedDuration = null;
+    // Format duration from database value
+    let formattedDuration = null;
+    if (flight.estimated_duration_minutes) {
+      const totalMinutes = flight.estimated_duration_minutes;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      if (hours > 0) {
+        formattedDuration = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+      } else {
+        formattedDuration = `${minutes}m`;
       }
     }
     
-    console.log('✅ Final calculated duration:', calculatedDuration);
+    console.log('✅ Database duration:', flight.estimated_duration_minutes, '→', formattedDuration);
 
     res.json({
       id: flight.id,
@@ -364,7 +337,7 @@ router.get('/:id', async (req, res) => {
       destination_code: flight.destination_code,
       departure_time: flight.departure_datetime,
       arrival_time: flight.arrival_datetime,
-      duration: calculatedDuration,
+      duration: formattedDuration,
       price: flight.price || flight.empty_leg_price,
       empty_leg_price: flight.empty_leg_price,
       original_price: flight.original_price,
@@ -499,7 +472,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
         original_price, empty_leg_price, available_seats, max_passengers,
         status, description, currency
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
       RETURNING *
     `, [
@@ -519,7 +492,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
       destinationCountry || 'US',
       departureDateTime,
       arrivalDateTime,
-      parseInt(estimatedDuration) || 120, // Duration in minutes
+      parseInt(estimatedDuration), // Duration in minutes - calculated from departure/arrival times
       originalPrice,
       emptyLegPrice,
       totalSeats,
@@ -896,6 +869,77 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
     console.error('Flight deletion error:', error);
     res.status(500).json({
       error: 'Failed to delete flight'
+    });
+  }
+});
+
+// @route   PUT /api/flights/fix-durations
+// @desc    Calculate and update durations for all flights based on departure/arrival times
+// @access  Admin only
+router.put('/fix-durations', authenticate, authorize(['admin', 'super-admin']), async (req, res) => {
+  try {
+    console.log('🔧 Starting duration fix for all flights...');
+    
+    // Get all flights with departure and arrival times
+    const result = await db.query(`
+      SELECT id, departure_datetime, arrival_datetime, estimated_duration_minutes
+      FROM flights 
+      WHERE departure_datetime IS NOT NULL AND arrival_datetime IS NOT NULL
+    `);
+
+    let updatedCount = 0;
+    let errors = [];
+
+    for (const flight of result.rows) {
+      try {
+        const departureTime = new Date(flight.departure_datetime);
+        const arrivalTime = new Date(flight.arrival_datetime);
+        
+        // Validate dates
+        if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+          errors.push(`Flight ${flight.id}: Invalid date format`);
+          continue;
+        }
+        
+        // Calculate duration in minutes
+        const durationMs = arrivalTime - departureTime;
+        if (durationMs <= 0) {
+          errors.push(`Flight ${flight.id}: Arrival time before departure time`);
+          continue;
+        }
+        
+        const durationMinutes = Math.round(durationMs / (1000 * 60));
+        
+        // Update the flight duration
+        await db.query(`
+          UPDATE flights 
+          SET estimated_duration_minutes = ? 
+          WHERE id = ?
+        `, [durationMinutes, flight.id]);
+        
+        console.log(`✅ Updated flight ${flight.id}: ${durationMinutes} minutes`);
+        updatedCount++;
+        
+      } catch (error) {
+        errors.push(`Flight ${flight.id}: ${error.message}`);
+      }
+    }
+
+    console.log(`🎉 Duration fix complete: ${updatedCount} flights updated`);
+    
+    res.json({
+      success: true,
+      message: `Successfully updated durations for ${updatedCount} flights`,
+      updatedCount,
+      totalFlights: result.rows.length,
+      errors: errors.length > 0 ? errors : null
+    });
+
+  } catch (error) {
+    console.error('❌ Error fixing flight durations:', error);
+    res.status(500).json({
+      error: 'Failed to fix flight durations',
+      message: error.message
     });
   }
 });
