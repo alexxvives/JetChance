@@ -40,6 +40,12 @@
       "emailPlaceholder": "Ingresa tu correo electrónico",
       "passwordLabel": "Contraseña",
       "passwordPlaceholder": "Crea una contraseña",
+      "signupCodeLabel": "Código de Registro de Operador",
+      "signupCodePlaceholder": "Ingresa el código de registro de operador",
+      "signupCodeHelp": "Contacta a ChanceFly para obtener tu código de registro de operador",
+      "operatorCompanyLabel": "Nombre de la Empresa",
+      "operatorCompanyPlaceholder": "Ingresa el nombre de tu empresa",
+      "operatorCompanyHelp": "Escribe tu nombre si no estás con una empresa",
       "createAccountButton": "Crear Cuenta",
       "createCustomerAccount": "Crear Cuenta de Cliente",
       "createOperatorAccount": "Crear Cuenta de Operador",
@@ -50,7 +56,7 @@
   },
   "hero": {
     "title": "¿Y si volar privado fuese tan accesible como un billete comercial?",
-    "subtitle": "Reserva vuelos en jets privados vacíos hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles.",
+    "subtitle": "Reserva vuelos en jets privados vacíos entre Colombia, México y las Américas hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles en toda Latinoamérica.",
     "browseFlights": "Explorar Vuelos",
     "learnMore": "Aprender Más"
   },
@@ -103,22 +109,19 @@
     "luxurySub": "Servicios premium y comodidad en todo momento"
   },
   "testimonials": {
-    "title": "Lo Que Dicen Nuestros Clientes",
-    "subtitle": "Únete a miles de viajeros satisfechos que han descubierto la ventaja de ChanceFly.",
+    "title": "No te quedes solo con nuestra palabra",
+    "subtitle": "Cientos de viajeros ya vuelan en privado con nuestras ofertas de vuelos vacíos.",
     "customer1": {
-      "text": "ChanceFly transformó cómo viajo por negocios. Los ahorros son increíbles, y el servicio siempre es de primera clase. He reservado más de 20 vuelos y cada experiencia ha sido perfecta.",
-      "name": "Sarah Chen",
-      "title": "CEO, TechVision"
+      "text": "Encontré ChanceFly a través de un familiar y ha sido genial para viajes de negocios. Buenos precios y servicio confiable. Lo he usado varias veces sin problemas.",
+      "name": "Carolina Vargas"
     },
     "customer2": {
-      "text": "Como alguien que valora tanto el lujo como la eficiencia, ChanceFly cumple en ambos aspectos. Los vuelos vacíos son revolucionarios para escapadas espontáneas de fin de semana.",
-      "name": "Marcus Rodriguez",
-      "title": "Gerente de Inversiones"
+      "text": "Buena alternativa a los vuelos comerciales cuando necesito algo más cómodo. Las opciones de vuelos vacíos funcionan bien con mi horario la mayoría del tiempo.",
+      "name": "Andrés Morales"
     },
     "customer3": {
-      "text": "La plataforma es increíblemente fácil de usar, y el equipo de soporte al cliente va más allá de lo esperado. He ahorrado miles manteniendo la experiencia de viaje de lujo que espero.",
-      "name": "Elena Petrov",
-      "title": "Diseñadora de Moda"
+      "text": "Sitio web fácil de usar y servicio al cliente útil cuando tuve preguntas. Definitivamente ahorra dinero comparado con precios regulares de charter.",
+      "name": "Isabella Ramírez"
     }
   },
   "cta": {

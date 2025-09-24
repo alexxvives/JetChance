@@ -2,36 +2,49 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function Signup() {
   const { register, isLoading, error } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    role: 'customer'
+    role: 'customer',
+    signupCode: '',
+    companyName: ''
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      await register({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+      const registrationData = {
         email: formData.email,
         password: formData.password,
         role: formData.role
-      });
+      };
+
+      // Add role-specific fields
+      if (formData.role === 'customer') {
+        registrationData.first_name = formData.firstName;
+        registrationData.last_name = formData.lastName;
+      } else if (formData.role === 'operator') {
+        registrationData.signupCode = formData.signupCode;
+        registrationData.companyName = formData.companyName;
+        // For operators, we don't send first/last name
+      }
+
+      await register(registrationData);
       
       // On success, navigate to dashboard
       navigate('/dashboard');
     } catch (error) {
-      console.error('Signup failed:', error);
-      // Error is handled by AuthContext
+      // Error is handled by AuthContext, no need to log expected validation errors
     }
   };
 
@@ -93,35 +106,58 @@ export default function Signup() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              {/* Customer Name Fields */}
+              {formData.role === 'customer' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('auth.signup.firstNameLabel')}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder={t('auth.signup.firstNamePlaceholder')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('auth.signup.lastNameLabel')}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder={t('auth.signup.lastNamePlaceholder')}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Operator Company Name Field */}
+              {formData.role === 'operator' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('auth.signup.firstNameLabel')}
+                    {t('auth.signup.operatorCompanyLabel')}
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t('auth.signup.firstNamePlaceholder')}
+                    placeholder={t('auth.signup.operatorCompanyPlaceholder')}
                   />
+                  <p className="mt-1 text-sm text-gray-500">
+                    {t('auth.signup.operatorCompanyHelp')}
+                  </p>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('auth.signup.lastNameLabel')}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t('auth.signup.lastNamePlaceholder')}
-                  />
-                </div>
-              </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -141,15 +177,51 @@ export default function Signup() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t('auth.signup.passwordLabel')}
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={t('auth.signup.passwordPlaceholder')}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={t('auth.signup.passwordPlaceholder')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Must be at least 8 characters with uppercase, lowercase, number, and special character (@$!%*?&)
+                </p>
               </div>
+
+              {/* Signup Code for Operators */}
+              {formData.role === 'operator' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('auth.signup.signupCodeLabel')}
+                  </label>
+                  <input
+                    type="text"
+                    required={formData.role === 'operator'}
+                    value={formData.signupCode}
+                    onChange={(e) => setFormData({...formData, signupCode: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={t('auth.signup.signupCodePlaceholder')}
+                  />
+                  <p className="mt-1 text-sm text-gray-500">
+                    {t('auth.signup.signupCodeHelp')}
+                  </p>
+                </div>
+              )}
 
               <button
                 type="submit"

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import { getCharterPrice, formatPrice, transformFlightsArray } from '../utils/flightDataUtils';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -123,11 +122,6 @@ function ActualOperatorDashboard({ user }) {
         console.log('📡 Flights array:', response.flights);
         console.log('📡 First flight sample:', response.flights?.[0]);
         setFlights(response.flights || []);
-      } else if (shouldUseMockFlightAPI()) {
-        console.log('🧪 Using Mock API...');
-        const response = await mockFlightAPI.getOperatorFlights(user.id);
-        console.log('🧪 Mock Response:', response);
-        setFlights(response.flights || []);
       } else {
         console.log('❌ No API available');
         setFlights([]);
@@ -179,8 +173,6 @@ function ActualOperatorDashboard({ user }) {
       
       if (shouldUseRealAPI()) {
         await flightsAPI.deleteFlight(flightId);
-      } else if (shouldUseMockFlightAPI()) {
-        await mockFlightAPI.deleteFlight(flightId);
       } else {
         throw new Error('No API available');
       }
@@ -490,3 +482,5 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
     </div>
   );
 }
+
+

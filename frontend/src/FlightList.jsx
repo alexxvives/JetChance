@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import FlightCard from './FlightCard';
-import { mockFlightAPI } from './utils/mockFlightAPI';
 import { flightsAPI, shouldUseRealAPI } from './api/flightsAPI';
 
 export default function FlightList({ filters = {}, isAdminView = false, onDeleteFlight }) {
@@ -21,10 +20,20 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
           const response = await flightsAPI.getFlights(filters);
           console.log('📡 Customer API response:', response);
           flightData = response.flights || response || [];
+          
+          // Additional client-side filter to remove past flights (safety check)
+          const currentTime = new Date();
+          flightData = flightData.filter(flight => {
+            const departureTime = new Date(flight.schedule?.departure || flight.departure_time);
+            if (departureTime <= currentTime) {
+              console.log(`Filtering out past flight: ${flight.flightNumber || flight.id} (departed: ${departureTime.toISOString()})`);
+              return false;
+            }
+            return true;
+          });
         } else {
-          console.log('🧪 Using Mock API for customer flights...');
-          const response = await mockFlightAPI.getFlights();
-          flightData = response.flights || [];
+          console.log('❌ No API available');
+          flightData = [];
         }
         
         console.log(`✅ Loaded ${flightData.length} flights for customer`);
@@ -126,3 +135,5 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
     </div>
   );
 }
+
+

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, MapPinIcon, ClockIcon, UsersIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import FreeFlightMap from '../components/FreeFlightMap';
 
 export default function FlightDetailsPage() {
@@ -21,12 +20,7 @@ export default function FlightDetailsPage() {
           const foundFlight = await flightsAPI.getFlightById(id);
           console.log('✅ Real API flight data:', foundFlight);
           setFlight(foundFlight);
-        } else if (shouldUseMockFlightAPI()) {
-          const response = await mockFlightAPI.getFlights();
-          const foundFlight = response.flights.find(f => f.id === parseInt(id) || f.id === id);
-          console.log('✅ Mock API flight data:', foundFlight);
-          setFlight(foundFlight);
-        } else {
+         } else {
           console.log('❌ No API configured');
           setFlight(null);
         }
@@ -80,6 +74,17 @@ export default function FlightDetailsPage() {
   const savings = originalPrice - price;
   const savingsPercentage = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
   console.log('💰 Price calculations:', { price, originalPrice, savings, savingsPercentage });
+
+  const startBookingProcess = () => {
+    // Navigate to dedicated payment page with flight data
+    navigate(`/payment/${flight.id}`, {
+      state: {
+        flight: flight,
+        passengers: selectedPassengers,
+        price: flight.empty_leg_price || flight.original_price || 0
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -276,7 +281,10 @@ export default function FlightDetailsPage() {
               </div>
 
               {/* Action Button */}
-              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={startBookingProcess}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+              >
                 Book Charter - ${Math.round(price / selectedPassengers).toLocaleString()} per person
               </button>
               
@@ -331,3 +339,5 @@ export default function FlightDetailsPage() {
     </div>
   );
 }
+
+

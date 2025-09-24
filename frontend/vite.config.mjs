@@ -6,4 +6,9 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.js',
   },
+  server: {
+    port: 8000,
+    host: true,
+    // Remove HTTPS for now - Stripe should work with localhost over HTTP
+  },
 });

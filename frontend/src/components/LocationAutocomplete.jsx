@@ -10,7 +10,8 @@ export default function LocationAutocomplete({
   renderOption, 
   required = false,
   disabled = false,
-  className = ""
+  className = "",
+  showAllOnFocus = false  // New prop to show all options on focus
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value || '');
@@ -57,6 +58,11 @@ export default function LocationAutocomplete({
       const results = searchFunction(inputValue, 8);
       setOptions(results);
       setIsOpen(true);
+    } else if (showAllOnFocus) {
+      // Show all available options when focused, even with empty input
+      const results = searchFunction('', 20); // Use empty string to get all options
+      setOptions(results);
+      setIsOpen(results.length > 0);
     }
   };
 

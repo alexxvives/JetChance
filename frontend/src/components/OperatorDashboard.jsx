@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import ConfirmationModal from './ConfirmationModal';
 
 export default function OperatorDashboard({ user }) {
@@ -125,7 +124,7 @@ export default function OperatorDashboard({ user }) {
       
       console.log('🔍 Checking API configuration...');
       console.log('shouldUseRealAPI():', shouldUseRealAPI());
-      console.log('shouldUseMockFlightAPI():', shouldUseMockFlightAPI());
+      console.log('false:', false);
       
       if (shouldUseRealAPI()) {
         console.log('📡 Using Real API to fetch flights...');
@@ -151,12 +150,7 @@ export default function OperatorDashboard({ user }) {
         
         console.log('🔄 Transformed flights:', transformedFlights);
         setFlights(transformedFlights);
-      } else if (shouldUseMockFlightAPI()) {
-        console.log('🧪 Using Mock API to fetch flights...');
-        const response = await mockFlightAPI.getOperatorFlights(user.id);
-        console.log('🧪 Mock API response:', response);
-        setFlights(response.flights);
-      } else {
+       } else {
         console.error('❌ No API available');
         throw new Error('No API available');
       }
@@ -192,9 +186,7 @@ export default function OperatorDashboard({ user }) {
       
       if (shouldUseRealAPI()) {
         await flightsAPI.deleteFlight(flightId);
-      } else if (shouldUseMockFlightAPI()) {
-        await mockFlightAPI.deleteFlight(flightId);
-      } else {
+       } else {
         throw new Error('No API available');
       }
       
@@ -426,3 +418,5 @@ export default function OperatorDashboard({ user }) {
     </div>
   );
 }
+
+

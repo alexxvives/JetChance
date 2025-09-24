@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../api/client';
-import { mockAuthAPI, shouldUseMockAuth } from '../utils/mockAuth';
 
 // Auth action types
 const AUTH_ACTIONS = {
@@ -111,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Use mock auth if backend is not available
-          const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+          const apiToUse = authAPI;
           const response = await apiToUse.getProfile();
           dispatch({
             type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -120,7 +119,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Auth check failed:', error);
           // Clear invalid tokens
-          const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+          const apiToUse = authAPI;
           apiToUse.logout();
           dispatch({ type: AUTH_ACTIONS.LOGOUT });
         }
@@ -138,7 +137,7 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
       
       // Use mock auth if backend is not available
-      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const apiToUse = authAPI;
       const response = await apiToUse.login(credentials);
       
       dispatch({
@@ -163,7 +162,7 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
       
       // Use mock auth if backend is not available
-      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const apiToUse = authAPI;
       const response = await apiToUse.register(userData);
       
       dispatch({
@@ -184,7 +183,7 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+    const apiToUse = authAPI;
     apiToUse.logout();
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
   };
@@ -192,7 +191,7 @@ export const AuthProvider = ({ children }) => {
   // Update profile function
   const updateProfile = async (profileData) => {
     try {
-      const apiToUse = shouldUseMockAuth() ? mockAuthAPI : authAPI;
+      const apiToUse = authAPI;
       const response = await apiToUse.updateProfile(profileData);
       dispatch({
         type: AUTH_ACTIONS.PROFILE_UPDATE,

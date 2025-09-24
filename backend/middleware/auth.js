@@ -21,7 +21,7 @@ const authenticate = async (req, res, next) => {
     
     // Get user details from database
     const result = await db.query(
-      'SELECT id, email, role, first_name, last_name FROM users WHERE id = ?',
+      'SELECT id, email, role FROM auth_users WHERE id = ?',
       [decoded.userId]
     );
 

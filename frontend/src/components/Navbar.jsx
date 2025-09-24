@@ -110,6 +110,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     {t('nav.logout')}
                   </button>
                 </div>
+                <LanguageSelector />
               </>
             ) : (
               // Guest User Actions
@@ -124,7 +125,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   to="/signup"
                   className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
-                  Join Now
+                  {t('auth.login.signUp')}
                 </Link>
                 <LanguageSelector />
               </div>
@@ -208,6 +209,13 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       <div className="text-sm font-medium text-violet-300">{user?.firstName} {user?.lastName}</div>
                       <div className="text-xs text-white/60">{user?.role} • {user?.id}</div>
                     </div>
+                    {/* Language Settings for Authenticated Users */}
+                    <div className="border-b border-violet-300/20 pb-3 mb-3">
+                      <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
+                      <div className="px-4 py-2">
+                        <LanguageSelector />
+                      </div>
+                    </div>
                     {/* Profile Icon Button */}
                     <button
                       onClick={() => {
@@ -247,7 +255,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       onClick={() => setIsMenuOpen(false)}
                       className="block mx-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold text-center hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
                     >
-                      Join Now
+                      {t('auth.login.signUp')}
                     </Link>
                   </div>
                 )}

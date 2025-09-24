@@ -20,7 +20,7 @@ const NotificationBell = () => {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/notifications/unread-count', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/unread-count`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -43,7 +43,7 @@ const NotificationBell = () => {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/notifications', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -67,7 +67,7 @@ const NotificationBell = () => {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/notifications/mark-all-read', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,

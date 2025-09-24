@@ -11,10 +11,19 @@ const router = express.Router();
 // Validation middleware
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body(['firstName', 'first_name']).optional().trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
-  body(['lastName', 'last_name']).optional().trim().isLength({ min: 2 }).withMessage('Last name must be at least 2 characters'),
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+  body('firstName').optional().trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
+  body('first_name').optional().trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
+  body('lastName').optional().trim().isLength({ min: 2 }).withMessage('Last name must be at least 2 characters'),
+  body('last_name').optional().trim().isLength({ min: 2 }).withMessage('Last name must be at least 2 characters'),
   body('role').optional().isIn(['customer', 'operator']),
+  body('signupCode').optional().trim(),
+  body('companyName').optional().trim(),
+  body('isIndividual').optional().isBoolean(),
 ];
 
 const loginValidation = [
@@ -54,23 +63,42 @@ router.post('/register', registerValidation, async (req, res) => {
       });
     }
 
-    const { email, password, role = 'customer' } = req.body;
+    const { email, password, role = 'customer', signupCode, companyName } = req.body;
     
     // Handle both firstName/lastName and first_name/last_name formats
     const firstName = req.body.firstName || req.body.first_name;
     const lastName = req.body.lastName || req.body.last_name;
     const phone = req.body.phone;
 
-    // Validate required fields
-    if (!firstName || !lastName) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        message: 'First name and last name are required'
-      });
+    // Validate required fields based on role
+    if (role === 'customer') {
+      if (!firstName || !lastName) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'First name and last name are required for customer accounts'
+        });
+      }
+    } else if (role === 'operator') {
+      if (!companyName || !companyName.trim()) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'Company/Organization name is required for operator accounts'
+        });
+      }
+    }
+
+    // Validate signup code for operators
+    if (role === 'operator') {
+      if (!signupCode || signupCode !== 'code') {
+        return res.status(400).json({
+          error: 'Wrong Signup Code',
+          message: 'Wrong Signup Code'
+        });
+      }
     }
 
     // Check if user already exists
-    const existingUser = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+    const existingUser = await db.query('SELECT id FROM auth_users WHERE email = ?', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json({
         error: 'User already exists',
@@ -84,37 +112,76 @@ router.post('/register', registerValidation, async (req, res) => {
 
     // Generate user ID
     const userId = SimpleIDGenerator.generateUserId();
-
-    // Set company name and status for operators
-    const companyName = role === 'operator' ? `${firstName} ${lastName} Aviation` : null;
-    const status = role === 'operator' ? 'pending' : 'approved';
-
-    // Create user
-    await db.run(
-      `INSERT INTO users (id, email, password_hash, first_name, last_name, phone, role, company_name, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, email, passwordHash, firstName, lastName, phone, role, companyName, status]
-    );
-
-    // Get the created user
-    const userResult = await db.query(
-      'SELECT id, email, first_name, last_name, role, created_at FROM users WHERE id = ?',
-      [userId]
-    );
-    const user = userResult.rows[0];
     
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    const status = 'approved'; // All users are automatically approved now
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      user: {
+    // Create user in auth_users table
+    await db.run(
+      `INSERT INTO auth_users (id, email, password_hash, phone, role, is_active, email_verified)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, email, passwordHash, phone, role, true, false]
+    );
+
+    // Create role-specific record
+    let roleSpecificId;
+    if (role === 'customer') {
+      roleSpecificId = 'cust_' + userId;
+      await db.run(
+        `INSERT INTO customers (id, auth_user_id, first_name, last_name)
+         VALUES (?, ?, ?, ?)`,
+        [roleSpecificId, userId, firstName, lastName]
+      );
+    } else if (role === 'operator') {
+      roleSpecificId = 'op_' + userId;
+      const isIndividual = companyName.toLowerCase() === 'particular';
+      await db.run(
+        `INSERT INTO operators (id, auth_user_id, company_name, is_individual, status)
+         VALUES (?, ?, ?, ?, ?)`,
+        [roleSpecificId, userId, companyName.trim(), isIndividual, status]
+      );
+    }
+
+    // Get the created user data
+    let userResponse;
+    if (role === 'customer') {
+      const result = await db.query(`
+        SELECT au.id, au.email, au.role, au.created_at, c.first_name, c.last_name
+        FROM auth_users au
+        JOIN customers c ON au.id = c.auth_user_id
+        WHERE au.id = ?
+      `, [userId]);
+      const user = result.rows[0];
+      userResponse = {
         id: user.id,
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
         role: user.role,
         createdAt: user.created_at
-      },
+      };
+    } else if (role === 'operator') {
+      const result = await db.query(`
+        SELECT au.id, au.email, au.role, au.created_at, o.company_name, o.is_individual
+        FROM auth_users au
+        JOIN operators o ON au.id = o.auth_user_id
+        WHERE au.id = ?
+      `, [userId]);
+      const user = result.rows[0];
+      userResponse = {
+        id: user.id,
+        email: user.email,
+        companyName: user.company_name,
+        isIndividual: user.is_individual,
+        role: user.role,
+        createdAt: user.created_at
+      };
+    }
+    
+    const { accessToken, refreshToken } = generateTokens(userId);
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: userResponse,
       tokens: {
         accessToken,
         refreshToken
@@ -145,9 +212,9 @@ router.post('/login', loginValidation, async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Find user
+    // Find user in auth_users
     const result = await db.query(
-      'SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, role, is_active FROM auth_users WHERE email = ?',
       [email]
     );
 
@@ -177,17 +244,38 @@ router.post('/login', loginValidation, async (req, res) => {
       });
     }
 
+    // Get role-specific data
+    let userResponse = {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    };
+
+    if (user.role === 'customer') {
+      const customerResult = await db.query(`
+        SELECT first_name, last_name FROM customers WHERE auth_user_id = ?
+      `, [user.id]);
+      if (customerResult.rows.length > 0) {
+        const customer = customerResult.rows[0];
+        userResponse.firstName = customer.first_name;
+        userResponse.lastName = customer.last_name;
+      }
+    } else if (user.role === 'operator') {
+      const operatorResult = await db.query(`
+        SELECT company_name, is_individual FROM operators WHERE auth_user_id = ?
+      `, [user.id]);
+      if (operatorResult.rows.length > 0) {
+        const operator = operatorResult.rows[0];
+        userResponse.companyName = operator.company_name;
+        userResponse.isIndividual = operator.is_individual;
+      }
+    }
+
     const { accessToken, refreshToken } = generateTokens(user.id);
 
     res.json({
       message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        role: user.role
-      },
+      user: userResponse,
       tokens: {
         accessToken,
         refreshToken
@@ -221,7 +309,7 @@ router.post('/refresh', async (req, res) => {
     
     // Check if user still exists and is active
     const result = await db.query(
-      'SELECT id, email, first_name, last_name, role FROM users WHERE id = $1 AND is_active = true',
+      'SELECT id, email, role FROM auth_users WHERE id = ? AND is_active = true',
       [decoded.userId]
     );
 
@@ -282,9 +370,8 @@ router.post('/logout', authenticate, async (req, res) => {
 router.get('/me', authenticate, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, email, first_name, last_name, phone, role, 
-              company_name, status, created_at
-       FROM users
+      `SELECT id, email, phone, role, is_active, created_at
+       FROM auth_users
        WHERE id = ?`,
       [req.user.id]
     );
@@ -296,18 +383,40 @@ router.get('/me', authenticate, async (req, res) => {
     }
 
     const user = result.rows[0];
-
-    res.json({
+    
+    // Get role-specific data
+    let userResponse = {
       id: user.id,
       email: user.email,
-      firstName: user.first_name,
-      lastName: user.last_name,
       phone: user.phone,
       role: user.role,
-      companyName: user.company_name,
-      status: user.status,
+      isActive: user.is_active,
       createdAt: user.created_at
-    });
+    };
+
+    if (user.role === 'customer') {
+      const customerResult = await db.query(`
+        SELECT first_name, last_name, date_of_birth FROM customers WHERE auth_user_id = ?
+      `, [user.id]);
+      if (customerResult.rows.length > 0) {
+        const customer = customerResult.rows[0];
+        userResponse.firstName = customer.first_name;
+        userResponse.lastName = customer.last_name;
+        userResponse.dateOfBirth = customer.date_of_birth;
+      }
+    } else if (user.role === 'operator') {
+      const operatorResult = await db.query(`
+        SELECT company_name, is_individual, status FROM operators WHERE auth_user_id = ?
+      `, [user.id]);
+      if (operatorResult.rows.length > 0) {
+        const operator = operatorResult.rows[0];
+        userResponse.companyName = operator.company_name;
+        userResponse.isIndividual = operator.is_individual;
+        userResponse.status = operator.status;
+      }
+    }
+
+    res.json(userResponse);
 
   } catch (error) {
     console.error('Profile fetch error:', error);

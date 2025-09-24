@@ -55,14 +55,14 @@ router.get('/', [
     
     // If user_id is provided, check if it's for operator viewing their own flights
     if (user_id) {
-      const userResult = await db.query('SELECT role FROM users WHERE id = ?', [user_id]);
+      const userResult = await db.query('SELECT role FROM auth_users WHERE id = ?', [user_id]);
       if (userResult.rows.length > 0) {
         const userRole = userResult.rows[0].role;
         if (userRole === 'operator') {
           // Operator viewing their own flights - show ALL statuses (pending, approved, declined)
           isOperatorOwned = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE auth_user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
@@ -71,7 +71,7 @@ router.get('/', [
           isOperatorOwned = true;
           isSuperAdmin = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE auth_user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
@@ -89,8 +89,8 @@ router.get('/', [
       params.push(statusFilter);
     }
 
-    // Only show future flights for customers (when not viewing operator-specific flights)
-    if (!isOperatorOwned && !isSuperAdmin && req.user && req.user.role === 'customer') {
+    // Only show future flights for customers and public catalog (always exclude past flights for non-operators)
+    if (!isOperatorOwned && !isSuperAdmin) {
       whereConditions.push(`f.departure_datetime > datetime('now')`);
     }
 
@@ -167,13 +167,12 @@ router.get('/', [
         f.description,
         f.aircraft_name,
         f.aircraft_image_url,
+        f.images,
         o.company_name as operator_name,
         o.id as operator_id,
-        u.first_name as operator_first_name,
-        u.last_name as operator_last_name
+        o.company_name as operator_company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN users u ON o.user_id = u.id
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
@@ -188,7 +187,6 @@ router.get('/', [
       SELECT COUNT(*) as total
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN users u ON o.user_id = u.id
       WHERE ${whereConditions.join(' AND ')}
     `;
 
@@ -236,7 +234,8 @@ router.get('/', [
         type: flight.aircraft_name || 'Private Jet',
         manufacturer: flight.aircraft_name ? flight.aircraft_name.split(' ')[0] : 'Unknown',
         model: flight.aircraft_name ? flight.aircraft_name.split(' ').slice(1).join(' ') : 'Private Jet',
-        image: flight.aircraft_image_url
+        image: flight.aircraft_image_url,
+        images: flight.images ? JSON.parse(flight.images) : (flight.aircraft_image_url ? [flight.aircraft_image_url] : [])
       },
       services: {
         catering: flight.catering_available,
@@ -247,10 +246,8 @@ router.get('/', [
       },
       operator: {
         name: flight.operator_name,
-        firstName: flight.operator_first_name,
-        lastName: flight.operator_last_name,
+        companyName: flight.operator_company_name,
         operatorId: flight.operator_id,
-        rating: parseFloat(flight.operator_rating) || 0,
         logo: flight.operator_logo
       },
       description: flight.description
@@ -295,11 +292,8 @@ router.get('/:id', async (req, res) => {
       SELECT 
         f.*,
         o.company_name as operator_name,
-        o.rating as operator_rating,
         o.total_flights as operator_total_flights,
-        o.description as operator_description,
-        o.logo_url as operator_logo,
-        o.website_url as operator_website
+        o.logo_url as operator_logo
       FROM flights f
       LEFT JOIN operators o ON f.operator_id = o.id
       WHERE f.id = ?
@@ -379,12 +373,11 @@ router.get('/:id', async (req, res) => {
       seats_available: flight.available_seats,
       status: flight.status,
       operator: flight.operator_name || 'Private Operator',
-      operator_rating: flight.operator_rating,
       operator_total_flights: flight.operator_total_flights,
       description: flight.description,
       amenities: flight.amenities,
       aircraft_image_url: flight.aircraft_image_url,
-      images: flight.aircraft_image_url ? [flight.aircraft_image_url] : []
+      images: flight.images ? JSON.parse(flight.images) : (flight.aircraft_image_url ? [flight.aircraft_image_url] : [])
     });
 
   } catch (error) {
@@ -420,7 +413,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     // Get operator ID
     const operatorResult = await db.query(
-      'SELECT id FROM operators WHERE user_id = $1 AND status = $2',
+      'SELECT id FROM operators WHERE auth_user_id = ? AND status = ?',
       [req.user.id, 'approved']
     );
 
@@ -463,12 +456,13 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
       description,
       specialRequirements,
       cancellationPolicy,
-      aircraft_image // Image URL from frontend
+      aircraft_image, // Single image URL for backwards compatibility
+      images = [] // Array of image URLs from frontend
     } = req.body;
 
     // Get operator ID for this user
     const userOperatorResult = await db.query(
-      'SELECT id, company_name FROM operators WHERE user_id = $1',
+      'SELECT id, company_name FROM operators WHERE auth_user_id = ?',
       [req.user.id]
     );
     
@@ -489,15 +483,23 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
     // Generate simple flight ID
     const flightId = SimpleIDGenerator.generateFlightId();
 
+    // Prepare images array - use provided images or fallback to single aircraft_image
+    let imageUrls = [];
+    if (images && Array.isArray(images) && images.length > 0) {
+      imageUrls = images;
+    } else if (aircraft_image) {
+      imageUrls = [aircraft_image];
+    }
+    
     const result = await db.query(`
       INSERT INTO flights (
-        id, operator_id, aircraft_id, aircraft_name, aircraft_image_url, origin_code, origin_name, origin_city, origin_country,
+        id, operator_id, aircraft_id, aircraft_name, aircraft_image_url, images, origin_code, origin_name, origin_city, origin_country,
         destination_code, destination_name, destination_city, destination_country,
         departure_datetime, arrival_datetime, estimated_duration_minutes,
         original_price, empty_leg_price, available_seats, max_passengers,
         status, description, currency
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
       RETURNING *
     `, [
@@ -505,7 +507,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
       userOperatorId, // Use the actual operator ID, not user ID
       selectedAircraftId,
       aircraftName, // Store the aircraft name directly
-      aircraft_image, // Store the uploaded image URL
+      imageUrls.length > 0 ? imageUrls[0] : null, // Keep first image for backwards compatibility
+      JSON.stringify(imageUrls), // Store all images as JSON array
       originCode,
       originName || originCode,
       originName || originCode,
@@ -763,10 +766,10 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
 
     // Get operator details to send notification
     const operatorSql = `
-      SELECT u.id as user_id, u.email, o.company_name
+      SELECT au.id as user_id, au.email, o.company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN users u ON o.user_id = u.id
+      JOIN auth_users au ON o.auth_user_id = au.id
       WHERE f.id = ?
     `;
     
@@ -825,10 +828,10 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
 
     // First, get the flight details to notify the operator
     const getFlightSql = `
-      SELECT f.*, o.id as operator_id, u.id as user_id, u.email as operator_email, o.company_name
+      SELECT f.*, o.id as operator_id, au.id as user_id, au.email as operator_email, o.company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN users u ON o.user_id = u.id
+      JOIN auth_users au ON o.auth_user_id = au.id
       WHERE f.id = ?
     `;
 

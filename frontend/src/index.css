@@ -16,15 +16,15 @@
   scroll-behavior: smooth;
 }
 
-/* Flight cards auto-scroll animation */
-.flight-cards-scroll {
+/* Alternative flight cards auto-scroll animation */
+.flight-cards-alt-scroll {
   overflow: hidden;
   width: 100%;
   position: relative;
 }
 
-.flight-cards-scroll .flex {
-  animation: scroll-rtl 80s linear infinite;
+.flight-cards-alt-scroll .flex {
+  animation: scroll-rtl 100s linear infinite;
   display: flex;
   position: absolute;
   left: 0;
@@ -41,75 +41,275 @@
   }
 }
 
-/* Fixed card layout to prevent text shifting */
-.card-wrapper {
-  width: 400px; /* Increased from 352px to 400px for longer titles */
-  height: 180px; /* 240px - 25% = 180px */
+/* Alternative card layout - wider and shorter for horizontal content */
+.card-alt-wrapper {
+  width: 352px;  /* 10% wider: 320px * 1.1 = 352px */
+  height: 280px; /* Shorter for horizontal layout */
   flex-shrink: 0;
   margin-right: 24px;
 }
 
-.card-inner {
+.card-alt-inner {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
   box-sizing: border-box;
 }
 
-.card-header {
-  display: table;
+.card-alt-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  table-layout: fixed;
-  margin-bottom: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.card-route {
-  display: table-cell;
-  width: 65%;
-  font-weight: bold;
+.route-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  gap: 8px;
+}
+
+.airport-code {
   font-size: 18px;
-  line-height: 1.2;
-  vertical-align: top;
-  padding-right: 8px;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
 }
 
-.card-price {
-  display: table-cell;
-  width: 35%;
+.route-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.route-line {
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(to right, #a855f7, #3b82f6);
+  flex-shrink: 0;
+}
+
+.route-plane {
+  color: #a855f7;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.card-alt-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex: 1;
+  align-items: center;
+}
+
+.card-alt-price {
+  flex-shrink: 0;
+  order: 2; /* Move price to the right */
+  text-align: right;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.price-amount {
   color: #7c3aed;
   font-weight: bold;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1.2;
-  text-align: right;
-  vertical-align: top;
 }
 
-.card-time {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
-.card-aircraft {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 16px;
-}
-
-.card-savings {
-  background-color: #ede9fe;
-  color: #5b21b6;
-  font-size: 14px;
-  padding: 4px 12px;
+.discount-badge {
+  background-color: #10b981;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
   border-radius: 9999px;
-  display: block;
-  width: fit-content;
-  margin: 0 auto;
-  text-align: center;
+  font-weight: 500;
+}
+
+.original-price {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: line-through;
+  text-align: right;
+}
+
+.card-alt-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  order: 1; /* Move details to the left */
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.card-alt-cta {
+  flex-shrink: 0;
 }
 
 /* Pause animation on hover */
-.flight-cards-scroll:hover .flex {
+.flight-cards-alt-scroll:hover .flex {
   animation-play-state: paused;
+}
+
+/* Enhanced Calendar Dropdown Styling */
+/* Style the calendar popup/dropdown that appears when clicking date inputs */
+
+/* Main calendar popup container */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  color: transparent;
+  opacity: 1;
+  display: block;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg>") no-repeat;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233B82F6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg>") no-repeat;
+  transform: scale(1.1);
+}
+
+/* Style the individual date fields when they appear in the input */
+input[type="date"]::-webkit-datetime-edit {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  background: rgba(59, 130, 246, 0.02);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: 0 1px;
+  color: #1e40af;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field:hover,
+input[type="date"]::-webkit-datetime-edit-day-field:hover,
+input[type="date"]::-webkit-datetime-edit-year-field:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-day-field:focus,
+input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Enhanced styling for better calendar popup appearance */
+input[type="date"] {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="date"]:hover {
+  border-color: #9ca3af;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+input[type="date"]:focus {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom calendar theming based on context */
+.departure-calendar input[type="date"]:focus {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.departure-calendar input[type="date"]::-webkit-datetime-edit-month-field,
+.departure-calendar input[type="date"]::-webkit-datetime-edit-day-field,
+.departure-calendar input[type="date"]::-webkit-datetime-edit-year-field {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #065f46;
+}
+
+.departure-calendar input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.departure-calendar input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.departure-calendar input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.departure-calendar input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2310B981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg>") no-repeat;
+}
+
+.arrival-calendar input[type="date"]:focus {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-month-field,
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-day-field,
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-year-field {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #991b1b;
+}
+
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.arrival-calendar input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.arrival-calendar input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23EF4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg>") no-repeat;
 }

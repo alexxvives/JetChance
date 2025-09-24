@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
 
@@ -135,10 +134,7 @@ export default function EditFlightPage() {
       if (shouldUseRealAPI()) {
         console.log('📡 Using real API');
         flightData = await flightsAPI.getFlightById(id);
-      } else if (shouldUseMockFlightAPI()) {
-        console.log('🎭 Using mock API');
-        flightData = await mockFlightAPI.getFlightById(id);
-      } else {
+       } else {
         throw new Error('No API configuration available');
       }
 
@@ -326,9 +322,7 @@ export default function EditFlightPage() {
       let result;
       if (shouldUseRealAPI()) {
         result = await flightsAPI.updateFlight(id, updateData);
-      } else if (shouldUseMockFlightAPI()) {
-        result = await mockFlightAPI.updateFlight(id, updateData);
-      } else {
+       } else {
         throw new Error('No API configuration available');
       }
 
@@ -467,7 +461,7 @@ export default function EditFlightPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <LocationAutocomplete
                 label="Origin City"
-                placeholder="Los Angeles"
+                placeholder="Bogotá"
                 value={formData.origin}
                 onChange={handleOriginCityChange}
                 searchFunction={searchCities}
@@ -477,7 +471,7 @@ export default function EditFlightPage() {
 
               <LocationAutocomplete
                 label="Origin Airport"
-                placeholder={formData.origin ? `Airports in ${formData.origin}` : "LAX - Los Angeles International"}
+                placeholder={formData.origin ? `Airports in ${formData.origin}` : "BOG - El Dorado International Airport"}
                 value={formData.originAirport ? `${formData.originAirport.code} - ${formData.originAirport.name}` : formData.originCode}
                 onChange={handleOriginAirportChange}
                 searchFunction={searchOriginAirports}
@@ -487,7 +481,7 @@ export default function EditFlightPage() {
 
               <LocationAutocomplete
                 label="Destination City"
-                placeholder="New York"
+                placeholder="Mexico City"
                 value={formData.destination}
                 onChange={handleDestinationCityChange}
                 searchFunction={searchCities}
@@ -497,7 +491,7 @@ export default function EditFlightPage() {
 
               <LocationAutocomplete
                 label="Destination Airport"
-                placeholder={formData.destination ? `Airports in ${formData.destination}` : "JFK - John F. Kennedy International"}
+                placeholder={formData.destination ? `Airports in ${formData.destination}` : "MEX - Mexico City International Airport"}
                 value={formData.destinationAirport ? `${formData.destinationAirport.code} - ${formData.destinationAirport.name}` : formData.destinationCode}
                 onChange={handleDestinationAirportChange}
                 searchFunction={searchDestinationAirports}
@@ -757,3 +751,5 @@ export default function EditFlightPage() {
     </div>
   );
 }
+
+

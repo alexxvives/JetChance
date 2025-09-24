@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
@@ -11,8 +11,10 @@ export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
   const [pendingFlights, setPendingFlights] = useState([]);
+  const [pendingOperators, setPendingOperators] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [processingFlights, setProcessingFlights] = useState(new Set());
+  const [processingOperators, setProcessingOperators] = useState(new Set());
   const [deleteModal, setDeleteModal] = useState({ 
     isOpen: false, 
     flightId: null, 
@@ -43,6 +45,41 @@ export default function AdminDashboard({ user }) {
     } catch (error) {
       console.error('❌ Error fetching pending flights:', error);
       setPendingFlights([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch pending operators for approval
+  const fetchPendingOperators = async () => {
+    try {
+      setIsLoading(true);
+      console.log('🔄 Admin fetching pending operators...');
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('❌ No auth token found');
+        return;
+      }
+
+      const response = await fetch('/api/operators/pending', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📡 Admin pending operators:', data);
+        setPendingOperators(data.operators || []);
+      } else {
+        console.error('❌ Failed to fetch pending operators:', response.status);
+        setPendingOperators([]);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching pending operators:', error);
+      setPendingOperators([]);
     } finally {
       setIsLoading(false);
     }
@@ -179,15 +216,88 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  // Approve operator
+  const approveOperator = async (operatorId) => {
+    try {
+      setProcessingOperators(prev => new Set(prev).add(operatorId));
+      console.log(`✅ Approving operator ${operatorId}...`);
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/operators/${operatorId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'approved' })
+      });
+
+      if (response.ok) {
+        await fetchPendingOperators(); // Refresh the list
+        console.log(`✅ Operator ${operatorId} approved successfully`);
+      } else {
+        console.error('❌ Failed to approve operator:', response.status);
+        alert('Failed to approve operator');
+      }
+    } catch (error) {
+      console.error(`❌ Error approving operator ${operatorId}:`, error);
+      alert('Error approving operator');
+    } finally {
+      setProcessingOperators(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operatorId);
+        return newSet;
+      });
+    }
+  };
+
+  // Deny operator
+  const denyOperator = async (operatorId, reason = '') => {
+    try {
+      setProcessingOperators(prev => new Set(prev).add(operatorId));
+      console.log(`❌ Denying operator ${operatorId}...`);
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/operators/${operatorId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'denied', reason })
+      });
+
+      if (response.ok) {
+        await fetchPendingOperators(); // Refresh the list
+        console.log(`❌ Operator ${operatorId} denied successfully`);
+      } else {
+        console.error('❌ Failed to deny operator:', response.status);
+        alert('Failed to deny operator');
+      }
+    } catch (error) {
+      console.error(`❌ Error denying operator ${operatorId}:`, error);
+      alert('Error denying operator');
+    } finally {
+      setProcessingOperators(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operatorId);
+        return newSet;
+      });
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'approvals') {
       fetchPendingFlights();
+    } else if (activeTab === 'operators') {
+      fetchPendingOperators();
     }
   }, [activeTab]);
 
   const tabs = [
     { id: 'catalog', name: 'Flight Catalog', icon: EyeIcon },
     { id: 'approvals', name: 'Flight Approvals', icon: CheckIcon, badge: pendingFlights.length },
+    { id: 'operators', name: 'Operator Approvals', icon: UsersIcon, badge: pendingOperators.length },
     { id: 'create', name: 'Create Flight', icon: PlusIcon }
   ];
 
@@ -351,6 +461,83 @@ export default function AdminDashboard({ user }) {
                             Deny
                           </button>
                         </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'operators' && (
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Operator Approvals</h2>
+              <p className="text-gray-600 mb-6">Review and approve pending operator registrations</p>
+              
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading pending operators...</p>
+                </div>
+              ) : pendingOperators.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Operators</h3>
+                  <p className="text-gray-600">All operator registrations have been processed</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {pendingOperators.map((operator) => (
+                    <div
+                      key={operator.id}
+                      className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-3 bg-yellow-100 rounded-full">
+                            <UsersIcon className="h-6 w-6 text-yellow-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-lg text-gray-900">
+                              {operator.firstName} {operator.lastName}
+                            </h4>
+                            <p className="text-sm text-blue-600 font-medium">{operator.email}</p>
+                            <p className="text-sm text-gray-600">{operator.companyName}</p>
+                          </div>
+                        </div>
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+                          ⏳ Pending Approval
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Registration Date:</span>
+                          <p className="text-sm text-gray-900">{new Date(operator.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">Status:</span>
+                          <p className="text-sm text-gray-900">{operator.status}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          disabled={processingOperators.has(operator.id)}
+                          onClick={() => approveOperator(operator.id)}
+                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                          <CheckIcon className="h-4 w-4 mr-2" />
+                          {processingOperators.has(operator.id) ? 'Processing...' : 'Approve'}
+                        </button>
+                        <button
+                          disabled={processingOperators.has(operator.id)}
+                          onClick={() => denyOperator(operator.id)}
+                          className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                        >
+                          <XMarkIcon className="h-4 w-4 mr-2" />
+                          {processingOperators.has(operator.id) ? 'Processing...' : 'Deny'}
+                        </button>
                       </div>
                     </div>
                   ))}

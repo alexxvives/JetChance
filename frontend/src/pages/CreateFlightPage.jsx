@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon, CameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { mockFlightAPI, shouldUseMockFlightAPI } from '../utils/mockFlightAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
+import CustomCalendar from '../components/CustomCalendar';
+import CustomTimePicker from '../components/CustomTimePicker';
 import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
 
 // Function to get high-quality private jet images based on aircraft type
@@ -75,6 +76,28 @@ const getDefaultAircraftImage = (aircraftType) => {
 export default function CreateFlightPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Helper function to render flight duration warning
+  const renderDurationWarning = () => {
+    if (!formData.departureTime || !formData.arrivalTime) return null;
+    
+    const departure = new Date(formData.departureTime);
+    const arrival = new Date(formData.arrivalTime);
+    const durationMs = arrival - departure;
+    const durationMinutes = Math.round(durationMs / (1000 * 60));
+    const hours = Math.floor(durationMinutes / 60);
+    
+    if (durationMs > 0 && hours >= 24) {
+      return (
+        <p className="text-xs text-gray-500 mt-4 flex items-center">
+          <span className="mr-1">⚠</span>
+          Unusually long flight duration. Please verify your dates.
+        </p>
+      );
+    }
+    return null;
+  };
+
   const [formData, setFormData] = useState({
     origin: '',
     destination: '',
@@ -86,32 +109,46 @@ export default function CreateFlightPage() {
     price: '',
     originalPrice: '',
     seatsAvailable: '',
-    aircraftImage: null,
+    aircraftImages: [],
     description: '',
     // Store selected airport objects
     originAirport: null,
     destinationAirport: null
   });
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImageUpload = (file) => {
-    if (file && file.type.startsWith('image/')) {
-      setFormData({...formData, aircraftImage: file});
+  const handleImageUpload = (files) => {
+    const fileArray = Array.from(files);
+    const validFiles = fileArray.filter(file => file.type.startsWith('image/'));
+    
+    if (validFiles.length > 0) {
+      const newImages = [...formData.aircraftImages, ...validFiles];
+      setFormData({...formData, aircraftImages: newImages});
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => setImagePreview(e.target.result);
-      reader.readAsDataURL(file);
+      // Create previews for new files
+      const newPreviews = [...imagePreviews];
+      validFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          newPreviews.push({
+            file: file,
+            preview: e.target.result,
+            name: file.name
+          });
+          setImagePreviews([...newPreviews]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    handleImageUpload(file);
+    const files = e.dataTransfer.files;
+    handleImageUpload(files);
   };
 
   const handleDragOver = (e) => {
@@ -124,9 +161,11 @@ export default function CreateFlightPage() {
     setIsDragOver(false);
   };
 
-  const removeImage = () => {
-    setFormData({...formData, aircraftImage: null});
-    setImagePreview(null);
+  const removeImage = (index) => {
+    const newImages = formData.aircraftImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setFormData({...formData, aircraftImages: newImages});
+    setImagePreviews(newPreviews);
   };
 
   // Render functions for autocomplete options
@@ -160,13 +199,17 @@ export default function CreateFlightPage() {
 
   // Smart airport search functions - filter by city if city is selected
   const searchOriginAirports = (query, limit = 10) => {
-    if (!query || query.length < 1) return [];
-    
-    // If origin city is selected, only show airports in that city
+    // If origin city is selected, show airports in that city
     if (formData.origin && formData.origin.trim() !== '') {
       const cityAirports = getCityAirports(formData.origin);
-      const lowercaseQuery = query.toLowerCase();
       
+      // If no query (empty string), return all airports in the city
+      if (!query || query.length === 0) {
+        return cityAirports.slice(0, limit);
+      }
+      
+      // If query exists, filter the city airports
+      const lowercaseQuery = query.toLowerCase();
       return cityAirports
         .filter(airport => 
           airport.code.toLowerCase().includes(lowercaseQuery) ||
@@ -175,18 +218,23 @@ export default function CreateFlightPage() {
         .slice(0, limit);
     }
     
-    // If no city selected, search all airports
+    // If no city selected, search all airports only if query exists
+    if (!query || query.length < 1) return [];
     return searchAirports(query, limit);
   };
 
   const searchDestinationAirports = (query, limit = 10) => {
-    if (!query || query.length < 1) return [];
-    
-    // If destination city is selected, only show airports in that city
+    // If destination city is selected, show airports in that city
     if (formData.destination && formData.destination.trim() !== '') {
       const cityAirports = getCityAirports(formData.destination);
-      const lowercaseQuery = query.toLowerCase();
       
+      // If no query (empty string), return all airports in the city
+      if (!query || query.length === 0) {
+        return cityAirports.slice(0, limit);
+      }
+      
+      // If query exists, filter the city airports
+      const lowercaseQuery = query.toLowerCase();
       return cityAirports
         .filter(airport => 
           airport.code.toLowerCase().includes(lowercaseQuery) ||
@@ -195,14 +243,16 @@ export default function CreateFlightPage() {
         .slice(0, limit);
     }
     
-    // If no city selected, search all airports
+    // If no city selected, search all airports only if query exists
+    if (!query || query.length < 1) return [];
     return searchAirports(query, limit);
   };
 
   // Handlers for autocomplete selections
   const handleOriginCityChange = (value) => {
     if (typeof value === 'object' && value.city) {
-      setFormData({
+      const cityAirports = getCityAirports(value.city);
+      const newFormData = {
         ...formData, 
         origin: value.city,
         // Clear airport selection if city changes to a different city
@@ -210,7 +260,15 @@ export default function CreateFlightPage() {
           originCode: '',
           originAirport: null
         })
-      });
+      };
+
+      // Auto-fill airport if city has only one airport
+      if (cityAirports.length === 1) {
+        newFormData.originCode = cityAirports[0].code;
+        newFormData.originAirport = cityAirports[0];
+      }
+
+      setFormData(newFormData);
     } else {
       setFormData({
         ...formData, 
@@ -226,7 +284,8 @@ export default function CreateFlightPage() {
 
   const handleDestinationCityChange = (value) => {
     if (typeof value === 'object' && value.city) {
-      setFormData({
+      const cityAirports = getCityAirports(value.city);
+      const newFormData = {
         ...formData, 
         destination: value.city,
         // Clear airport selection if city changes to a different city
@@ -234,7 +293,15 @@ export default function CreateFlightPage() {
           destinationCode: '',
           destinationAirport: null
         })
-      });
+      };
+
+      // Auto-fill airport if city has only one airport
+      if (cityAirports.length === 1) {
+        newFormData.destinationCode = cityAirports[0].code;
+        newFormData.destinationAirport = cityAirports[0];
+      }
+
+      setFormData(newFormData);
     } else {
       setFormData({
         ...formData, 
@@ -279,32 +346,40 @@ export default function CreateFlightPage() {
     setIsSubmitting(true);
     
     try {
-      let uploadedImageUrl = null;
+      let uploadedImageUrls = [];
       
-      // First, upload the image if one was selected
-      if (formData.aircraftImage) {
-        const formDataForUpload = new FormData();
-        formDataForUpload.append('aircraftImage', formData.aircraftImage);
-        
-        const uploadResponse = await fetch('http://localhost:4000/api/upload/aircraft-image', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          },
-          body: formDataForUpload
-        });
-        
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json();
-          // Handle both relative and absolute URLs
-          uploadedImageUrl = uploadResult.imageUrl.startsWith('http') 
-            ? uploadResult.imageUrl 
-            : `http://localhost:4000${uploadResult.imageUrl}`;
-          console.log('✅ Image uploaded successfully:', uploadedImageUrl);
-        } else {
-          const errorText = await uploadResponse.text();
-          console.error('❌ Image upload failed:', uploadResponse.status, errorText);
-          console.warn('⚠️ Image upload failed, continuing without image');
+      // Upload all selected images
+      if (formData.aircraftImages.length > 0) {
+        for (const image of formData.aircraftImages) {
+          try {
+            const formDataForUpload = new FormData();
+            formDataForUpload.append('aircraftImage', image);
+            
+            const uploadResponse = await fetch('http://localhost:4000/api/upload/aircraft-image', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
+              body: formDataForUpload
+            });
+            
+            if (uploadResponse.ok) {
+              const uploadResult = await uploadResponse.json();
+              // Handle both relative and absolute URLs
+              const imageUrl = uploadResult.imageUrl.startsWith('http') 
+                ? uploadResult.imageUrl 
+                : `http://localhost:4000${uploadResult.imageUrl}`;
+              uploadedImageUrls.push(imageUrl);
+              console.log('✅ Image uploaded successfully:', imageUrl);
+            } else {
+              const errorText = await uploadResponse.text();
+              console.error('❌ Image upload failed:', uploadResponse.status, errorText);
+              // Continue with other images even if one fails
+            }
+          } catch (imageError) {
+            console.error('❌ Error uploading image:', image.name, imageError);
+            // Continue with other images even if one fails
+          }
         }
       }
       
@@ -335,16 +410,14 @@ export default function CreateFlightPage() {
         destination: formData.destination,
         price: parseFloat(formData.price),
         seatsAvailable: parseInt(formData.seatsAvailable),
-        aircraft_image: uploadedImageUrl || getDefaultAircraftImage(formData.aircraftType),
-        images: uploadedImageUrl ? [uploadedImageUrl] : []
+        aircraft_image: uploadedImageUrls.length > 0 ? uploadedImageUrls[0] : getDefaultAircraftImage(formData.aircraftType),
+        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : []
       };
       
       // Use real API to save to database, fallback to mock API if needed
       if (shouldUseRealAPI()) {
         await flightsAPI.createFlight(flightData);
-      } else if (shouldUseMockFlightAPI()) {
-        await mockFlightAPI.createFlight(flightData, user.id);
-      } else {
+       } else {
         throw new Error('No API available for flight creation');
       }
       
@@ -383,59 +456,74 @@ export default function CreateFlightPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Aircraft Image Upload */}
+          {/* Aircraft Images Upload */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Aircraft Image</h2>
+            <div className="flex items-center mb-4">
+              <CameraIcon className="w-5 h-5 mr-2 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Aircraft Images</h2>
+            </div>
             
             <div className="space-y-4">
-              {!imagePreview ? (
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                    isDragOver
-                      ? 'border-blue-400 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <CloudArrowUpIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <div className="space-y-2">
-                    <p className="text-lg font-medium text-gray-900">
-                      Drop your aircraft image here
-                    </p>
-                    <p className="text-gray-600">
-                      or{' '}
-                      <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-                        browse files
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
-                          onChange={(e) => handleImageUpload(e.target.files[0])}
-                          className="sr-only"
-                        />
-                      </label>
-                    </p>
-                    <p className="text-sm text-gray-500">PNG, JPG, WebP, GIF, SVG up to 5MB</p>
-                  </div>
+              {/* Upload Area */}
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                  isDragOver
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <CloudArrowUpIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <div className="space-y-2">
+                  <p className="text-lg font-medium text-gray-900">
+                    Drop your aircraft images here
+                  </p>
+                  <p className="text-gray-600">
+                    or{' '}
+                    <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
+                      browse files
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
+                        multiple
+                        onChange={(e) => handleImageUpload(e.target.files)}
+                        className="sr-only"
+                      />
+                    </label>
+                  </p>
+                  <p className="text-sm text-gray-500">PNG, JPG, WebP, GIF, SVG up to 5MB each • Multiple files supported</p>
                 </div>
-              ) : (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Aircraft preview"
-                    className="w-full h-64 object-cover rounded-xl"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"
-                  >
-                    <XMarkIcon className="h-5 w-5" />
-                  </button>
-                  <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-lg text-sm">
-                    {formData.aircraftImage?.name}
-                  </div>
+              </div>
+
+              {/* Image Previews */}
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {imagePreviews.map((imageData, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={imageData.preview}
+                        alt={`Aircraft preview ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-xl"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs max-w-[calc(100%-1rem)] truncate">
+                        {imageData.name}
+                      </div>
+                      {index === 0 && (
+                        <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                          Main
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -443,12 +531,15 @@ export default function CreateFlightPage() {
 
           {/* Flight Route Information */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Route Information</h2>
+            <div className="flex items-center mb-6">
+              <PaperAirplaneIcon className="w-5 h-5 mr-2 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Route Information</h2>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <LocationAutocomplete
                 label="Origin City"
-                placeholder="Los Angeles"
+                placeholder="Bogotá"
                 value={formData.origin}
                 onChange={handleOriginCityChange}
                 searchFunction={searchCities}
@@ -458,17 +549,18 @@ export default function CreateFlightPage() {
 
               <LocationAutocomplete
                 label="Origin Airport"
-                placeholder={formData.origin ? `Airports in ${formData.origin}` : "LAX - Los Angeles International"}
+                placeholder={formData.origin ? `Airports in ${formData.origin}` : "BOG - El Dorado International Airport"}
                 value={formData.originAirport ? `${formData.originAirport.code} - ${formData.originAirport.name}` : formData.originCode}
                 onChange={handleOriginAirportChange}
                 searchFunction={searchOriginAirports}
                 renderOption={renderAirportOption}
+                showAllOnFocus={formData.origin && formData.origin.trim() !== ''}
                 required
               />
 
               <LocationAutocomplete
                 label="Destination City"
-                placeholder="New York"
+                placeholder="Mexico City"
                 value={formData.destination}
                 onChange={handleDestinationCityChange}
                 searchFunction={searchCities}
@@ -478,11 +570,12 @@ export default function CreateFlightPage() {
 
               <LocationAutocomplete
                 label="Destination Airport"
-                placeholder={formData.destination ? `Airports in ${formData.destination}` : "JFK - John F. Kennedy International"}
+                placeholder={formData.destination ? `Airports in ${formData.destination}` : "MEX - Mexico City International Airport"}
                 value={formData.destinationAirport ? `${formData.destinationAirport.code} - ${formData.destinationAirport.name}` : formData.destinationCode}
                 onChange={handleDestinationAirportChange}
                 searchFunction={searchDestinationAirports}
                 renderOption={renderAirportOption}
+                showAllOnFocus={formData.destination && formData.destination.trim() !== ''}
                 required
               />
             </div>
@@ -490,169 +583,268 @@ export default function CreateFlightPage() {
 
           {/* Flight Schedule */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Schedule</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Flight Schedule
+            </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Departure Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={formData.departureTime}
-                  onChange={(e) => setFormData({...formData, departureTime: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Departure Section */}
+              <div className="space-y-4">
+                <div className="flex items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Departure</h3>
+                </div>
+                
+                {/* Departure Date & Time */}
+                <div className="flex space-x-4">
+                  {/* Departure Date - 75% width */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date <span className="text-red-500">*</span>
+                    </label>
+                    <CustomCalendar
+                      value={formData.departureTime ? formData.departureTime.split('T')[0] : ''}
+                      onChange={(date) => {
+                        const time = formData.departureTime ? formData.departureTime.split('T')[1] || '' : '';
+                        if (time) {
+                          setFormData({...formData, departureTime: `${date}T${time}`});
+                        } else {
+                          setFormData({...formData, departureTime: date});
+                        }
+                      }}
+                      minDate={new Date().toISOString().split('T')[0]}
+                      placeholder="Select departure date"
+                      theme="departure"
+                    />
+                  </div>
+
+                  {/* Departure Time - 25% width */}
+                  <div className="w-32">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Time <span className="text-red-500">*</span>
+                    </label>
+                    <CustomTimePicker
+                      value={formData.departureTime ? formData.departureTime.split('T')[1]?.substring(0, 5) || '' : ''}
+                      onChange={(time) => {
+                        const date = formData.departureTime ? 
+                          (formData.departureTime.includes('T') ? formData.departureTime.split('T')[0] : formData.departureTime) : 
+                          new Date().toISOString().split('T')[0];
+                        setFormData({...formData, departureTime: `${date}T${time}`});
+                      }}
+                      placeholder="Time"
+                    />
+                  </div>
+                </div>
+                
+                {/* Departure Preview */}
+                {formData.departureTime && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="text-sm text-blue-800 font-medium">
+                      {new Date(formData.departureTime).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <div className="text-lg font-bold text-blue-900">
+                      {new Date(formData.departureTime).toLocaleTimeString('en-GB', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Arrival Time *
-                  {formData.departureTime && formData.arrivalTime && (() => {
-                    const departure = new Date(formData.departureTime);
-                    const arrival = new Date(formData.arrivalTime);
-                    const departureDate = departure.toDateString();
-                    const arrivalDate = arrival.toDateString();
-                    
-                    if (departureDate !== arrivalDate) {
-                      const timeDiff = arrival.getTime() - departure.getTime();
-                      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+              {/* Arrival Section */}
+              <div className="space-y-4">
+                <div className="flex items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                    Arrival
+                    {formData.departureTime && formData.arrivalTime && (() => {
+                      const departure = new Date(formData.departureTime);
+                      const arrival = new Date(formData.arrivalTime);
+                      const departureDate = departure.toDateString();
+                      const arrivalDate = arrival.toDateString();
                       
-                      if (daysDiff === 1) {
-                        return <sup className="text-xs text-red-500 font-bold">+1</sup>;
-                      } else if (daysDiff > 1) {
-                        return <sup className="text-xs text-red-500 font-bold">+{daysDiff}</sup>;
+                      if (departureDate !== arrivalDate) {
+                        const timeDiff = arrival.getTime() - departure.getTime();
+                        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                        
+                        if (daysDiff === 1) {
+                          return <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">+1 day</span>;
+                        } else if (daysDiff > 1) {
+                          return <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">+{daysDiff} days</span>;
+                        }
                       }
-                    }
-                    return null;
-                  })()}
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={formData.arrivalTime}
-                  onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                      return null;
+                    })()}
+                  </h3>
+                </div>
+                
+                {/* Arrival Date & Time */}
+                <div className="flex space-x-4">
+                  {/* Arrival Date - 75% width */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date <span className="text-red-500">*</span>
+                    </label>
+                    <CustomCalendar
+                      value={formData.arrivalTime ? formData.arrivalTime.split('T')[0] : ''}
+                      onChange={(date) => {
+                        const time = formData.arrivalTime ? formData.arrivalTime.split('T')[1] || '' : '';
+                        if (time) {
+                          setFormData({...formData, arrivalTime: `${date}T${time}`});
+                        } else {
+                          setFormData({...formData, arrivalTime: date});
+                        }
+                      }}
+                      minDate={formData.departureTime ? formData.departureTime.split('T')[0] : new Date().toISOString().split('T')[0]}
+                      placeholder="Select arrival date"
+                      theme="arrival"
+                    />
+                  </div>
 
-              {/* Duration will be calculated automatically from departure and arrival times */}
-              {formData.departureTime && formData.arrivalTime && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Calculated Duration
-                  </label>
-                  <div className={`w-full px-4 py-3 border border-gray-300 rounded-xl ${
+                  {/* Arrival Time - 25% width */}
+                  <div className="w-32">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Time <span className="text-red-500">*</span>
+                    </label>
+                    <CustomTimePicker
+                      value={formData.arrivalTime ? formData.arrivalTime.split('T')[1]?.substring(0, 5) || '' : ''}
+                      onChange={(time) => {
+                        const date = formData.arrivalTime ? 
+                          (formData.arrivalTime.includes('T') ? formData.arrivalTime.split('T')[0] : formData.arrivalTime) : 
+                          (formData.departureTime ? 
+                            (formData.departureTime.includes('T') ? formData.departureTime.split('T')[0] : formData.departureTime) : 
+                            new Date().toISOString().split('T')[0]);
+                        setFormData({...formData, arrivalTime: `${date}T${time}`});
+                      }}
+                      placeholder="Time"
+                    />
+                  </div>
+                </div>
+                
+                {/* Arrival Preview */}
+                {formData.arrivalTime && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <div className="text-sm text-purple-800 font-medium">
+                      {new Date(formData.arrivalTime).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <div className="text-lg font-bold text-purple-900">
+                      {new Date(formData.arrivalTime).toLocaleTimeString('en-GB', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Flight Duration Summary */}
+            {formData.departureTime && formData.arrivalTime && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-center">
+                  <div className={`px-6 py-4 rounded-2xl border-2 ${
                     (() => {
                       const departure = new Date(formData.departureTime);
                       const arrival = new Date(formData.arrivalTime);
                       const durationMs = arrival - departure;
                       
                       if (durationMs <= 0) {
-                        return "bg-red-100 text-red-700";
+                        return "bg-red-100 border-red-300 text-red-700";
+                      } else if (durationMs > 24 * 60 * 60 * 1000) {
+                        return "bg-orange-100 border-orange-300 text-orange-700";
                       } else {
-                        return "bg-gray-100 text-gray-700";
+                        return "bg-blue-100 border-blue-300 text-blue-700";
                       }
                     })()
                   }`}>
-                    {(() => {
-                      const departure = new Date(formData.departureTime);
-                      const arrival = new Date(formData.arrivalTime);
-                      const durationMs = arrival - departure;
-                      const durationMinutes = Math.round(durationMs / (1000 * 60));
-                      const hours = Math.floor(durationMinutes / 60);
-                      const minutes = durationMinutes % 60;
-                      
-                      if (durationMs <= 0) {
-                        return "Invalid: Arrival must be after departure";
-                      } else if (hours >= 24) {
-                        const days = Math.floor(hours / 24);
-                        const remainingHours = hours % 24;
-                        return days > 0 
-                          ? (remainingHours > 0 
-                              ? `${days}d ${remainingHours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
-                              : `${days}d ${minutes > 0 ? `${minutes}m` : ''}`.trim())
-                          : (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`);
-                      } else if (hours > 0) {
-                        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-                      } else {
-                        return `${minutes}m`;
-                      }
-                    })()}
+                    <div className="text-center">
+                      <div className="text-sm font-medium opacity-75 mb-1">Flight Duration</div>
+                      <div className="text-2xl font-bold">
+                        {(() => {
+                          const departure = new Date(formData.departureTime);
+                          const arrival = new Date(formData.arrivalTime);
+                          const durationMs = arrival - departure;
+                          const durationMinutes = Math.round(durationMs / (1000 * 60));
+                          const hours = Math.floor(Math.abs(durationMinutes) / 60);
+                          
+                          if (durationMs <= 0) {
+                            return "⚠️ Invalid: Arrival must be after departure";
+                          } else if (hours >= 24) {
+                            const days = Math.floor(hours / 24);
+                            const remainingHours = hours % 24;
+                            return `${days}d ${remainingHours > 0 ? `${remainingHours}h` : ''} ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+                          } else if (hours > 0) {
+                            return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+                          } else {
+                            return `${minutes}m`;
+                          }
+                        })()}
+                      </div>
+                    </div>
                   </div>
-                  {(() => {
-                    const departure = new Date(formData.departureTime);
-                    const arrival = new Date(formData.arrivalTime);
-                    const durationMs = arrival - departure;
-                    const durationMinutes = Math.round(durationMs / (1000 * 60));
-                    const hours = Math.floor(durationMinutes / 60);
-                    
-                    if (durationMs > 0 && hours >= 24) {
-                      return null; // Warning moved to bottom of card
-                    }
-                    return null;
-                  })()}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
             {/* Warning at bottom of Schedule card */}
-            {formData.departureTime && formData.arrivalTime && (() => {
-              const departure = new Date(formData.departureTime);
-              const arrival = new Date(formData.arrivalTime);
-              const durationMs = arrival - departure;
-              const durationMinutes = Math.round(durationMs / (1000 * 60));
-              const hours = Math.floor(durationMinutes / 60);
-              
-              if (durationMs > 0 && hours >= 24) {
-                return (
-                  <p className="text-xs text-gray-500 mt-4 flex items-center">
-                    <span className="mr-1">⚠</span>
-                    Unusually long flight duration. Please verify your dates.
-                  </p>
-                );
-              }
-              return null;
-            })()}
+            {renderDurationWarning()}
           </div>
 
           {/* Aircraft Details */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Aircraft Details</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Aircraft Details
+            </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aircraft Type *
+                  Aircraft Type <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.aircraftType}
                   onChange={(e) => setFormData({...formData, aircraftType: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                   placeholder="Gulfstream G650"
                 />
               </div>
 
-              <div>
+              <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Available Seats *
+                  Available Seats <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   required
                   value={formData.seatsAvailable}
                   onChange={(e) => setFormData({...formData, seatsAvailable: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                   placeholder="12"
                   min="1"
                   max="50"
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description (Optional)
                 </label>
@@ -660,8 +852,8 @@ export default function CreateFlightPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Describe your aircraft amenities, special features, or any additional information..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 hover:border-gray-400"
+                  placeholder="Luxury international flight from Colombia to Mexico with premium amenities, Wi-Fi, and catering service..."
                 />
               </div>
             </div>
@@ -669,12 +861,17 @@ export default function CreateFlightPage() {
 
           {/* Pricing */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Pricing</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Pricing
+            </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Charter Price (USD) *
+                  Charter Price (USD) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -683,17 +880,17 @@ export default function CreateFlightPage() {
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="8500"
+                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    placeholder="15000"
                     min="0"
                     step="100"
                   />
                 </div>
               </div>
 
-              <div>
+              <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Original Price (USD) *
+                  Original Price (USD) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -702,8 +899,8 @@ export default function CreateFlightPage() {
                     required
                     value={formData.originalPrice}
                     onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="34000"
+                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    placeholder="45000"
                     min="0"
                     step="100"
                   />

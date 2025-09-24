@@ -11,6 +11,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
+import PaymentPage from './pages/PaymentPage';
+import BookingSuccessPage from './pages/BookingSuccessPage';
 import CreateFlightPage from './pages/CreateFlightPage';
 import EditFlightPage from './pages/EditFlightPage';
 import PendingFlightsPage from './pages/PendingFlightsPage';
@@ -25,8 +27,10 @@ function AppContent() {
   const [currentFPS, setCurrentFPS] = useState(null);
   const location = useLocation();
 
-  // Only show PlasmaBackground on home page
+  // Only show PlasmaBackground on home page and auth pages
   const isHomePage = location.pathname === '/';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const showPlasmaBackground = isHomePage || isAuthPage;
 
   // Performance detection
   useEffect(() => {
@@ -60,8 +64,8 @@ function AppContent() {
 
   return (
     <>
-      {/* Adaptive Background - Only on home page */}
-      {isHomePage && (
+      {/* Adaptive Background - On home page and auth pages */}
+      {showPlasmaBackground && (
         <div className="fixed inset-0 z-0">
           <PlasmaBackground 
             color="#B19EEF"
@@ -86,6 +90,8 @@ function AppContent() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/flight/:id" element={<FlightDetailsPage />} />
+              <Route path="/payment/:flightId" element={<PaymentPage />} />
+              <Route path="/booking-success" element={<BookingSuccessPage />} />
               <Route path="/operators" element={<OperatorsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />

@@ -185,8 +185,15 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
               <p className="text-sm text-gray-500">{operatorName}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600">
-                ${price ? price.toLocaleString() : '0'}
+              <div className="flex items-center gap-2 justify-end mb-1">
+                <div className="text-2xl font-bold text-blue-600">
+                  ${price ? price.toLocaleString() : '0'}
+                </div>
+                {savings > 0 && (
+                  <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                    -{savingsPercent}%
+                  </div>
+                )}
               </div>
               {originalPrice && originalPrice > 0 && (
                 <div className="text-sm text-gray-400 line-through">
@@ -209,14 +216,6 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
           <div className="text-sm text-gray-600">
             <span className="font-medium">Available Seats:</span> {seatsAvailable}
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          {savings > 0 && (
-            <div className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
-              Save ${savings.toLocaleString()} ({savingsPercent}% off)
-            </div>
-          )}
         </div>
 
           <button 

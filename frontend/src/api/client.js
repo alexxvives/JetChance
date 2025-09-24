@@ -69,7 +69,15 @@ class ApiClient {
         return response.text();
       }
     } catch (error) {
-      console.error('API request failed:', error);
+      // Only log unexpected errors (not user validation errors)
+      if (!error.message.includes('Wrong Signup Code') && 
+          !error.message.includes('User already exists') &&
+          !error.message.includes('Invalid credentials') &&
+          !error.message.includes('Missing required fields') &&
+          !error.message.includes('Password must be') &&
+          !error.message.includes('Password must contain')) {
+        console.error('API request failed:', error);
+      }
       throw error;
     }
   }

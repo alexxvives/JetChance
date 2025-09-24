@@ -1,9 +1,64 @@
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { authenticate } = require('../middleware/auth');
-const db = require('../config/database');
+const Database = require('better-sqlite3');
+const { authenticateToken } = require('../middleware/auth');
+const path = require('path');
 
 const router = express.Router();
+
+// Initialize database
+const db = new Database(path.join(__dirname, '..', 'flights.db'));
+
+// Create payments table if it doesn't exist
+db.exec(`
+  CREATE TABLE IF NOT EXISTS payments (
+    id TEXT PRIMARY KEY,
+    flight_id TEXT NOT NULL,
+    user_id TEXT,
+    transaction_id TEXT UNIQUE NOT NULL,
+    amount REAL NOT NULL,
+    currency TEXT DEFAULT 'USD',
+    status TEXT DEFAULT 'completed',
+    payment_method TEXT,
+    customer_name TEXT,
+    customer_email TEXT,
+    customer_phone TEXT,
+    passengers INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (flight_id) REFERENCES flights (id)
+  )
+`);
+
+// Create bookings table if it doesn't exist
+db.exec(`
+  CREATE TABLE IF NOT EXISTS bookings (
+    id TEXT PRIMARY KEY,
+    flight_id TEXT NOT NULL,
+    user_id TEXT,
+    payment_id TEXT,
+    status TEXT DEFAULT 'confirmed',
+    passengers INTEGER DEFAULT 1,
+    total_amount REAL NOT NULL,
+    customer_name TEXT,
+    customer_email TEXT,
+    customer_phone TEXT,
+    booking_reference TEXT UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (flight_id) REFERENCES flights (id),
+    FOREIGN KEY (payment_id) REFERENCES payments (id)
+  )
+`);
+
+// Helper function to generate booking reference
+function generateBookingReference() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = 'CF'; // ChanceFly prefix
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // @route   POST /api/payments/create-intent
 // @desc    Create payment intent for booking

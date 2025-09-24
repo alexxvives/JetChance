@@ -1,17 +1,23 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../contexts/TranslationContext';
 import HeroSection from '../components/HeroSection';
-import FlightCards from '../components/FlightCards';
+import FlightCardsAlt from '../components/FlightCardsAlt';
 
-export default function LandingPage({ onNavigate }) {
+export default function LandingPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  
+  const handleNavigate = (page) => {
+    navigate(`/${page}`);
+  };
   
   return (
     <>
-      <HeroSection onNavigate={onNavigate} />
+      <HeroSection onNavigate={handleNavigate} />
       
       {/* Flight Cards Section */}
-      <FlightCards />
+      <FlightCardsAlt onNavigate={handleNavigate} />
       
       {/* How It Works Section */}
       <section className="py-20 bg-black/40 backdrop-blur-sm px-6 border-y border-white/10">
@@ -177,11 +183,10 @@ export default function LandingPage({ onNavigate }) {
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-violet-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-4 border border-violet-400/30">
-                  <span className="text-violet-300 font-semibold">SC</span>
+                  <span className="text-violet-300 font-semibold">CV</span>
                 </div>
                 <div>
                   <div className="font-semibold text-white">{t('testimonials.customer1.name')}</div>
-                  <div className="text-white/60">{t('testimonials.customer1.title')}</div>
                 </div>
               </div>
             </div>
@@ -197,11 +202,10 @@ export default function LandingPage({ onNavigate }) {
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-violet-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-4 border border-violet-400/30">
-                  <span className="text-violet-300 font-semibold">MR</span>
+                  <span className="text-violet-300 font-semibold">AM</span>
                 </div>
                 <div>
                   <div className="font-semibold text-white">{t('testimonials.customer2.name')}</div>
-                  <div className="text-white/60">{t('testimonials.customer2.title')}</div>
                 </div>
               </div>
             </div>
@@ -217,11 +221,10 @@ export default function LandingPage({ onNavigate }) {
               </p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-violet-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-4 border border-violet-400/30">
-                  <span className="text-violet-300 font-semibold">EP</span>
+                  <span className="text-violet-300 font-semibold">IR</span>
                 </div>
                 <div>
                   <div className="font-semibold text-white">{t('testimonials.customer3.name')}</div>
-                  <div className="text-white/60">{t('testimonials.customer3.title')}</div>
                 </div>
               </div>
             </div>
@@ -256,10 +259,10 @@ export default function LandingPage({ onNavigate }) {
       </section>
 
       {/* Enhanced Footer */}
-      <footer className="bg-gray-900/90 backdrop-blur-sm text-gray-300 py-16 px-6 border-t border-white/10">
+      <footer className="bg-black/60 backdrop-blur-sm text-white/80 py-16 px-6 border-t border-white/10">
         <div className="max-w-6xl mx-auto">
           {/* Newsletter Section */}
-          <div className="text-center mb-12 pb-8 border-b border-gray-700">
+          <div className="text-center mb-12 pb-8 border-b border-white/20">
             <h3 className="text-3xl font-bold text-white mb-4">
               {t('footer.newsletter.title')}
             </h3>
@@ -324,9 +327,9 @@ export default function LandingPage({ onNavigate }) {
             </div>
           </div>
           
-          <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400">{t('footer.copyright')}</p>
-            <div className="flex items-center space-x-6 mt-4 md:mt-0">
+          <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-white/60">{t('footer.copyright')}</p>
+            <div className="flex items-center space-x-6 mt-4 md:mt-0 text-white/60">
               <span className="text-sm">📞 1-800-CHANCE-FLY</span>
               <span className="text-sm">✉️ hello@chancefly.com</span>
             </div>

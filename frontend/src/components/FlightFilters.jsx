@@ -39,7 +39,7 @@ export default function FlightFilters({ filters, setFilters }) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <LocationAutocomplete
           label="From"
-          placeholder="Origin city"
+          placeholder="Medellín"
           value={filters.origin}
           onChange={handleOriginChange}
           searchFunction={searchCities}
@@ -48,7 +48,7 @@ export default function FlightFilters({ filters, setFilters }) {
 
         <LocationAutocomplete
           label="To"
-          placeholder="Destination city"
+          placeholder="Cancún"
           value={filters.destination}
           onChange={handleDestinationChange}
           searchFunction={searchCities}

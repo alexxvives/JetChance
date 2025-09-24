@@ -40,6 +40,12 @@
       "emailPlaceholder": "Enter your email",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Create a password",
+      "signupCodeLabel": "Operator Signup Code",
+      "signupCodePlaceholder": "Enter operator signup code",
+      "signupCodeHelp": "Contact ChanceFly to obtain your operator signup code",
+      "operatorCompanyLabel": "Company Name",
+      "operatorCompanyPlaceholder": "Enter your company name",
+      "operatorCompanyHelp": "Type your name if you are not with a company",
       "createAccountButton": "Create Account",
       "createCustomerAccount": "Create Customer Account",
       "createOperatorAccount": "Create Operator Account",
@@ -50,7 +56,7 @@
   },
   "hero": {
     "title": "What if flying private was as accessible as a commercial ticket?",
-    "subtitle": "Book empty-leg private jet flights at up to 95% off regular charter prices. Luxury travel made accessible.",
+    "subtitle": "Book empty-leg private jet flights between Colombia, Mexico, and the Americas at up to 95% off regular charter prices. Luxury travel made accessible across Latin America.",
     "browseFlights": "Browse Flights",
     "learnMore": "Learn More"
   },
@@ -103,22 +109,19 @@
     "luxurySub": "Premium services and comfort throughout"
   },
   "testimonials": {
-    "title": "What Our Customers Say",
-    "subtitle": "Join thousands of satisfied travelers who've discovered the ChanceFly advantage.",
+    "title": "Don't just take our word for it",
+    "subtitle": "Hundreds of travelers already fly private with our empty leg deals.",
     "customer1": {
-      "text": "ChanceFly transformed how I travel for business. The savings are incredible, and the service is always top-notch. I've booked over 20 flights and every experience has been flawless.",
-      "name": "Sarah Chen",
-      "title": "CEO, TechVision"
+      "text": "Found ChanceFly through a family member and it's been great for business trips. Good pricing and reliable service. I've used it several times now without any issues.",
+      "name": "Carolina Vargas"
     },
     "customer2": {
-      "text": "As someone who values both luxury and efficiency, ChanceFly delivers on both fronts. The empty-leg flights are a game-changer for spontaneous weekend getaways.",
-      "name": "Marcus Rodriguez",
-      "title": "Investment Manager"
+      "text": "Nice alternative to commercial flights when I need something more comfortable. The empty-leg options work well for my schedule most of the time.",
+      "name": "Andrés Morales"
     },
     "customer3": {
-      "text": "The platform is incredibly user-friendly, and the customer support team goes above and beyond. I've saved thousands while maintaining the luxury travel experience I expect.",
-      "name": "Elena Petrov",
-      "title": "Fashion Designer"
+      "text": "Easy to use website and helpful customer service when I had questions. Definitely saves money compared to regular charter prices.",
+      "name": "Isabella Ramírez"
     }
   },
   "cta": {

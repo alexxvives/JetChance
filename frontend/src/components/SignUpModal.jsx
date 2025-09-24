@@ -10,7 +10,8 @@ export default function SignUpModal({ isOpen, onClose }) {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'customer'
+    role: 'customer',
+    signupCode: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -38,6 +39,9 @@ export default function SignUpModal({ isOpen, onClose }) {
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
+    if (formData.role === 'operator' && !formData.signupCode.trim()) {
+      errors.signupCode = 'Signup code is required for operators';
+    }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -56,7 +60,8 @@ export default function SignUpModal({ isOpen, onClose }) {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        role: formData.role
+        role: formData.role,
+        signupCode: formData.signupCode
       });
       
       // Close modal on successful registration
@@ -67,7 +72,8 @@ export default function SignUpModal({ isOpen, onClose }) {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'customer'
+        role: 'customer',
+        signupCode: ''
       });
       setValidationErrors({});
     } catch (error) {
@@ -84,7 +90,8 @@ export default function SignUpModal({ isOpen, onClose }) {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'customer'
+      role: 'customer',
+      signupCode: ''
     });
     setValidationErrors({});
   };
@@ -253,6 +260,29 @@ export default function SignUpModal({ isOpen, onClose }) {
               <option value="operator">Operator - List flights</option>
             </select>
           </div>
+
+          {/* Signup Code for Operators */}
+          {formData.role === 'operator' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Operator Signup Code
+              </label>
+              <input
+                type="text"
+                required={formData.role === 'operator'}
+                value={formData.signupCode}
+                onChange={(e) => setFormData({...formData, signupCode: e.target.value})}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter operator signup code"
+              />
+              {validationErrors.signupCode && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.signupCode}</p>
+              )}
+              <p className="mt-1 text-sm text-gray-500">
+                Contact ChanceFly to obtain your operator signup code
+              </p>
+            </div>
+          )}
 
           <button
             type="submit"
