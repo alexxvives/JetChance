@@ -57,7 +57,7 @@
   "dashboard": {
     "operator": {
       "title": "Operator Dashboard",
-      "welcome": "Welcome back, {{name}}! Manage your flights and track their status.",
+      "welcome": "Welcome back! Manage your flights and track their status.",
       "createFlight": "Create Flight",
       "createFirstFlight": "Create Your First Flight",
       "loading": {
@@ -90,7 +90,17 @@
       "actions": {
         "show": "Show",
         "hide": "Hide",
-        "viewDetails": "View Details"
+        "viewDetails": "View Details",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "flightCard": {
+        "availableSeats": "Available Seats",
+        "totalPrice": "Total Price",
+        "flightTime": "Flight Time",
+        "origin": "Origin",
+        "destination": "Destination",
+        "seats": "Seats"
       },
       "messages": {
         "allPastFlights": "All your flights have departed. Consider creating new flights for upcoming trips."
@@ -167,12 +177,15 @@
       "pricing": {
         "title": "Pricing",
         "fields": {
-          "pricePerSeat": "Price per Seat (USD)",
-          "charterPrice": "Charter Price (USD)"
+          "pricePerSeat": "Price per Seat (COP)",
+          "pricePerSeatHelp": "Your charter price per individual seat",
+          "marketPricePerSeat": "Market Price per Seat (COP)", 
+          "marketPricePerSeatHelp": "Regular market rate per seat for comparison"
         },
-        "placeholders": {
-          "pricePerSeat": "5000",
-          "charterPrice": "60000"
+        "savingsCalculation": {
+          "savings": "Savings",
+          "perSeat": "per seat",
+          "off": "off"
         }
       }
     },
@@ -180,6 +193,16 @@
       "cancel": "Cancel",
       "createFlight": "Create Flight",
       "creatingFlight": "Creating Flight..."
+    }
+  },
+  "editFlight": {
+    "title": "Edit Flight",
+    "subtitle": "Update your flight listing information",
+    "backToDashboard": "Back to Dashboard",
+    "buttons": {
+      "cancel": "Cancel",
+      "updateFlight": "Update Flight",
+      "updatingFlight": "Updating Flight..."
     }
   },
   "hero": {
@@ -457,5 +480,144 @@
       "applyButton": "Apply Now",
       "scheduleButton": "Schedule a Call"
     }
+  },
+  "flightDetails": {
+    "loading": "Loading flight details...",
+    "notFound": "Flight not found",
+    "backToDashboard": "Back to Dashboard",
+    "backToFlights": "Back to Flights",
+    "availableSeats": "Available Seats",
+    "operator": "Operator",
+    "flightTime": "Flight Time",
+    "flightRoute": "Flight Route",
+    "routeTo": "to",
+    "pricing": "Pricing",
+    "marketRate": "MARKET RATE",
+  "marketPrice": "MARKET PRICE",
+    "standardPricing": "Standard Pricing",
+    "greatValue": "GREAT VALUE",
+    "competitiveRate": "Competitive Rate",
+    "charterPrice": "CHARTER PRICE",
+    "emptyLegDeal": "Empty Leg Deal",
+    "passengers": "Passengers",
+    "seatsAvailable": "seats available",
+    "totalPerPerson": "Total per person",
+    "bookCharter": "Book Charter",
+    "aircraftImages": "Aircraft Images",
+    "viewAllImages": "View All Images",
+    "perPerson": "per person",
+    "totalCharter": "total charter",
+    "perSeat": "per seat",
+    "total": "total",
+    "passengerSingle": "passenger",
+    "passengersPlural": "passengers",
+    "sharedFlight": "Shared Flight",
+    "privateFlightWarning": "Flight may be shared if others book remaining seats. To guarantee privacy, book all {remainingSeats} remaining seats",
+    "seatsAlreadyBooked": "{bookedSeats} already booked",
+    "finalPriceConfirmed": "Final price confirmed before payment",
+    "operatorViewOnly": "View Only - Operator Account",
+    "operatorCannotBook": "Operators cannot book flights through this interface"
+  },
+  "payment": {
+    "title": "Complete Payment",
+    "backToFlightDetails": "Back to Flight Details",
+    "loadingFlightDetails": "Loading flight details...",
+    "flightNotFound": "Flight not found",
+    "failedToLoad": "Failed to load flight details",
+    "errorLoadingFlight": "Error Loading Flight",
+    "goBack": "Go Back",
+    "bookingReference": "Booking Reference: Processing...",
+    "flightSummary": "Flight Summary",
+    "departure": "Departure",
+    "aircraft": "Aircraft",
+    "operator": "Operator",
+    "notSpecified": "Not specified",
+    "flightDetails": "Flight Details",
+    "passengers": "Passengers",
+    "pricing": "Pricing",
+    "emptyLegPricePerSeat": "Empty Leg Price (per seat)",
+    "passengersMultiplied": "Passengers × {count}",
+    "marketPrice": "Market Price",
+    "total": "Total",
+    "youAreSaving": "You're saving {amount}!",
+    "percentOffRegularPrice": "{percent}% off regular price",
+    "completePayment": "Complete Payment",
+    "securePayment": "Secure Payment",
+    "securePaymentDescription": "Your payment is protected by 256-bit SSL encryption and processed securely by PayU Latam.",
+    "instantConfirmation": "Instant Confirmation",
+    "instantConfirmationDescription": "Immediate booking confirmation",
+    "pciCompliantDescription": "PCI DSS compliant processing",
+    "support247": "24/7 Support",
+    "support247Description": "Round-the-clock assistance"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "loading": "Loading notifications...",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDescription": "We'll notify you when something happens",
+    "timeJustNow": "Just now",
+    "timeMinutesAgo": "{minutes}m ago",
+    "timeHoursAgo": "{hours}h ago",
+    "timeDaysAgo": "{days}d ago",
+    "types": {
+      "flight_approved": {
+        "title": "Flight Approved",
+        "message": "Your flight has been approved and is ready for bookings"
+      },
+      "flight_denied": {
+        "title": "Flight Denied", 
+        "message": "Your flight has not been approved. Please review the details"
+      },
+      "flight_deleted": {
+        "title": "Flight Deleted",
+        "message": "Your flight has been removed from the system"
+      },
+      "flight_submitted": {
+        "title": "Flight Submitted for Review",
+        "message": "Your flight has been successfully submitted for admin review"
+      },
+      "booking_confirmed": {
+        "title": "Booking Confirmed",
+        "message": "Your booking has been confirmed successfully"
+      },
+      "payment_received": {
+        "title": "Payment Received",
+        "message": "We have received your payment successfully"
+      }
+    }
+  },
+  "bookingSuccess": {
+    "title": "Booking Confirmed!",
+    "subtitle": "Your private jet flight has been successfully booked",
+    "bookingReference": "Booking Reference",
+    "keepReference": "Keep this reference for your records",
+    "flightDetails": "Flight Details",
+    "passengerInfo": "Passenger Information",
+    "paymentSummary": "Payment Summary",
+    "specialRequests": "Special Requests",
+    "whatNext": "What's Next?",
+    "confirmationEmail": "Confirmation Email",
+    "confirmationEmailDesc": "Check your email for detailed booking confirmation and flight information.",
+    "flightPreparation": "Flight Preparation",
+    "flightPreparationDesc": "Arrive at the airport 30 minutes before departure. Bring valid ID.",
+    "customerSupport": "Customer Support",
+    "customerSupportDesc": "Our team is available 24/7 for any questions or changes.",
+    "viewBookings": "View My Bookings",
+    "bookAnother": "Book Another Flight",
+    "needHelp": "Need Help?",
+    "supportDesc": "Our customer support team is here to assist you",
+    "departure": "Departure",
+    "time": "Time",
+    "flightTime": "Flight Time",
+    "aircraft": "Aircraft",
+    "operator": "Operator",
+    "passengers": "Passengers",
+    "amountPaid": "Amount Paid",
+    "transactionId": "Transaction ID",
+    "paymentStatus": "Payment Status",
+    "completed": "✓ Completed",
+    "origin": "Origin",
+    "destination": "Destination",
+    "seats": "Seats"
   }
 }

@@ -29,6 +29,9 @@ export const TranslationProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('chancefly-language', currentLanguage);
   }, [currentLanguage]);
+  useEffect(() => {
+    localStorage.setItem('chancefly-language', currentLanguage);
+  }, [currentLanguage]);
 
   const t = (key, defaultValue = key) => {
     const keys = key.split('.');
