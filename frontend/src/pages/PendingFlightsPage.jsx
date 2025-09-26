@@ -146,10 +146,11 @@ export default function PendingFlightsPage() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    const formatted = new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(price);
+    return `COP ${formatted}`;
   };
 
   if (isLoading) {
@@ -233,7 +234,7 @@ export default function PendingFlightsPage() {
                         </div>
                         <div>
                           <span className="font-medium">Duration:</span><br />
-                          {flight.estimated_duration_minutes} minutes
+                          {flight.flight_time || 'N/A'}
                         </div>
                       </div>
 

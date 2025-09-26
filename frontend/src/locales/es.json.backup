@@ -1,0 +1,564 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "operators": "Para Operadores",
+    "about": "Acerca de Nosotros",
+    "contact": "Contáctanos",
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "signIn": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "welcome": "Bienvenido",
+    "language": "Idioma"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta de ChanceFly",
+      "emailLabel": "Dirección de correo electrónico",
+    "passengerSingle": "pasajero",
+  "passengersPlural": "pasajeros",
+  "sharedFlight": "Vuelo Compartido",
+  "privateFlightWarning": "Si deseas tener el vuelo completamente privado, necesitarías reservar todos los {maxSeats} asientos disponibles",
+  "seatsAlreadyBooked": "{bookedSeats} ya reservados",
+  "finalPriceConfirmed": "Precio final confirmado antes del pago"
+},
+"auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "emailLabel": "Correo Electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "signInButton": "Iniciar Sesión",
+      "signingIn": "Iniciando sesión...",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate"
+    },
+    "signup": {
+      "title": "Únete a ChanceFly",
+      "subtitle": "Crea tu cuenta para comenzar a reservar vuelos",
+      "accountTypeLabel": "Tipo de Cuenta",
+      "customerLabel": "Cliente",
+      "customerDescription": "Reservar vuelos privados",
+      "operatorLabel": "Operador",
+      "operatorDescription": "Registrar tu aeronave",
+      "firstNameLabel": "Nombre",
+      "firstNamePlaceholder": "Nombre",
+      "lastNameLabel": "Apellido",
+      "lastNamePlaceholder": "Apellido",
+      "emailLabel": "Dirección de correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Crea una contraseña",
+      "signupCodeLabel": "Código de Registro de Operador",
+      "signupCodePlaceholder": "Ingresa el código de registro de operador",
+      "signupCodeHelp": "Contacta a ChanceFly para obtener tu código de registro de operador",
+      "operatorCompanyLabel": "Nombre de la Empresa",
+      "operatorCompanyPlaceholder": "Ingresa el nombre de tu empresa",
+      "operatorCompanyHelp": "Escribe tu nombre si no estás con una empresa",
+      "createAccountButton": "Crear Cuenta",
+      "createCustomerAccount": "Crear Cuenta de Cliente",
+      "createOperatorAccount": "Crear Cuenta de Operador",
+      "creatingAccount": "Creando cuenta...",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión"
+    }
+  },
+  "dashboard": {
+    "operator": {
+      "title": "Panel de Operador",
+      "welcome": "¡Bienvenido de vuelta! Gestiona tus vuelos y rastrea su estado.",
+      "createFlight": "Crear Vuelo",
+      "createFirstFlight": "Crea Tu Primer Vuelo",
+      "loading": {
+        "title": "Cargando Panel...",
+        "message": "Por favor espera mientras preparamos tu panel.",
+        "flights": "Cargando vuelos..."
+      },
+      "error": {
+        "title": "Error del Panel",
+        "message": "Ocurrió un error inesperado al cargar tu panel.",
+        "auth": {
+          "title": "Problema de Autenticación",
+          "message": "Tu sesión parece ser inválida."
+        }
+      },
+      "noFlights": {
+        "title": "No Se Encontraron Vuelos",
+        "message": "Aún no has creado ningún vuelo."
+      },
+      "sections": {
+        "upcoming": {
+          "title": "Próximos Vuelos",
+          "status": "Activo"
+        },
+        "past": {
+          "title": "Vuelos Pasados",
+          "status": "Completado"
+        }
+      },
+      "actions": {
+        "show": "Mostrar",
+        "hide": "Ocultar",
+        "viewDetails": "Ver Detalles",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      },
+      "flightCard": {
+        "availableSeats": "Asientos Disponibles",
+        "totalPrice": "Precio Total",
+        "flightTime": "Tiempo de Vuelo",
+        "origin": "Origen",
+        "destination": "Destino",
+        "seats": "Asientos"
+      },
+      "messages": {
+        "allPastFlights": "Todos tus vuelos han partido. Considera crear nuevos vuelos para próximos viajes."
+      },
+      "delete": {
+        "title": "Eliminar Vuelo",
+        "message": "¿Estás seguro de que quieres eliminar este vuelo?",
+        "confirm": "Eliminar Vuelo"
+      }
+    },
+    "customer": {
+      "title": "Vuelos Vacíos Disponibles",
+      "subtitle": "Descubre vuelos de lujo a precios inmejorables"
+    }
+  },
+  "createFlight": {
+    "title": "Crear Nuevo Vuelo",
+    "subtitle": "Agrega un nuevo vuelo a tu inventario",
+    "backToDashboard": "Volver al Panel",
+    "sections": {
+      "aircraftImages": {
+        "title": "Imágenes de la Aeronave",
+        "uploadArea": {
+          "title": "Arrastra las imágenes de tu aeronave aquí",
+          "subtitle": "o",
+          "browse": "navegar archivos",
+          "formats": "PNG, JPG, WebP, GIF, SVG hasta 5MB cada uno • Múltiples archivos soportados",
+          "dragText": "Suelta los archivos aquí..."
+        }
+      },
+      "routeInformation": {
+        "title": "Información de Ruta",
+        "fields": {
+          "originCity": "Ciudad de Origen",
+          "originAirport": "Aeropuerto de Origen",
+          "destinationCity": "Ciudad de Destino", 
+          "destinationAirport": "Aeropuerto de Destino"
+        },
+        "placeholders": {
+          "originCity": "Bogotá",
+          "originAirport": "BOG - Aeropuerto Internacional El Dorado",
+          "destinationCity": "Ciudad de México",
+          "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
+          "airportsIn": "Aeropuertos en {{city}}"
+        }
+      },
+      "flightSchedule": {
+        "title": "Horario de Vuelo",
+        "departure": "Salida",
+        "arrival": "Llegada",
+        "fields": {
+          "date": "Fecha",
+          "time": "Hora"
+        },
+        "placeholders": {
+          "selectDate": "Seleccionar fecha de salida",
+          "selectArrivalDate": "Seleccionar fecha de llegada"
+        },
+        "warning": "Duración de vuelo inusualmente larga. Por favor verifica tus fechas."
+      },
+      "aircraftDetails": {
+        "title": "Detalles de la Aeronave",
+        "fields": {
+          "aircraftType": "Tipo de Aeronave",
+          "availableSeats": "Asientos Disponibles",
+          "description": "Descripción (Opcional)"
+        },
+        "placeholders": {
+          "aircraftType": "Gulfstream G650",
+          "availableSeats": "12",
+          "description": "Vuelo internacional de lujo de Colombia a México con comodidades premium, Wi-Fi y servicio de catering..."
+        }
+      },
+      "pricing": {
+        "title": "Precios",
+        "fields": {
+          "pricePerSeat": "Precio por Asiento (COP)",
+          "pricePerSeatHelp": "Tu precio charter por asiento individual",
+          "marketPricePerSeat": "Precio de Mercado por Asiento (COP)",
+          "marketPricePerSeatHelp": "Tarifa regular del mercado por asiento para comparación"
+        },
+        "savingsCalculation": {
+          "savings": "Ahorro",
+          "perSeat": "por asiento", 
+          "off": "de descuento"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "createFlight": "Crear Vuelo",
+      "creatingFlight": "Creando Vuelo..."
+    }
+  },
+  "editFlight": {
+    "title": "Editar Vuelo",
+    "subtitle": "Actualiza la información de tu vuelo",
+    "backToDashboard": "Volver al Panel",
+    "buttons": {
+      "cancel": "Cancelar",
+      "updateFlight": "Actualizar Vuelo",
+      "updatingFlight": "Actualizando Vuelo..."
+    }
+  },
+  "hero": {
+    "title": "¿Y si volar privado fuese tan accesible como un billete comercial?",
+    "subtitle": "Reserva vuelos en jets privados vacíos entre Colombia, México y las Américas hasta 95% menos que los precios charter regulares. Viajes de lujo hechos accesibles en toda Latinoamérica.",
+    "browseFlights": "Explorar Vuelos",
+    "learnMore": "Aprender Más"
+  },
+  "stats": {
+    "flightsBooked": "Vuelos Reservados",
+    "verifiedOperators": "Operadores Verificados",
+    "customerSatisfaction": "Satisfacción del Cliente",
+    "savingsGenerated": "Ahorros Generados"
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Reservar tu vuelo soñado es más fácil que nunca. Sigue estos simples pasos para acceder a viajes de lujo a precios increíbles.",
+    "step1": {
+      "title": "Buscar y Comparar",
+      "description": "Explora vuelos vacíos disponibles, compara precios, tipos de aeronaves y horarios de salida para encontrar tu opción perfecta."
+    },
+    "step2": {
+      "title": "Reservar al Instante",
+      "description": "Asegura tu asiento con nuestro proceso de reserva simplificado. Añade pasajeros, selecciona servicios y completa el pago en minutos."
+    },
+    "step3": {
+      "title": "Volar en Lujo",
+      "description": "Llega a la terminal privada, evita las multitudes y disfruta de tu experiencia de viaje premium con servicio personalizado."
+    }
+  },
+  "whyChoose": {
+    "title": "Por Qué Elegir ChanceFly",
+    "subtitle": "Experimenta la diferencia con nuestra plataforma premium diseñada para viajeros exigentes.",
+    "savings": {
+      "title": "Ahorros Masivos",
+      "description": "Ahorra hasta 75% en vuelos privados de lujo reservando rutas vacías de operadores verificados."
+    },
+    "quality": {
+      "title": "Calidad Verificada",
+      "description": "Todas las aeronaves y operadores son rigurosamente verificados por seguridad, estándares de lujo y excelencia en el servicio."
+    },
+    "instant": {
+      "title": "Reserva Instantánea",
+      "description": "Reserva vuelos confirmados al instante con nuestra plataforma simplificada. Sin esperas, sin incertidumbre."
+    }
+  },
+  "advantages": {
+    "noQueues": "Sin Colas en el Aeropuerto",
+    "noQueuesSub": "Evita las multitudes y largas filas de seguridad",
+    "flexibility": "Flexibilidad Total",
+    "flexibilitySub": "Cambia tus planes con restricciones mínimas",
+    "privacy": "Privacidad Completa",
+    "privacySub": "Disfruta tu vuelo sin ninguna molestia",
+    "luxury": "Amenidades de Lujo",
+    "luxurySub": "Servicios premium y comodidad en todo momento"
+  },
+  "testimonials": {
+    "title": "No te quedes solo con nuestra palabra",
+    "subtitle": "Cientos de viajeros ya vuelan en privado con nuestras ofertas de vuelos vacíos.",
+    "customer1": {
+      "text": "Encontré ChanceFly a través de un familiar y ha sido genial para viajes de negocios. Buenos precios y servicio confiable. Lo he usado varias veces sin problemas.",
+      "name": "Carolina Vargas"
+    },
+    "customer2": {
+      "text": "Buena alternativa a los vuelos comerciales cuando necesito algo más cómodo. Las opciones de vuelos vacíos funcionan bien con mi horario la mayoría del tiempo.",
+      "name": "Andrés Morales"
+    },
+    "customer3": {
+      "text": "Sitio web fácil de usar y servicio al cliente útil cuando tuve preguntas. Definitivamente ahorra dinero comparado con precios regulares de charter.",
+      "name": "Isabella Ramírez"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Experimentar Viajes de Lujo?",
+    "subtitle": "Únete a miles de viajeros inteligentes que han descubierto la ventaja de ChanceFly. Tu próximo vuelo de lujo está a solo un clic.",
+    "startBooking": "Comenzar a Reservar",
+    "browseFlights": "Explorar Vuelos"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Mantente Actualizado con Ofertas Exclusivas",
+      "subtitle": "Suscríbete a nuestro boletín y sé el primero en conocer nuevos vuelos vacíos y ofertas especiales.",
+      "placeholder": "Ingresa tu dirección de correo",
+      "subscribe": "Suscribirse"
+    },
+    "company": {
+      "description": "Tu puerta de entrada a viajes de lujo a precios accesibles. Descubre vuelos vacíos y experimenta la aviación premium."
+    },
+    "quickLinks": {
+      "title": "Enlaces Rápidos",
+      "browseFlights": "Explorar Vuelos",
+      "howItWorks": "Cómo Funciona",
+      "pricing": "Precios",
+      "about": "Acerca de Nosotros",
+      "contact": "Contacto"
+    },
+    "operators": {
+      "title": "Para Operadores",
+      "listAircraft": "Lista Tu Aeronave",
+      "partnerProgram": "Programa de Socios",
+      "operatorPortal": "Portal del Operador",
+      "resources": "Recursos"
+    },
+    "support": {
+      "title": "Soporte",
+      "helpCenter": "Centro de Ayuda",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "safety": "Seguridad y Protección"
+    },
+    "copyright": "© 2025 ChanceFly. Todos los derechos reservados."
+  },
+  "about": {
+    "hero": {
+      "title": "Redefiniendo\nlos Viajes de Lujo",
+      "subtitle": "ChanceFly está revolucionando la aviación privada haciendo que los viajes de lujo sean accesibles, transparentes y sin esfuerzo. Descubre nuestra historia y la pasión que nos impulsa hacia adelante."
+    },
+    "mission": {
+      "title": "Nuestra Misión",
+      "subtitle": "Democratizar los viajes de lujo y crear un mundo donde las experiencias excepcionales estén al alcance de todos.",
+      "breaking": {
+        "title": "Derribando Barreras",
+        "description1": "La aviación privada ha estado reservada durante mucho tiempo para los ultra ricos. Creemos que esto no debería ser así. Al conectar viajeros con vuelos vacíos y ofertas exclusivas, estamos haciendo que los viajes de lujo sean accesibles para más personas que nunca.",
+        "description2": "Nuestro enfoque impulsado por la tecnología elimina ineficiencias, reduce costos y crea escenarios ganar-ganar tanto para viajeros como para operadores."
+      },
+      "stats": {
+        "savings": "95%",
+        "savingsLabel": "Ahorro Promedio",
+        "savingsDesc": "comparado con precios charter tradicionales"
+      }
+    },
+    "values": {
+      "title": "Nuestros Valores",
+      "subtitle": "Estos principios guían todo lo que hacemos y moldean el futuro de los viajes de lujo.",
+      "customerFirst": {
+        "title": "Cliente Primero",
+        "description": "Cada decisión que tomamos prioriza las necesidades, comodidad y satisfacción de nuestros clientes por encima de todo."
+      },
+      "innovation": {
+        "title": "Innovación",
+        "description": "Aprovechamos tecnología de vanguardia para resolver problemas complejos y crear experiencias fluidas."
+      },
+      "trustSafety": {
+        "title": "Confianza y Seguridad",
+        "description": "Mantenemos los más altos estándares de seguridad, protección y transparencia en todo lo que hacemos."
+      }
+    },
+    "team": {
+      "title": "Construido por Entusiastas de la Aviación",
+      "subtitle": "Nuestro equipo combina décadas de experiencia en la industria de la aviación con experiencia en tecnología de vanguardia. Somos apasionados por hacer que los viajes de lujo sean accesibles para todos mientras mantenemos los más altos estándares de servicio y seguridad."
+    },
+    "cta": {
+      "title": "Únete a Nuestro Viaje",
+      "subtitle": "Ya seas un viajero buscando tu próxima aventura, un operador buscando hacer crecer tu negocio, o simplemente alguien que comparte nuestra pasión por la aviación, te invitamos a ser parte de la historia de ChanceFly.",
+      "getStarted": "Empezar Hoy"
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Ponte en Contacto",
+      "subtitle": "¿Tienes preguntas sobre ChanceFly? ¿Necesitas soporte con tu reserva? ¿Quieres asociarte con nosotros? Estamos aquí para ayudarte y nos encantaría saber de ti."
+    },
+    "options": {
+      "title": "¿Cómo Podemos Ayudarte?",
+      "subtitle": "Elige la mejor manera de contactar a nuestro equipo según tus necesidades.",
+      "call": {
+        "title": "Llámanos",
+        "description": "Habla directamente con nuestros especialistas en reservas",
+        "number": "+1 (555) 123-4567"
+      },
+      "email": {
+        "title": "Soporte por Email",
+        "description": "Obtén asistencia detallada por correo electrónico",
+        "address": "support@chancefly.com"
+      },
+      "chat": {
+        "title": "Chat en Vivo",
+        "description": "Chatea con nosotros en tiempo real",
+        "button": "Iniciar Chat"
+      }
+    },
+    "form": {
+      "title": "Envíanos un Mensaje",
+      "subtitle": "Completa el formulario a continuación y te responderemos en un plazo de 24 horas.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Email",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "placeholders": {
+        "firstName": "Juan",
+        "lastName": "Pérez",
+        "email": "juan.perez@ejemplo.com",
+        "subject": "Selecciona un tema",
+        "message": "¿Cómo podemos ayudarte?"
+      },
+      "subjects": {
+        "booking": "Asistencia con Reservas",
+        "support": "Soporte al Cliente",
+        "partnership": "Consulta de Asociación",
+        "other": "Otro"
+      },
+      "button": "Enviar Mensaje"
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Respuestas rápidas a preguntas comunes sobre ChanceFly y nuestros servicios.",
+      "questions": {
+        "booking": {
+          "question": "¿Con cuánta anticipación debo reservar?",
+          "answer": "Para la mejor disponibilidad y tarifas, recomendamos reservar con al menos 48 horas de anticipación. Sin embargo, a menudo podemos acomodar solicitudes de último minuto dependiendo de la disponibilidad de aeronaves."
+        },
+        "pricing": {
+          "question": "¿Qué está incluido en el precio del vuelo?",
+          "answer": "Nuestros precios incluyen la aeronave, tripulación, combustible y catering estándar. Servicios adicionales como transporte terrestre, solicitudes especiales de catering o tarifas de pernocta pueden aplicar."
+        },
+        "cancellation": {
+          "question": "¿Qué pasa si mi vuelo es cancelado?",
+          "answer": "En el raro caso de una cancelación, trabajaremos inmediatamente para encontrarte un vuelo alternativo o proporcionar un reembolso completo. Nuestro equipo de soporte al cliente está disponible 24/7 para asistirte."
+        },
+        "pets": {
+          "question": "¿Puedo traer mascotas en mi vuelo?",
+          "answer": "¡Sí! Uno de los beneficios de la aviación privada es que las mascotas son bienvenidas. Solo háznos saber al momento de reservar para que podamos asegurar que la aeronave esté adecuadamente preparada."
+        }
+      }
+    }
+  },
+  "operators": {
+    "hero": {
+      "title": "Asociate con ChanceFly",
+      "subtitle": "Únete a la plataforma premier para aviación de lujo. Conecta con viajeros de alto valor, maximiza la utilización de tu flota, y haz crecer tu negocio con el mercado innovador de ChanceFly.",
+      "button": "Conviértete en Socio"
+    },
+    "benefits": {
+      "title": "¿Por Qué Asociarte con Nosotros?",
+      "subtitle": "Únete a una red creciente de operadores premium y desbloquea nuevas oportunidades de ingresos.",
+      "revenue": {
+        "title": "Ingresos Incrementados",
+        "description": "Monetiza vuelos de tramo vacío y llena asientos vacantes con nuestra extensa red de clientes."
+      },
+      "clientele": {
+        "title": "Clientela Premium",
+        "description": "Acceso a individuos verificados y de alto patrimonio que valoran el lujo y la confiabilidad."
+      },
+      "operations": {
+        "title": "Operaciones Simplificadas",
+        "description": "Proceso de reserva optimizado con pagos automatizados y gestión de clientes."
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "subtitle": "Únete a nuestra red en cuatro simples pasos y comienza a maximizar el potencial de tu aeronave.",
+      "apply": {
+        "title": "Aplicar",
+        "description": "Envía los detalles de tu aeronave y credenciales de operador para revisión."
+      },
+      "verify": {
+        "title": "Verificar",
+        "description": "Completa nuestro proceso integral de verificación para seguridad y calidad."
+      },
+      "list": {
+        "title": "Listar",
+        "description": "Tu aeronave se pone en vivo en nuestra plataforma de mercado premium."
+      },
+      "earn": {
+        "title": "Ganar",
+        "description": "Comienza a recibir reservas de alto valor de clientes verificados."
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Maximizar tu Flota?",
+      "subtitle": "Únete a nuestra red exclusiva de operadores premium y comienza a generar mayores retornos de tus inversiones en aeronaves.",
+      "cardTitle": "Comienza tu Asociación Hoy",
+      "cardSubtitle": "Completa nuestro proceso de aplicación simple y únete a la red de socios de aviación elite de ChanceFly.",
+      "applyButton": "Aplicar Ahora",
+      "scheduleButton": "Programar una Llamada"
+    }
+  },
+  "flightDetails": {
+    "loading": "Cargando detalles del vuelo...",
+    "notFound": "Vuelo no encontrado",
+    "backToDashboard": "Volver al Panel",
+    "backToFlights": "Volver a Vuelos",
+    "availableSeats": "Asientos Disponibles",
+    "operator": "Operador",
+    "flightTime": "Tiempo de Vuelo",
+    "flightRoute": "Ruta del Vuelo",
+    "routeTo": "a",
+    "pricing": "Precios",
+    "marketRate": "TARIFA DE MERCADO",
+  "marketPrice": "PRECIO DE MERCADO",
+    "standardPricing": "Precios Estándar",
+    "greatValue": "GRAN VALOR",
+    "competitiveRate": "Tarifa Competitiva",
+    "charterPrice": "PRECIO CHÁRTER",
+    "emptyLegDeal": "Oferta Tramo Vacío",
+    "passengers": "Pasajeros",
+    "seatsAvailable": "asientos disponibles",
+    "totalPerPerson": "Total por persona",
+    "bookCharter": "Reservar Chárter",
+    "aircraftImages": "Imágenes de la Aeronave",
+    "viewAllImages": "Ver Todas las Imágenes",
+    "perPerson": "por persona",
+    "totalCharter": "chárter total",
+    "perSeat": "por asiento",
+    "total": "total",
+    "passengerSingle": "pasajero",
+    "passengersPlural": "pasajeros",
+    "sharedFlight": "Vuelo Compartido",
+    "privateFlightWarning": "Si deseas tener el vuelo completamente privado, necesitarías reservar todos los {maxSeats} asientos disponibles",
+    "seatsAlreadyBooked": "{bookedSeats} ya reservados",
+    "finalPriceConfirmed": "Precio final confirmado antes del pago"
+  },
+  "bookingSuccess": {
+    "title": "¡Reserva Confirmada!",
+    "subtitle": "Tu vuelo en jet privado ha sido reservado exitosamente",
+    "bookingReference": "Referencia de Reserva",
+    "keepReference": "Guarda esta referencia para tus registros",
+    "flightDetails": "Detalles del Vuelo",
+    "passengerInfo": "Información del Pasajero",
+    "paymentSummary": "Resumen del Pago",
+    "specialRequests": "Solicitudes Especiales",
+    "whatNext": "¿Qué Sigue?",
+    "confirmationEmail": "Email de Confirmación",
+    "confirmationEmailDesc": "Revisa tu email para la confirmación detallada de la reserva e información del vuelo.",
+    "flightPreparation": "Preparación del Vuelo",
+    "flightPreparationDesc": "Llega al aeropuerto 30 minutos antes de la salida. Trae una identificación válida.",
+    "customerSupport": "Soporte al Cliente",
+    "customerSupportDesc": "Nuestro equipo está disponible 24/7 para cualquier pregunta o cambio.",
+    "viewBookings": "Ver Mis Reservas",
+    "bookAnother": "Reservar Otro Vuelo",
+    "needHelp": "¿Necesitas Ayuda?",
+    "supportDesc": "Nuestro equipo de soporte al cliente está aquí para ayudarte",
+    "departure": "Salida",
+    "time": "Hora",
+    "flightTime": "Tiempo de Vuelo",
+    "aircraft": "Aeronave",
+    "operator": "Operador",
+    "passengers": "Pasajeros",
+    "amountPaid": "Monto Pagado",
+    "transactionId": "ID de Transaccion",
+    "paymentStatus": "Estado del Pago",
+    "completed": "Completado",
+    "origin": "Origen",
+    "destination": "Destino",
+    "seats": "Asientos"
+  }
+}

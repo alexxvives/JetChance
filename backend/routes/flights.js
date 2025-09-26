@@ -2,7 +2,7 @@ const express = require('express');
 const { body, query, validationResult } = require('express-validator');
 const SimpleIDGenerator = require('../utils/idGenerator');
 const OperatorFlightCounter = require('../utils/operatorFlightCounter');
-const db = require('../config/database-sqlite');
+const { query: dbQuery, run: dbRun, db } = require('../config/database-sqlite');
 const { authenticate, authorize } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
 
@@ -18,7 +18,7 @@ router.get('/', [
   query('passengers').optional().isInt({ min: 1, max: 20 }),
   query('max_price').optional().isFloat({ min: 0 }),
   query('aircraft_type').optional().trim(),
-  query('user_id').optional().matches(/^[A-Z]{2,3}\d{4}$/),
+  query('user_id').optional().matches(/^[A-Z]{2,3}\d{6}$/),
   query('status').optional().isIn(['pending', 'approved', 'declined', 'available', 'cancelled', 'booked']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
@@ -26,8 +26,12 @@ router.get('/', [
   query('sort_order').optional().isIn(['asc', 'desc']),
 ], async (req, res) => {
   try {
+    console.log('🔍 FLIGHTS: Starting flight fetch request');
+    console.log('🔍 FLIGHTS: Query params:', req.query);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ FLIGHTS: Validation errors:', errors.array());
       return res.status(400).json({
         error: 'Invalid query parameters',
         details: errors.array()
@@ -56,25 +60,28 @@ router.get('/', [
     
     // If user_id is provided, check if it's for operator viewing their own flights
     if (user_id) {
-      const userResult = await db.query('SELECT role FROM users WHERE id = ?', [user_id]);
-      if (userResult.rows.length > 0) {
-        const userRole = userResult.rows[0].role;
+      const userStmt = db.prepare('SELECT role FROM users WHERE id = ?');
+      const userResult = userStmt.get(user_id);
+      if (userResult) {
+        const userRole = userResult.role;
         if (userRole === 'operator') {
           // Operator viewing their own flights - show ALL statuses (pending, approved, declined)
           isOperatorOwned = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
-          if (operatorResult.rows.length > 0) {
-            operatorId = operatorResult.rows[0].id;
+          const operatorStmt = db.prepare('SELECT id FROM operators WHERE user_id = ?');
+          const operatorResult = operatorStmt.get(user_id);
+          if (operatorResult) {
+            operatorId = operatorResult.id;
           }
         } else if (userRole === 'super-admin') {
           // Super-admin viewing their operator flights - show ALL statuses
           isOperatorOwned = true;
           isSuperAdmin = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
-          if (operatorResult.rows.length > 0) {
-            operatorId = operatorResult.rows[0].id;
+          const operatorStmt = db.prepare('SELECT id FROM operators WHERE user_id = ?');
+          const operatorResult = operatorStmt.get(user_id);
+          if (operatorResult) {
+            operatorId = operatorResult.id;
           }
         }
       }
@@ -181,7 +188,8 @@ router.get('/', [
 
     params.push(parseInt(limit), offset);
 
-    const result = await db.query(query, params);
+    const stmt = db.prepare(query);
+    const result = stmt.all(...params);
 
     // Get total count for pagination (without LIMIT and OFFSET)
     const countQuery = `
@@ -193,12 +201,13 @@ router.get('/', [
 
     // Use original params without the LIMIT and OFFSET values
     const countParams = params.slice(0, -2);
-    const countResult = await db.query(countQuery, countParams);
-    const totalFlights = parseInt(countResult.rows[0].total);
+    const countStmt = db.prepare(countQuery);
+    const countResult = countStmt.get(...countParams);
+    const totalFlights = parseInt(countResult.total);
     const totalPages = Math.ceil(totalFlights / parseInt(limit));
 
     // Format response
-    const flights = result.rows.map(flight => {
+    const flights = result.map(flight => {
       // Parse images from JSON and convert to full URLs
       let images = [];
       let imageUrls = [];
@@ -332,7 +341,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     console.log('🔍 Getting flight by ID:', id);
 
-    const result = await db.query(`
+    const stmt = db.prepare(`
       SELECT 
         f.*,
         o.company_name as operator_name,
@@ -340,11 +349,12 @@ router.get('/:id', async (req, res) => {
       FROM flights f
       LEFT JOIN operators o ON f.operator_id = o.id
       WHERE f.id = ?
-    `, [id]);
+    `);
+    const result = stmt.get(id);
 
-    console.log('📝 Query result:', result.rows);
+    console.log('📝 Query result:', result);
 
-    if (result.rows.length === 0) {
+    if (!result) {
       console.log('❌ Flight not found');
       return res.status(404).json({
         error: 'Flight not found',
@@ -352,7 +362,7 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    const flight = result.rows[0];
+    const flight = result;
     console.log('✅ Found flight:', flight);
 
     // Note: Duration calculation removed as estimated_duration_minutes column was removed in optimization
@@ -834,15 +844,16 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     const flightId = req.params.id;
     
     // Check if flight exists and is pending
-    const flight = await db.query('SELECT * FROM flights WHERE id = ?', [flightId]);
+    const flightStmt = db.prepare('SELECT * FROM flights WHERE id = ?');
+    const flight = flightStmt.get(flightId);
     
-    if (flight.rows.length === 0) {
+    if (!flight) {
       return res.status(404).json({
         error: 'Flight not found'
       });
     }
 
-    if (flight.rows[0].status !== 'pending') {
+    if (flight.status !== 'pending') {
       return res.status(400).json({
         error: 'Only pending flights can be approved or declined'
       });
@@ -852,38 +863,33 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     const databaseStatus = status === 'approved' ? 'available' : 'cancelled';
 
     // Update flight status
-    const result = await db.query(`
+    const updateStmt = db.prepare(`
       UPDATE flights 
       SET status = ?, updated_at = datetime('now')
       WHERE id = ?
-      RETURNING *
-    `, [databaseStatus, flightId]);
+    `);
+    const result = updateStmt.run(databaseStatus, flightId);
 
     // Get operator details to send notification
-    const operatorSql = `
+    const operatorStmt = db.prepare(`
       SELECT au.id as user_id, au.email, o.company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
       JOIN users au ON o.user_id = au.id
       WHERE f.id = ?
-    `;
+    `);
+    const operator = operatorStmt.get(flightId);
     
-    const operatorResult = await db.query(operatorSql, [flightId]);
-    
-    if (operatorResult.rows.length > 0) {
-      const operator = operatorResult.rows[0];
-      const flightInfo = result.rows[0];
-      
+    if (operator) {
       // Create notification for the operator
       try {
         const notificationType = status === 'approved' ? 'flight_approved' : 'flight_declined';
         const notificationTitle = status === 'approved' ? 'Flight Approved! ✅' : 'Flight Declined ❌';
         const notificationMessage = status === 'approved' 
-          ? `Great news! Your flight ${flightInfo.origin_code} → ${flightInfo.destination_code} has been approved and is now live for customers to book.`
-          : `Your flight ${flightInfo.origin_code} → ${flightInfo.destination_code} was declined. ${reason ? `Reason: ${reason}` : 'Please contact admin for details.'}`;
+          ? `Great news! Your flight ${flight.origin_name} → ${flight.destination_name} has been approved and is now live for customers to book.`
+          : `Your flight ${flight.origin_name} → ${flight.destination_name} was declined. ${reason ? `Reason: ${reason}` : 'Please contact admin for details.'}`;
         
         await createNotification(
-          db,
           operator.user_id,
           notificationTitle,
           notificationMessage
@@ -899,7 +905,7 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     console.log(`Flight ${flightId} ${status} by admin ${req.user.email}`);
 
     const flightResponse = {
-      ...result.rows[0],
+      ...flight,
       status: databaseStatus
     };
 

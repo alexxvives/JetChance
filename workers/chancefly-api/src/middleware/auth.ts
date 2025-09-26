@@ -43,7 +43,7 @@ export async function authenticate(request: Request, env: Env): Promise<AuthResu
 
       // Get user from database
       const userQuery = await env.chancefly_db.prepare(
-        'SELECT id, email, first_name, last_name, role FROM users WHERE id = ?'
+        'SELECT id, email, role FROM users WHERE id = ?'
       ).bind(decoded.userId).first();
 
       if (!userQuery) {
@@ -53,10 +53,32 @@ export async function authenticate(request: Request, env: Env): Promise<AuthResu
       const user: AuthUser = {
         id: userQuery.id as string,
         email: userQuery.email as string,
-        first_name: userQuery.first_name as string,
-        last_name: userQuery.last_name as string,
+        first_name: '', // Will be populated from role-specific table if needed
+        last_name: '', // Will be populated from role-specific table if needed
         role: userQuery.role as string,
       };
+
+      // Add role-specific data if needed (for future use)
+      if (userQuery.role === 'customer') {
+        const customerQuery = await env.chancefly_db.prepare(
+          'SELECT first_name, last_name FROM customers WHERE user_id = ?'
+        ).bind(decoded.userId).first();
+        
+        if (customerQuery) {
+          user.first_name = customerQuery.first_name as string;
+          user.last_name = customerQuery.last_name as string;
+        }
+      } else if (userQuery.role === 'operator') {
+        const operatorQuery = await env.chancefly_db.prepare(
+          'SELECT company_name FROM operators WHERE user_id = ?'
+        ).bind(decoded.userId).first();
+        
+        if (operatorQuery) {
+          // For operators, we could use company_name as display name
+          user.first_name = operatorQuery.company_name as string;
+          user.last_name = '';
+        }
+      }
 
       return { user };
 

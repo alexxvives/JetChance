@@ -5,15 +5,15 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../config/database-sqlite');
 
 // Helper function to create notification
-const createNotification = async (db, userId, type, title, message, flightId = null) => {
+const createNotification = async (db, userId, title, message) => {
   try {
     const notificationId = SimpleIDGenerator.generateNotificationId();
     const sql = `
-      INSERT INTO notifications (id, user_id, type, title, message, flight_id)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO notifications (id, user_id, title, message, created_at)
+      VALUES (?, ?, ?, ?, ?)
     `;
     
-    await db.query(sql, [notificationId, userId, type, title, message, flightId]);
+    await db.run(sql, [notificationId, userId, title, message, new Date().toISOString()]);
     console.log('✅ Notification created:', notificationId);
     return notificationId;
   } catch (err) {
@@ -32,15 +32,10 @@ router.get('/', authenticate, async (req, res) => {
 
   try {
     const sql = `
-      SELECT 
-        n.*,
-        f.origin_code,
-        f.destination_code,
-        f.departure_datetime
-      FROM notifications n
-      LEFT JOIN flights f ON n.flight_id = f.id
-      WHERE n.user_id = ?
-      ORDER BY n.created_at DESC
+      SELECT *
+      FROM notifications
+      WHERE user_id = ?
+      ORDER BY created_at DESC
       LIMIT 50
     `;
 
@@ -64,7 +59,7 @@ router.get('/unread-count', authenticate, async (req, res) => {
     const sql = `
       SELECT COUNT(*) as count
       FROM notifications
-      WHERE user_id = ? AND read_at IS NULL
+      WHERE user_id = ? AND read_status = FALSE
     `;
 
     const result = await db.query(sql, [userId]);
@@ -87,11 +82,11 @@ router.patch('/:id/read', authenticate, async (req, res) => {
   try {
     const sql = `
       UPDATE notifications
-      SET read_at = CURRENT_TIMESTAMP
-      WHERE id = ? AND user_id = ? AND read_at IS NULL
+      SET read_status = TRUE
+      WHERE id = ? AND user_id = ? AND read_status = FALSE
     `;
 
-    const result = await db.query(sql, [id, userId]);
+    const result = await db.run(sql, [id, userId]);
     
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Notification not found or already read' });
@@ -115,11 +110,11 @@ router.patch('/mark-all-read', authenticate, async (req, res) => {
   try {
     const sql = `
       UPDATE notifications
-      SET read_at = CURRENT_TIMESTAMP
-      WHERE user_id = ? AND read_at IS NULL
+      SET read_status = TRUE
+      WHERE user_id = ? AND read_status = FALSE
     `;
 
-    const result = await db.query(sql, [userId]);
+    const result = await db.run(sql, [userId]);
     res.json({ success: true, updated: result.changes });
   } catch (err) {
     console.error('❌ Error marking all notifications as read:', err);

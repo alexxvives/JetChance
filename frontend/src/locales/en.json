@@ -523,6 +523,7 @@
     "passengersPlural": "passengers",
     "sharedFlight": "Shared Flight",
     "privateFlightWarning": "Flight may be shared if others book remaining seats. To guarantee privacy, book all {remainingSeats} remaining seats",
+    "sharedFlightWarning": "This flight is shared, {bookedSeats} seats have already been reserved. To guarantee privacy, book all seats on another flight.",
     "seatsAlreadyBooked": "{bookedSeats} already booked",
     "finalPriceConfirmed": "Final price confirmed before payment",
     "operatorViewOnly": "View Only - Operator Account",

@@ -1,7 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const db = require('../config/database');
-const { authenticate } = require('../middleware/auth');
+const { query: dbQuery, run, db } = require('../config/database-sqlite');
+const { authenticate, authorize } = require('../middleware/auth');
+const SimpleIDGenerator = require('../utils/idGenerator');
 
 const router = express.Router();
 
@@ -15,40 +16,46 @@ router.get('/', authenticate, async (req, res) => {
         b.*,
         f.origin_city,
         f.destination_city,
-        f.origin_code,
-        f.destination_code,
+        f.origin_name,
+        f.destination_name,
         f.departure_datetime,
         f.arrival_datetime,
-        a.aircraft_type,
+        f.aircraft_model as aircraft_name,
+        'COP' as currency,
         o.company_name as operator_name
       FROM bookings b
       JOIN flights f ON b.flight_id = f.id
-      JOIN aircraft a ON f.aircraft_id = a.id
       JOIN operators o ON f.operator_id = o.id
-      WHERE b.user_id = $1
+      WHERE b.customer_id = ?
       ORDER BY b.created_at DESC
     `, [req.user.id]);
 
-    const bookings = result.rows.map(booking => ({
-      id: booking.id,
-      bookingReference: booking.booking_reference,
-      status: booking.status,
-      paymentStatus: booking.payment_status,
-      passengerCount: booking.passenger_count,
-      totalAmount: parseFloat(booking.total_amount),
-      currency: booking.currency,
-      flight: {
-        origin: `${booking.origin_city} (${booking.origin_code})`,
-        destination: `${booking.destination_city} (${booking.destination_code})`,
-        departure: booking.departure_datetime,
-        arrival: booking.arrival_datetime,
-        aircraftType: booking.aircraft_type,
-        operator: booking.operator_name
-      },
-      bookingDate: booking.booking_date,
-      paymentDate: booking.payment_date,
-      confirmationDate: booking.confirmation_date
-    }));
+    const bookings = result.rows.map(booking => {
+      // Extract airport codes from names (format: "Airport Name (CODE)")
+      const originCodeMatch = booking.origin_name?.match(/\(([^)]+)\)$/);
+      const destinationCodeMatch = booking.destination_name?.match(/\(([^)]+)\)$/);
+      const originCode = originCodeMatch ? originCodeMatch[1] : booking.origin_city;
+      const destinationCode = destinationCodeMatch ? destinationCodeMatch[1] : booking.destination_city;
+
+      return {
+        id: booking.id,
+        bookingReference: booking.id, // Use ID as booking reference
+        status: booking.status,
+        passengerCount: booking.total_passengers,
+        totalAmount: parseFloat(booking.total_amount),
+        currency: booking.currency, // Get currency from flights table
+        flight: {
+          origin: `${booking.origin_city} (${originCode})`,
+          destination: `${booking.destination_city} (${destinationCode})`,
+          departure: booking.departure_datetime,
+          arrival: booking.arrival_datetime,
+          aircraftName: booking.aircraft_name,
+          operator: booking.operator_name
+        },
+        specialRequests: booking.special_requests,
+        bookingDate: booking.created_at
+      };
+    });
 
     res.json({ bookings });
 
@@ -64,11 +71,12 @@ router.get('/', authenticate, async (req, res) => {
 // @desc    Create a new booking
 // @access  Private
 router.post('/', authenticate, [
-  body('flightId').isUUID(),
+  body('flightId').isLength({ min: 1 }).withMessage('Flight ID is required'),
   body('passengers').isArray({ min: 1 }),
   body('passengers.*.firstName').trim().isLength({ min: 2 }),
   body('passengers.*.lastName').trim().isLength({ min: 2 }),
-  body('passengers.*.email').isEmail(),
+  body('totalAmount').isNumeric().withMessage('Total amount must be a number'),
+  body('contact_email').isEmail().withMessage('Valid contact email is required'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -79,98 +87,236 @@ router.post('/', authenticate, [
       });
     }
 
-    const { flightId, passengers, specialRequests, cateringRequests, groundTransportRequired } = req.body;
+    const { flightId, passengers, specialRequests, totalAmount, paymentMethod, contact_email } = req.body;
+
+    // First, find or create customer record for this user
+    let customerStmt = db.prepare('SELECT * FROM customers WHERE user_id = ?');
+    let customer = customerStmt.get(req.user.id);
+
+    if (!customer) {
+      // Create a customer record for this user
+      const customerId = SimpleIDGenerator.generateCustomerId();
+      const insertCustomerStmt = db.prepare(`
+        INSERT INTO customers (id, user_id, first_name, last_name)
+        VALUES (?, ?, ?, ?)
+      `);
+      insertCustomerStmt.run(customerId, req.user.id, req.user.firstName || '', req.user.lastName || '');
+      
+      // Fetch the created customer
+      customer = customerStmt.get(req.user.id);
+    }
 
     // Check flight availability
-    const flightResult = await db.query(
-      'SELECT * FROM flights WHERE id = $1 AND status = $2 AND available_seats >= $3',
-      [flightId, 'available', passengers.length]
+    const flightStmt = db.prepare(
+      'SELECT * FROM flights WHERE id = ? AND status = ? AND available_seats >= ?'
     );
+    const flightResult = flightStmt.get(flightId, 'available', passengers.length);
 
-    if (flightResult.rows.length === 0) {
+    if (!flightResult) {
       return res.status(400).json({
         error: 'Flight not available',
         message: 'Flight not found or insufficient seats available'
       });
     }
 
-    const flight = flightResult.rows[0];
-    const totalAmount = flight.empty_leg_price * passengers.length;
+    const flight = flightResult;
 
-    // Generate booking reference
-    const bookingReference = `CF${Date.now().toString().slice(-8)}`;
+    // Generate booking ID using the new sequential pattern
+    const bookingId = SimpleIDGenerator.generateBookingId();
 
-    // Begin transaction
-    const client = await db.pool.connect();
-    
     try {
-      await client.query('BEGIN');
-
-      // Create booking
-      const bookingResult = await client.query(`
+      // Create booking with simplified structure
+      const bookingStmt = db.prepare(`
         INSERT INTO bookings (
-          booking_reference, user_id, flight_id, passenger_count,
-          total_amount, currency, special_requests, catering_requests,
-          ground_transport_required
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING *
-      `, [
-        bookingReference, req.user.id, flightId, passengers.length,
-        totalAmount, flight.currency, specialRequests, cateringRequests,
-        groundTransportRequired
-      ]);
+          id, customer_id, flight_id, total_passengers,
+          total_amount, payment_method, special_requests, status, contact_email
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const bookingResult = bookingStmt.run(
+        bookingId, customer.id, flightId, passengers.length,
+        totalAmount, paymentMethod || 'CREDIT_CARD', specialRequests, 'pending', contact_email
+      );
 
-      const booking = bookingResult.rows[0];
+      // Get the created booking
+      const getBookingStmt = db.prepare('SELECT * FROM bookings WHERE id = ?');
+      const booking = getBookingStmt.get(bookingId);
 
-      // Add passengers
+      // Add passengers to passengers table
+      const passengerStmt = db.prepare(`
+        INSERT INTO passengers (
+          id, booking_id, first_name, last_name, date_of_birth,
+          document_type, document_number
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+      
       for (const passenger of passengers) {
-        await client.query(`
-          INSERT INTO passengers (
-            booking_id, first_name, last_name, email, phone,
-            date_of_birth, nationality, passport_number, passport_expiry,
-            dietary_requirements, mobility_assistance, seat_preference
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        `, [
-          booking.id, passenger.firstName, passenger.lastName, passenger.email,
-          passenger.phone, passenger.dateOfBirth, passenger.nationality,
-          passenger.passportNumber, passenger.passportExpiry,
-          passenger.dietaryRequirements, passenger.mobilityAssistance,
-          passenger.seatPreference
-        ]);
+        const passengerId = SimpleIDGenerator.generatePassengerId();
+        passengerStmt.run(
+          passengerId, booking.id, passenger.firstName, passenger.lastName, 
+          passenger.dateOfBirth || null,
+          passenger.documentType || 'CC', passenger.documentNumber || null
+        );
       }
 
       // Update flight availability
-      await client.query(
-        'UPDATE flights SET available_seats = available_seats - $1 WHERE id = $2',
-        [passengers.length, flightId]
+      const updateFlightStmt = db.prepare(
+        'UPDATE flights SET available_seats = available_seats - ? WHERE id = ?'
       );
-
-      await client.query('COMMIT');
+      updateFlightStmt.run(passengers.length, flightId);
 
       res.status(201).json({
         message: 'Booking created successfully',
         booking: {
           id: booking.id,
-          bookingReference: booking.booking_reference,
+          booking_reference: booking.id, // Use ID as reference
           totalAmount: parseFloat(booking.total_amount),
-          currency: booking.currency,
+          currency: 'COP', // Default currency
           status: booking.status,
-          paymentStatus: booking.payment_status
+          passengerCount: passengers.length,
+          passengers: passengers.length,
+          paymentMethod: booking.payment_method,
+          specialRequests: booking.special_requests
         }
       });
 
     } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
+      console.error('Booking creation error:', error);
+      res.status(500).json({
+        error: 'Failed to create booking',
+        message: 'Unable to process booking. Please try again.'
+      });
     }
-
   } catch (error) {
-    console.error('Booking creation error:', error);
+    console.error('Outer booking error:', error);
     res.status(500).json({
       error: 'Failed to create booking',
       message: 'Unable to process booking. Please try again.'
+    });
+  }
+});
+
+// @route   GET /api/bookings/crm
+// @desc    Get all bookings for CRM (Super Admin only)
+// @access  Super Admin
+router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) => {
+  try {
+    console.log('🏢 CRM: Fetching all bookings for super admin');
+
+    // Get all bookings with detailed information
+    console.log('🔍 CRM: Preparing bookings query...');
+    const bookingsStmt = db.prepare(`
+      SELECT 
+        b.*,
+        f.origin_city,
+        f.destination_city,
+        f.origin_name,
+        f.destination_name,
+        f.departure_datetime,
+        f.arrival_datetime,
+        f.aircraft_model as aircraft_name,
+        o.company_name as operator_name,
+        c.first_name as customer_first_name,
+        c.last_name as customer_last_name,
+        u.email as customer_email,
+        b.contact_email
+      FROM bookings b
+      JOIN flights f ON b.flight_id = f.id
+      JOIN operators o ON f.operator_id = o.id
+      JOIN customers c ON b.customer_id = c.id
+      JOIN users u ON c.user_id = u.id
+      ORDER BY b.created_at DESC
+    `);
+    
+    console.log('🔍 CRM: Executing bookings query...');
+    const bookingsResult = bookingsStmt.all();
+    console.log(`🔍 CRM: Found ${bookingsResult.length} raw bookings`);
+
+    // Get passengers for each booking
+    console.log('🔍 CRM: Preparing passengers query...');
+    const passengersStmt = db.prepare(`
+      SELECT 
+        p.id,
+        p.first_name,
+        p.last_name,
+        p.date_of_birth,
+        p.document_type,
+        p.document_number
+      FROM passengers p
+      WHERE p.booking_id = ?
+      ORDER BY p.first_name, p.last_name
+    `);
+
+    const bookingsWithPassengers = [];
+    console.log('🔍 CRM: Processing bookings...');
+    for (const booking of bookingsResult) {
+      console.log(`🔍 CRM: Processing booking ${booking.id}...`);
+      const passengersResult = passengersStmt.all(booking.id);
+
+      // Extract airport codes
+      const originCodeMatch = booking.origin_name?.match(/\(([^)]+)\)$/);
+      const destinationCodeMatch = booking.destination_name?.match(/\(([^)]+)\)$/);
+      const originCode = originCodeMatch ? originCodeMatch[1] : booking.origin_city;
+      const destinationCode = destinationCodeMatch ? destinationCodeMatch[1] : booking.destination_city;
+
+      bookingsWithPassengers.push({
+        id: booking.id,
+        status: booking.status,
+        totalPrice: parseFloat(booking.total_amount),
+        createdAt: booking.created_at,
+        customer: {
+          firstName: booking.customer_first_name,
+          lastName: booking.customer_last_name,
+          email: booking.customer_email
+        },
+        flight: {
+          origin: {
+            code: originCode
+          },
+          destination: {
+            code: destinationCode
+          },
+          schedule: {
+            departure: booking.departure_datetime
+          }
+        },
+        passengers: passengersResult.map(p => ({
+          firstName: p.first_name,
+          lastName: p.last_name,
+          email: '', // Passengers don't have email in this table
+          phone: '' // Passengers don't have phone in this table
+        }))
+      });
+    }
+
+    // Calculate revenue summary
+    const totalRevenue = bookingsWithPassengers.reduce((sum, booking) => {
+      return sum + (booking.status === 'confirmed' ? booking.totalPrice : 0);
+    }, 0);
+
+    const platformCommission = totalRevenue * 0.10; // 10% commission
+    const operatorRevenue = totalRevenue - platformCommission;
+
+    console.log(`✅ CRM: Found ${bookingsWithPassengers.length} bookings`);
+
+    const response = {
+      bookings: bookingsWithPassengers,
+      revenue: {
+        total: totalRevenue,
+        commission: platformCommission,
+        operator: operatorRevenue
+      }
+    };
+
+    console.log('✅ CRM: Sending response:', JSON.stringify(response, null, 2));
+    res.json(response);
+
+  } catch (error) {
+    console.error('❌ CRM bookings fetch error:', error.message);
+    console.error('❌ CRM error stack:', error.stack);
+    res.status(500).json({
+      error: 'Failed to fetch CRM data',
+      details: error.message
     });
   }
 });
@@ -186,14 +332,13 @@ router.get('/:id', authenticate, async (req, res) => {
       SELECT 
         b.*,
         f.origin_city, f.destination_city, f.origin_code, f.destination_code,
-        f.departure_datetime, f.arrival_datetime, f.flight_number,
-        a.aircraft_type, a.manufacturer, a.model,
-        o.company_name as operator_name, o.phone as operator_phone
+        f.departure_datetime, f.arrival_datetime, f.flight_number, f.currency,
+        f.aircraft_name, f.aircraft_image_url,
+        o.company_name as operator_name
       FROM bookings b
       JOIN flights f ON b.flight_id = f.id
-      JOIN aircraft a ON f.aircraft_id = a.id
       JOIN operators o ON f.operator_id = o.id
-      WHERE b.id = $1 AND b.user_id = $2
+      WHERE b.id = ? AND b.user_id = ?
     `, [id, req.user.id]);
 
     if (result.rows.length === 0) {
@@ -206,43 +351,35 @@ router.get('/:id', authenticate, async (req, res) => {
 
     // Get passengers
     const passengersResult = await db.query(
-      'SELECT * FROM passengers WHERE booking_id = $1 ORDER BY created_at',
+      'SELECT * FROM passengers WHERE booking_id = ? ORDER BY created_at',
       [booking.id]
     );
 
     res.json({
       id: booking.id,
-      bookingReference: booking.booking_reference,
+      bookingReference: booking.id, // Use ID as reference
       status: booking.status,
-      paymentStatus: booking.payment_status,
-      passengerCount: booking.passenger_count,
+      passengerCount: booking.total_passengers,
       totalAmount: parseFloat(booking.total_amount),
-      currency: booking.currency,
+      currency: booking.currency, // Get from flight
       flight: {
         flightNumber: booking.flight_number,
         origin: `${booking.origin_city} (${booking.origin_code})`,
         destination: `${booking.destination_city} (${booking.destination_code})`,
         departure: booking.departure_datetime,
         arrival: booking.arrival_datetime,
-        aircraft: `${booking.manufacturer} ${booking.model} (${booking.aircraft_type})`,
-        operator: booking.operator_name,
-        operatorPhone: booking.operator_phone
+        aircraft: booking.aircraft_name,
+        operator: booking.operator_name
       },
       passengers: passengersResult.rows.map(p => ({
         firstName: p.first_name,
         lastName: p.last_name,
-        email: p.email,
-        phone: p.phone
+        dateOfBirth: p.date_of_birth,
+        nationality: p.nationality,
+        passportNumber: p.passport_number
       })),
       specialRequests: booking.special_requests,
-      cateringRequests: booking.catering_requests,
-      groundTransportRequired: booking.ground_transport_required,
-      dates: {
-        booking: booking.booking_date,
-        payment: booking.payment_date,
-        confirmation: booking.confirmation_date,
-        cancellation: booking.cancellation_date
-      }
+      bookingDate: booking.created_at
     });
 
   } catch (error) {

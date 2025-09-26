@@ -19,8 +19,8 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
     passengers: 1
   });
 
-  // Show admin dashboard for super-admins
-  if (currentUser?.role === 'super-admin') {
+  // Show admin dashboard for admins and super-admins
+  if (currentUser?.role === 'admin' || currentUser?.role === 'super-admin') {
     return (
       <ErrorBoundary>
         <AdminDashboard user={currentUser} />

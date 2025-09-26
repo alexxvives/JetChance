@@ -74,7 +74,6 @@ npm run dev
 Operator: operator@gmail.com / password
 Customer: customer@gmail.com / password  
 Admin: admin@chancefly.com / Admin123!
-Admin2: admin2@chancefly.com / SuperAdmin2024!
 ```
 
 ### **Authentication Flow:**

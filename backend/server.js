@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -19,7 +19,8 @@ const app = express();
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:8000',
-    'http://localhost:8001'
+    'http://localhost:8001',
+    'http://localhost:8002'
   ],
   credentials: true
 }));

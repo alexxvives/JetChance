@@ -1,0 +1,13 @@
+{
+  "test": "test",
+  "flightDetails": {
+    "sharedFlight": "Vuelo Compartido",
+    "privateFlightWarning": "Si deseas tener el vuelo completamente privado, necesitarías reservar todos los {maxSeats} asientos disponibles",
+    "seatsAlreadyBooked": "{bookedSeats} ya reservados"
+  },
+  "bookingSuccess": {
+    "completed": "Completado",
+    "origin": "Origen",
+    "seats": "Asientos"
+  }
+}

@@ -58,7 +58,8 @@ export default function FreeFlightMap({ flight }) {
     'ORD': { lat: 41.9742, lng: -87.9073, name: 'O\'Hare International' },
     'SEA': { lat: 47.4502, lng: -122.3088, name: 'Seattle-Tacoma International' },
     'BOG': { lat: 4.7016, lng: -74.1469, name: 'El Dorado International Airport' },
-    'MEX': { lat: 19.4363, lng: -99.0721, name: 'Mexico City International Airport' }
+    'MEX': { lat: 19.4363, lng: -99.0721, name: 'Mexico City International Airport' },
+    'BAQ': { lat: 10.8896, lng: -74.7808, name: 'Ernesto Cortissoz International Airport' }
   };
 
   // Get coordinates from airport codes

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
@@ -37,6 +37,11 @@ export default function AdminDashboard({ user }) {
     date: '',
     passengers: 1
   });
+
+  // CRM state for super-admin
+  const [crmData, setCrmData] = useState(null);
+  const [crmLoading, setCrmLoading] = useState(false);
+  const [expandedBookings, setExpandedBookings] = useState(new Set());
 
   // Fetch pending flights for approval
   const fetchPendingFlights = async () => {
@@ -296,11 +301,64 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  // CRM functions for super-admin
+  const fetchCrmData = async () => {
+    try {
+      setCrmLoading(true);
+      console.log('🏢 CRM: Fetching data...');
+      
+      const token = localStorage.getItem('accessToken');
+      console.log('🔑 Token exists:', !!token);
+      console.log('🔑 Token preview:', token ? token.substring(0, 50) + '...' : 'No token');
+      
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+
+      const response = await fetch('http://localhost:4000/api/bookings/crm', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        }
+        if (response.status === 403) {
+          throw new Error('Access denied. Super admin privileges required.');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCrmData(data);
+      console.log('✅ CRM: Data loaded', data);
+    } catch (error) {
+      console.error('❌ CRM: Error fetching data:', error);
+    } finally {
+      setCrmLoading(false);
+    }
+  };
+
+  const toggleBookingExpansion = (bookingId) => {
+    const newExpanded = new Set(expandedBookings);
+    if (newExpanded.has(bookingId)) {
+      newExpanded.delete(bookingId);
+    } else {
+      newExpanded.add(bookingId);
+    }
+    setExpandedBookings(newExpanded);
+  };
+
   useEffect(() => {
     if (activeTab === 'approvals') {
       fetchPendingFlights();
     } else if (activeTab === 'operators') {
       fetchPendingOperators();
+    } else if (activeTab === 'crm' && user?.role === 'super-admin') {
+      fetchCrmData();
     }
   }, [activeTab]);
 
@@ -308,7 +366,8 @@ export default function AdminDashboard({ user }) {
     { id: 'catalog', name: 'Flight Catalog', icon: EyeIcon },
     { id: 'approvals', name: 'Flight Approvals', icon: CheckIcon, badge: pendingFlights.length },
     { id: 'operators', name: 'Operator Approvals', icon: UsersIcon, badge: pendingOperators.length },
-    { id: 'create', name: 'Create Flight', icon: PlusIcon }
+    { id: 'create', name: 'Create Flight', icon: PlusIcon },
+    ...(user?.role === 'super-admin' ? [{ id: 'crm', name: 'CRM & Analytics', icon: ChartBarIcon }] : [])
   ];
 
   return (
@@ -576,6 +635,162 @@ export default function AdminDashboard({ user }) {
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Create New Flight
               </button>
+            </div>
+          )}
+
+          {activeTab === 'crm' && (
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">CRM Dashboard</h2>
+              <p className="text-gray-600 mb-6">View all bookings, revenue analytics, and customer details</p>
+              
+              {crmLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading CRM data...</p>
+                </div>
+              ) : crmData ? (
+                <div className="space-y-6">
+                  {/* Revenue Summary */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="bg-green-100 p-2 rounded-lg">
+                        <ChartBarIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900">Revenue Summary</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          ${crmData.revenue.total.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <p className="text-sm font-medium text-gray-600">Platform Commission (10%)</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ${crmData.revenue.commission.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <p className="text-sm font-medium text-gray-600">Operator Revenue</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          ${crmData.revenue.operator.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bookings List */}
+                  <div className="bg-white border border-gray-200 rounded-xl">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        All Bookings ({crmData.bookings.length})
+                      </h3>
+                    </div>
+                    
+                    <div className="divide-y divide-gray-200">
+                      {crmData.bookings.map((booking) => (
+                        <div key={booking.id} className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <button
+                                  onClick={() => toggleBookingExpansion(booking.id)}
+                                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                                >
+                                  {expandedBookings.has(booking.id) ? (
+                                    <ChevronDownIcon className="h-5 w-5" />
+                                  ) : (
+                                    <ChevronRightIcon className="h-5 w-5" />
+                                  )}
+                                  <span className="font-medium">Booking #{booking.id}</span>
+                                </button>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  booking.status === 'confirmed' 
+                                    ? 'bg-green-100 text-green-700'
+                                    : booking.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {booking.status}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">Customer</p>
+                                  <p className="text-sm text-gray-900">
+                                    {booking.customer?.firstName} {booking.customer?.lastName}
+                                  </p>
+                                  <p className="text-xs text-gray-600">{booking.customer?.email}</p>
+                                  {booking.contact_email && booking.contact_email !== booking.customer?.email && (
+                                    <p className="text-xs text-green-600 font-medium">Contact: {booking.contact_email}</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">Flight</p>
+                                  <p className="text-sm text-gray-900">
+                                    {booking.flight?.origin?.code} → {booking.flight?.destination?.code}
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    {booking.flight?.schedule?.departure ? 
+                                      new Date(booking.flight.schedule.departure).toLocaleDateString() : 'TBD'
+                                    }
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">Total Price</p>
+                                  <p className="text-sm font-bold text-gray-900">
+                                    ${booking.totalPrice?.toLocaleString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">Booked On</p>
+                                  <p className="text-sm text-gray-900">
+                                    {new Date(booking.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Expandable Passenger Details */}
+                              {expandedBookings.has(booking.id) && booking.passengers && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                                    Passengers ({booking.passengers.length})
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {booking.passengers.map((passenger, index) => (
+                                      <div key={index} className="flex items-center space-x-4 text-sm">
+                                        <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                                          {index + 1}
+                                        </span>
+                                        <div className="flex-1 grid grid-cols-3 gap-4">
+                                          <span className="font-medium text-gray-900">
+                                            {passenger.firstName} {passenger.lastName}
+                                          </span>
+                                          <span className="text-gray-600">{passenger.email}</span>
+                                          <span className="text-gray-600">{passenger.phone}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No CRM Data</h3>
+                  <p className="text-gray-600">Unable to load CRM data at this time.</p>
+                </div>
+              )}
             </div>
           )}
         </div>

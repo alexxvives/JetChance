@@ -1,53 +1,62 @@
--- ChanceFly Database Schema for D1
+-- ChanceFly Database Schema - Optimized for Colombian Flight Booking MVP
+-- ========================================================================
+-- ⚠️  WARNING: DO NOT ADD COLUMNS WITHOUT EXPLICIT APPROVAL
+-- This schema is optimized for MVP launch in Colombian market
+-- ========================================================================
 
--- Create users table
+-- Users table - Authentication and basic user info
 CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,                    -- Sequential: US0001, US0002, etc.
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  phone TEXT,
   role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'operator')),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create operators table
-CREATE TABLE IF NOT EXISTS operators (
-  id TEXT PRIMARY KEY,
+-- Customers table - Customer profiles
+CREATE TABLE IF NOT EXISTS customers (
+  id TEXT PRIMARY KEY,                    -- Sequential: CU0001, CU0002, etc.
   user_id TEXT NOT NULL,
+  phone TEXT,
+  document_number TEXT,
+  document_type TEXT DEFAULT 'CC',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Operators table - Flight operators (simplified)
+CREATE TABLE IF NOT EXISTS operators (
+  id TEXT PRIMARY KEY,                    -- Sequential: OP0001, OP0002, etc.
+  auth_user_id TEXT NOT NULL,
   company_name TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'suspended')),
+  total_flights INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  FOREIGN KEY (auth_user_id) REFERENCES users (id)
 );
 
--- Create flights table
+-- Flights table - Available flights (optimized)
 CREATE TABLE IF NOT EXISTS flights (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,                    -- Sequential: FL0001, FL0002, etc.
   operator_id TEXT NOT NULL,
-  origin TEXT NOT NULL,
-  destination TEXT NOT NULL,
+  flight_number TEXT,
+  origin_city TEXT NOT NULL,
+  destination_city TEXT NOT NULL,
   origin_code TEXT NOT NULL,
   destination_code TEXT NOT NULL,
-  departure_time DATETIME NOT NULL,
-  arrival_time DATETIME NOT NULL,
-  aircraft_type TEXT NOT NULL,
-  aircraft_image TEXT,
-  price DECIMAL(10, 2) NOT NULL,
-  original_price DECIMAL(10, 2),
-  seats_available INTEGER NOT NULL,
-  operator_name TEXT NOT NULL,
-  duration TEXT NOT NULL,
-  origin_lat REAL,
-  origin_lng REAL,
-  destination_lat REAL,
-  destination_lng REAL,
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'completed')),
+  departure_datetime DATETIME NOT NULL,
+  arrival_datetime DATETIME NOT NULL,
+  aircraft_name TEXT NOT NULL,
+  aircraft_image_url TEXT,
+  empty_leg_price REAL NOT NULL,
+  currency TEXT DEFAULT 'COP',           -- Colombian Pesos
+  available_seats INTEGER DEFAULT 1,
+  status TEXT DEFAULT 'available' CHECK (status IN ('available', 'booked', 'cancelled')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (operator_id) REFERENCES operators (id)
+);
   FOREIGN KEY (operator_id) REFERENCES operators (id) ON DELETE CASCADE
 );
 

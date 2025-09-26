@@ -1,33 +1,30 @@
-const sqlite3 = require('sqlite3').verbose();
+﻿const Database = require('better-sqlite3');
 const path = require('path');
 
-// Create or connect to SQLite database
 const dbPath = path.join(__dirname, '..', 'chancefly.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-// Promisify database operations
 const query = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ rows });
-      }
-    });
-  });
+  try {
+    const stmt = db.prepare(sql);
+    const rows = stmt.all(params);
+    return Promise.resolve({ rows });
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 const run = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ lastID: this.lastID, changes: this.changes });
-      }
+  try {
+    const stmt = db.prepare(sql);
+    const result = stmt.run(params);
+    return Promise.resolve({ 
+      lastID: result.lastInsertRowid, 
+      changes: result.changes 
     });
-  });
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 module.exports = {

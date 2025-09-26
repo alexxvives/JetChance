@@ -1,6 +1,7 @@
 const express = require('express');
 const Database = require('better-sqlite3');
 const { authenticateToken } = require('../middleware/auth');
+const SimpleIDGenerator = require('../utils/idGenerator');
 const path = require('path');
 
 // Initialize Stripe
@@ -17,18 +18,11 @@ db.exec(`
     id TEXT PRIMARY KEY,
     flight_id TEXT NOT NULL,
     user_id TEXT,
-    transaction_id TEXT UNIQUE NOT NULL,
     amount REAL NOT NULL,
-    currency TEXT DEFAULT 'USD',
-    status TEXT DEFAULT 'completed',
     payment_method TEXT,
-    customer_name TEXT,
-    customer_email TEXT,
-    customer_phone TEXT,
-    passengers INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (flight_id) REFERENCES flights (id)
+    FOREIGN KEY (flight_id) REFERENCES flights (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
   )
 `);
 
@@ -36,20 +30,17 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS bookings (
     id TEXT PRIMARY KEY,
+    booking_reference TEXT UNIQUE,
     flight_id TEXT NOT NULL,
     user_id TEXT,
-    payment_id TEXT,
-    status TEXT DEFAULT 'confirmed',
-    passengers INTEGER DEFAULT 1,
+    total_passengers INTEGER NOT NULL,
     total_amount REAL NOT NULL,
-    customer_name TEXT,
-    customer_email TEXT,
-    customer_phone TEXT,
-    booking_reference TEXT UNIQUE,
+    special_requests TEXT,
+    status TEXT DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (flight_id) REFERENCES flights (id),
-    FOREIGN KEY (payment_id) REFERENCES payments (id)
+    FOREIGN KEY (user_id) REFERENCES users (id)
   )
 `);
 
@@ -128,27 +119,15 @@ router.post('/process', async (req, res) => {
     const {
       flightId,
       amount,
-      currency = 'USD',
       passengers = 1,
-      customerInfo,
-      paymentMethod,
-      transactionId
+      paymentMethod
     } = req.body;
 
     // Validate required fields
-    if (!flightId || !amount || !customerInfo || !transactionId) {
+    if (!flightId || !amount) {
       return res.status(400).json({
         success: false,
         error: 'Missing required payment information'
-      });
-    }
-
-    // Check if transaction already exists
-    const existingPayment = db.prepare('SELECT id FROM payments WHERE transaction_id = ?').get(transactionId);
-    if (existingPayment) {
-      return res.status(400).json({
-        success: false,
-        error: 'Transaction already processed'
       });
     }
 
@@ -161,9 +140,9 @@ router.post('/process', async (req, res) => {
       });
     }
 
-    // Generate IDs
-    const paymentId = `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const bookingId = `book_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate IDs using the new sequential pattern
+    const paymentId = SimpleIDGenerator.generatePaymentId();
+    const bookingId = SimpleIDGenerator.generateBookingId();
     const bookingReference = generateBookingReference();
 
     // Get user ID if authenticated
@@ -172,17 +151,14 @@ router.post('/process', async (req, res) => {
     // Start transaction
     const insertPayment = db.prepare(`
       INSERT INTO payments (
-        id, flight_id, user_id, transaction_id, amount, currency, 
-        payment_method, customer_name, customer_email, customer_phone, 
-        passengers, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed')
+        id, flight_id, user_id, amount, payment_method
+      ) VALUES (?, ?, ?, ?, ?)
     `);
 
     const insertBooking = db.prepare(`
       INSERT INTO bookings (
-        id, flight_id, user_id, payment_id, passengers, total_amount,
-        customer_name, customer_email, customer_phone, booking_reference, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')
+        id, booking_reference, flight_id, user_id, total_passengers, total_amount, status
+      ) VALUES (?, ?, ?, ?, ?, ?, 'confirmed')
     `);
 
     const transaction = db.transaction(() => {
@@ -191,28 +167,18 @@ router.post('/process', async (req, res) => {
         paymentId,
         flightId,
         userId,
-        transactionId,
         amount,
-        currency,
-        JSON.stringify(paymentMethod),
-        customerInfo.name,
-        customerInfo.email,
-        customerInfo.phone || null,
-        passengers
+        JSON.stringify(paymentMethod)
       );
 
       // Insert booking record
       insertBooking.run(
         bookingId,
+        bookingReference,
         flightId,
         userId,
-        paymentId,
         passengers,
-        amount,
-        customerInfo.name,
-        customerInfo.email,
-        customerInfo.phone || null,
-        bookingReference
+        amount
       );
 
       // Update flight available seats (optional)
@@ -228,13 +194,14 @@ router.post('/process', async (req, res) => {
       success: true,
       payment: {
         id: paymentId,
-        transactionId,
+        transactionId: paymentId, // Use payment ID as transaction ID
         amount,
-        currency,
+        currency: 'COL', // Always Colombian Pesos
         status: 'completed'
       },
       booking: {
         id: bookingId,
+        booking_reference: bookingReference,
         reference: bookingReference,
         status: 'confirmed',
         flightId,
@@ -259,21 +226,17 @@ router.get('/bookings', (req, res) => {
     
     let bookings;
     if (userId) {
-      // Get bookings for authenticated user
+      // Get bookings for authenticated user (no need for payment join since booking has all needed info)
       bookings = db.prepare(`
         SELECT 
           b.*,
-          f.origin,
-          f.destination,
+          f.origin_code,
+          f.destination_code,
           f.departure_time,
           f.aircraft_name,
-          f.operator_name,
-          p.transaction_id,
-          p.amount as payment_amount,
-          p.currency
+          f.operator_name
         FROM bookings b
         JOIN flights f ON f.id = b.flight_id
-        JOIN payments p ON p.id = b.payment_id
         WHERE b.user_id = ?
         ORDER BY b.created_at DESC
       `).all(userId);

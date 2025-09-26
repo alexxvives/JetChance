@@ -12,10 +12,8 @@ const router = express.Router();
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
   body('firstName').optional().trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
   body('first_name').optional().trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
   body('lastName').optional().trim().isLength({ min: 2 }).withMessage('Last name must be at least 2 characters'),
@@ -98,7 +96,7 @@ router.post('/register', registerValidation, async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await db.query('SELECT id FROM auth_users WHERE email = ?', [email]);
+    const existingUser = await db.query('SELECT id FROM users WHERE email = ?', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json({
         error: 'User already exists',
@@ -115,29 +113,28 @@ router.post('/register', registerValidation, async (req, res) => {
     
     const status = 'approved'; // All users are automatically approved now
 
-    // Create user in auth_users table
+    // Create user in users table
     await db.run(
-      `INSERT INTO auth_users (id, email, password_hash, phone, role, is_active, email_verified)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, email, passwordHash, phone, role, true, false]
+      `INSERT INTO users (id, email, password_hash, role)
+       VALUES (?, ?, ?, ?)`,
+      [userId, email, passwordHash, role]
     );
 
     // Create role-specific record
     let roleSpecificId;
     if (role === 'customer') {
-      roleSpecificId = 'cust_' + userId;
+      roleSpecificId = SimpleIDGenerator.generateCustomerId();
       await db.run(
-        `INSERT INTO customers (id, auth_user_id, first_name, last_name)
+        `INSERT INTO customers (id, user_id, first_name, last_name)
          VALUES (?, ?, ?, ?)`,
         [roleSpecificId, userId, firstName, lastName]
       );
     } else if (role === 'operator') {
-      roleSpecificId = 'op_' + userId;
-      const isIndividual = companyName.toLowerCase() === 'particular';
+      roleSpecificId = SimpleIDGenerator.generateOperatorId();
       await db.run(
-        `INSERT INTO operators (id, auth_user_id, company_name, is_individual, status)
+        `INSERT INTO operators (id, user_id, company_name, total_flights, created_at)
          VALUES (?, ?, ?, ?, ?)`,
-        [roleSpecificId, userId, companyName.trim(), isIndividual, status]
+        [roleSpecificId, userId, companyName.trim(), 0, new Date().toISOString()]
       );
     }
 
@@ -146,8 +143,8 @@ router.post('/register', registerValidation, async (req, res) => {
     if (role === 'customer') {
       const result = await db.query(`
         SELECT au.id, au.email, au.role, au.created_at, c.first_name, c.last_name
-        FROM auth_users au
-        JOIN customers c ON au.id = c.auth_user_id
+        FROM users au
+        JOIN customers c ON au.id = c.user_id
         WHERE au.id = ?
       `, [userId]);
       const user = result.rows[0];
@@ -161,9 +158,9 @@ router.post('/register', registerValidation, async (req, res) => {
       };
     } else if (role === 'operator') {
       const result = await db.query(`
-        SELECT au.id, au.email, au.role, au.created_at, o.company_name, o.is_individual
-        FROM auth_users au
-        JOIN operators o ON au.id = o.auth_user_id
+        SELECT au.id, au.email, au.role, au.created_at, o.company_name
+        FROM users au
+        JOIN operators o ON au.id = o.user_id
         WHERE au.id = ?
       `, [userId]);
       const user = result.rows[0];
@@ -171,7 +168,6 @@ router.post('/register', registerValidation, async (req, res) => {
         id: user.id,
         email: user.email,
         companyName: user.company_name,
-        isIndividual: user.is_individual,
         role: user.role,
         createdAt: user.created_at
       };
@@ -212,9 +208,9 @@ router.post('/login', loginValidation, async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Find user in auth_users
+    // Find user in users
     const result = await db.query(
-      'SELECT id, email, password_hash, role, is_active FROM auth_users WHERE email = ?',
+      'SELECT id, email, password_hash, role FROM users WHERE email = ?',
       [email]
     );
 
@@ -226,14 +222,6 @@ router.post('/login', loginValidation, async (req, res) => {
     }
 
     const user = result.rows[0];
-
-    // Check if account is active
-    if (!user.is_active) {
-      return res.status(401).json({
-        error: 'Account disabled',
-        message: 'Your account has been disabled. Please contact support.'
-      });
-    }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
@@ -253,7 +241,7 @@ router.post('/login', loginValidation, async (req, res) => {
 
     if (user.role === 'customer') {
       const customerResult = await db.query(`
-        SELECT first_name, last_name FROM customers WHERE auth_user_id = ?
+        SELECT first_name, last_name FROM customers WHERE user_id = ?
       `, [user.id]);
       if (customerResult.rows.length > 0) {
         const customer = customerResult.rows[0];
@@ -262,12 +250,11 @@ router.post('/login', loginValidation, async (req, res) => {
       }
     } else if (user.role === 'operator') {
       const operatorResult = await db.query(`
-        SELECT company_name, is_individual FROM operators WHERE auth_user_id = ?
+        SELECT company_name FROM operators WHERE user_id = ?
       `, [user.id]);
       if (operatorResult.rows.length > 0) {
         const operator = operatorResult.rows[0];
         userResponse.companyName = operator.company_name;
-        userResponse.isIndividual = operator.is_individual;
       }
     }
 
@@ -309,7 +296,7 @@ router.post('/refresh', async (req, res) => {
     
     // Check if user still exists and is active
     const result = await db.query(
-      'SELECT id, email, role FROM auth_users WHERE id = ? AND is_active = true',
+      'SELECT id, email, role FROM users WHERE id = ?',
       [decoded.userId]
     );
 
@@ -370,8 +357,8 @@ router.post('/logout', authenticate, async (req, res) => {
 router.get('/me', authenticate, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, email, phone, role, is_active, created_at
-       FROM auth_users
+      `SELECT id, email, role, created_at
+       FROM users
        WHERE id = ?`,
       [req.user.id]
     );
@@ -388,15 +375,13 @@ router.get('/me', authenticate, async (req, res) => {
     let userResponse = {
       id: user.id,
       email: user.email,
-      phone: user.phone,
       role: user.role,
-      isActive: user.is_active,
       createdAt: user.created_at
     };
 
     if (user.role === 'customer') {
       const customerResult = await db.query(`
-        SELECT first_name, last_name, date_of_birth FROM customers WHERE auth_user_id = ?
+        SELECT first_name, last_name FROM customers WHERE user_id = ?
       `, [user.id]);
       if (customerResult.rows.length > 0) {
         const customer = customerResult.rows[0];
@@ -406,13 +391,11 @@ router.get('/me', authenticate, async (req, res) => {
       }
     } else if (user.role === 'operator') {
       const operatorResult = await db.query(`
-        SELECT company_name, is_individual, status FROM operators WHERE auth_user_id = ?
+        SELECT company_name FROM operators WHERE user_id = ?
       `, [user.id]);
       if (operatorResult.rows.length > 0) {
         const operator = operatorResult.rows[0];
         userResponse.companyName = operator.company_name;
-        userResponse.isIndividual = operator.is_individual;
-        userResponse.status = operator.status;
       }
     }
 

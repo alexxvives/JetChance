@@ -168,6 +168,7 @@
     "passengersPlural": "pasajeros",
     "sharedFlight": "Vuelo Compartido",
     "privateFlightWarning": "El vuelo puede ser compartido si otros reservan asientos restantes. Para garantizar privacidad, reserva los {remainingSeats} asientos restantes",
+    "sharedFlightWarning": "Este vuelo es compartido, {bookedSeats} ya han sido reservados. Para garantizar privacidad, reserva todos los asientos de otro vuelo.",
     "seatsAlreadyBooked": "{bookedSeats} ya reservados",
     "finalPriceConfirmed": "Precio final confirmado antes del pago",
     "operatorViewOnly": "Solo Vista - Cuenta de Operador", 

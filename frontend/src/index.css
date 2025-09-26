@@ -198,67 +198,53 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   transform: scale(1.1);
 }
 
-/* Style the individual date fields when they appear in the input */
+/* Remove all custom styling - make it look like regular text input */
 input[type="date"]::-webkit-datetime-edit {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-weight: 500;
-  color: #1f2937;
+  font-family: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-  background: rgba(59, 130, 246, 0.02);
-  border-radius: 6px;
-  padding: 4px 8px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
 }
 
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 4px;
-  padding: 2px 6px;
-  margin: 0 1px;
-  color: #1e40af;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font-weight: inherit;
+  transition: none;
 }
 
 input[type="date"]::-webkit-datetime-edit-month-field:hover,
 input[type="date"]::-webkit-datetime-edit-day-field:hover,
 input[type="date"]::-webkit-datetime-edit-year-field:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.3);
+  background: transparent;
+  border: none;
 }
 
 input[type="date"]::-webkit-datetime-edit-month-field:focus,
 input[type="date"]::-webkit-datetime-edit-day-field:focus,
 input[type="date"]::-webkit-datetime-edit-year-field:focus {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: #3b82f6;
+  background: transparent;
+  border: none;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: none;
 }
 
-/* Enhanced styling for better calendar popup appearance */
+/* Make date input look exactly like text input */
 input[type="date"] {
-  position: relative;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-input[type="date"]:hover {
-  border-color: #9ca3af;
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-input[type="date"]:focus {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
 }
 
 /* Custom calendar theming based on context */

@@ -125,41 +125,65 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     const userId = uuidv4();
     const role = data.role || 'customer';
     
-    // Create user
+    // Create user (authentication data only)
     await env.chancefly_db.prepare(
-      `INSERT INTO users (id, email, password_hash, first_name, last_name, phone, role)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    ).bind(userId, data.email, passwordHash, firstName, lastName, data.phone || null, role).run();
+      `INSERT INTO users (id, email, password_hash, role)
+       VALUES (?, ?, ?, ?)`
+    ).bind(userId, data.email, passwordHash, role).run();
     
-    // If registering as operator, create operator profile
-    if (role === 'operator') {
+    // Create role-specific profile
+    if (role === 'customer') {
+      const customerId = uuidv4();
+      await env.chancefly_db.prepare(
+        'INSERT INTO customers (id, user_id, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)'
+      ).bind(customerId, userId, firstName, lastName, data.phone || null).run();
+    } else if (role === 'operator') {
       const operatorId = uuidv4();
       await env.chancefly_db.prepare(
         'INSERT INTO operators (id, user_id, company_name, status) VALUES (?, ?, ?, ?)'
       ).bind(operatorId, userId, `${firstName} ${lastName} Aviation`, 'pending').run();
     }
     
-    // Get the created user
+    // Get the created user and role-specific data
     const userResult = await env.chancefly_db.prepare(
-      'SELECT id, email, first_name, last_name, role, created_at FROM users WHERE id = ?'
+      'SELECT id, email, role, created_at FROM users WHERE id = ?'
     ).bind(userId).first();
     
     if (!userResult) {
       throw new Error('Failed to retrieve created user');
     }
     
+    let userData: any = {
+      id: userResult.id,
+      email: userResult.email,
+      role: userResult.role,
+      createdAt: userResult.created_at
+    };
+
+    if (role === 'customer') {
+      const customerResult = await env.chancefly_db.prepare(
+        'SELECT first_name, last_name FROM customers WHERE user_id = ?'
+      ).bind(userId).first();
+      
+      if (customerResult) {
+        userData.firstName = customerResult.first_name;
+        userData.lastName = customerResult.last_name;
+      }
+    } else if (role === 'operator') {
+      const operatorResult = await env.chancefly_db.prepare(
+        'SELECT company_name FROM operators WHERE user_id = ?'
+      ).bind(userId).first();
+      
+      if (operatorResult) {
+        userData.companyName = operatorResult.company_name;
+      }
+    }
+    
     const { accessToken, refreshToken } = generateTokens(userId, env);
     
     return new Response(JSON.stringify({
       message: 'User registered successfully',
-      user: {
-        id: userResult.id,
-        email: userResult.email,
-        firstName: userResult.first_name,
-        lastName: userResult.last_name,
-        role: userResult.role,
-        createdAt: userResult.created_at
-      },
+      user: userData,
       tokens: {
         accessToken,
         refreshToken
@@ -204,7 +228,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     
     // Get user from database
     const user = await env.chancefly_db.prepare(
-      'SELECT id, email, password_hash, first_name, last_name, role FROM users WHERE email = ?'
+      'SELECT id, email, password_hash, role FROM users WHERE email = ?'
     ).bind(data.email).first();
     
     if (!user) {
@@ -230,17 +254,37 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
       });
     }
     
+    // Build user response with role-specific data
+    let userData: any = {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    };
+
+    if (user.role === 'customer') {
+      const customerResult = await env.chancefly_db.prepare(
+        'SELECT first_name, last_name FROM customers WHERE user_id = ?'
+      ).bind(user.id).first();
+      
+      if (customerResult) {
+        userData.firstName = customerResult.first_name;
+        userData.lastName = customerResult.last_name;
+      }
+    } else if (user.role === 'operator') {
+      const operatorResult = await env.chancefly_db.prepare(
+        'SELECT company_name FROM operators WHERE user_id = ?'
+      ).bind(user.id).first();
+      
+      if (operatorResult) {
+        userData.companyName = operatorResult.company_name;
+      }
+    }
+    
     const { accessToken, refreshToken } = generateTokens(user.id as string, env);
     
     return new Response(JSON.stringify({
       message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        role: user.role
-      },
+      user: userData,
       tokens: {
         accessToken,
         refreshToken

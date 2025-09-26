@@ -3,8 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, MapPinIcon, ClockIcon, UsersIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FreeFlightMap from '../components/FreeFlightMap';
+import { useTranslation } from '../contexts/TranslationContext';
+import { useAuth } from '../contexts/AuthContext';
+
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
 
 export default function FlightDetailsPage() {
+  const { t, currentLanguage } = useTranslation();
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [flight, setFlight] = useState(null);
@@ -35,12 +48,26 @@ export default function FlightDetailsPage() {
     loadFlight();
   }, [id]);
 
+  // Set selectedPassengers to available seats when flight data loads
+  useEffect(() => {
+    if (!flight) {
+      return;
+    }
+
+    const fallbackMaxPassengers = flight.max_passengers ?? flight.capacity?.maxPassengers ?? 8;
+    const initialSeats = flight.available_seats ?? flight.seats_available ?? flight.capacity?.availableSeats ?? fallbackMaxPassengers;
+
+    if (initialSeats !== undefined && initialSeats !== null) {
+      setSelectedPassengers(initialSeats);
+    }
+  }, [flight]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading flight details...</p>
+          <p className="mt-4 text-gray-600">{t('flightDetails.loading')}</p>
         </div>
       </div>
     );
@@ -50,12 +77,12 @@ export default function FlightDetailsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-gray-600">Flight not found</p>
+          <p className="text-xl text-gray-600">{t('flightDetails.notFound')}</p>
           <button 
             onClick={() => navigate('/dashboard')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Back to Dashboard
+            {t('flightDetails.backToDashboard')}
           </button>
         </div>
       </div>
@@ -69,22 +96,58 @@ export default function FlightDetailsPage() {
   console.log('⏰ Departure time:', flight.departure_time);
   console.log('⏰ Arrival time:', flight.arrival_time);
   console.log('⏱️ Duration:', flight.duration);
-  const price = flight.price || flight.empty_leg_price || 0;
-  const originalPrice = flight.original_price || price;
-  const savings = originalPrice - price;
-  const savingsPercentage = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
-  console.log('💰 Price calculations:', { price, originalPrice, savings, savingsPercentage });
+  // Since operators now input per-seat prices, we need to calculate total charter prices for display
+  const pricePerSeat = flight.price || flight.seat_leg_price || flight.empty_leg_price || 0; // Empty leg price per seat
+  const originalPricePerSeat = flight.original_price || flight.seat_market_price || pricePerSeat; // Market price per seat
+  const maxPassengers = flight.max_passengers || flight.capacity?.maxPassengers || 8;
+  const availableSeats = flight.available_seats ?? flight.seats_available ?? flight.capacity?.availableSeats ?? maxPassengers;
+  const hasExistingBookings = availableSeats < maxPassengers;
+  const remainingSeatsForPrivacy = Math.max(availableSeats - selectedPassengers, 0);
+  const bookedSeats = maxPassengers - availableSeats;
+  const showPrivacyWarning = !hasExistingBookings && selectedPassengers < maxPassengers;
+  const showSharedFlightWarning = hasExistingBookings;
+  
+  // Calculate total charter prices (full charter regardless of passenger count)
+  const charterPrice = pricePerSeat * maxPassengers; // Charter Price = empty leg price * max passengers
+  const marketPrice = originalPricePerSeat * maxPassengers; // Market Price = market price * max passengers
+  
+  // For booking calculations (what user actually pays based on selected passengers)
+  const price = pricePerSeat * selectedPassengers;
+  const originalPrice = originalPricePerSeat * selectedPassengers;
+  
+  const savings = marketPrice - charterPrice;
+  const savingsPercentage = marketPrice > 0 ? Math.round((savings / marketPrice) * 100) : 0;
+  console.log('💰 Price calculations:', { 
+    pricePerSeat,
+    originalPricePerSeat,
+    maxPassengers, 
+    selectedPassengers,
+    charterPrice,
+    marketPrice,
+    price, 
+    originalPrice, 
+    savings, 
+    savingsPercentage 
+  });
 
   const startBookingProcess = () => {
+    // Operators cannot book their own flights
+    if (user?.role === 'operator') {
+      return; // Do nothing - just decorative for operators
+    }
+    
     // Navigate to dedicated payment page with flight data
     navigate(`/payment/${flight.id}`, {
       state: {
         flight: flight,
         passengers: selectedPassengers,
-        price: flight.empty_leg_price || flight.original_price || 0
+        price: price // This is now pricePerSeat * selectedPassengers
       }
     });
   };
+
+  // Check if user is an operator
+  const isOperator = user?.role === 'operator';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -95,7 +158,7 @@ export default function FlightDetailsPage() {
           className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Back to Flights
+          {t('flightDetails.backToFlights')}
         </button>
 
         {/* Flight Details */}
@@ -111,15 +174,19 @@ export default function FlightDetailsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 truncate">
-                    {flight.aircraft_name || 'Private Jet'}
+                    {flight.aircraft_model || flight.aircraft_name || 'Private Jet'}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    {flight.departure_time ? new Date(flight.departure_time).toLocaleDateString('en-US', { 
-                      weekday: 'long',
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric'
-                    }) : 'TBD'}
+                    {flight.departure_time ? (() => {
+                      const dateStr = new Date(flight.departure_time).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', { 
+                        weekday: 'long',
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric'
+                      });
+                      // Capitalize the first letter
+                      return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+                    })() : 'TBD'}
                   </p>
                 </div>
               </div>
@@ -134,7 +201,7 @@ export default function FlightDetailsPage() {
                   {flight.originCode || flight.origin_code || 'N/A'}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">
-                  {flight.origin || flight.origin_city || 'Origin'}
+                  ORIGIN
                 </div>
               </div>
               
@@ -158,31 +225,37 @@ export default function FlightDetailsPage() {
                   {flight.destinationCode || flight.destination_code || 'N/A'}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">
-                  {flight.destination || flight.destination_city || 'Destination'}
+                  DESTINATION
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quick Info Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-lg font-bold text-gray-900">
-                {flight.seats_available || flight.capacity?.availableSeats || 'N/A'}
+                {flight.available_seats ?? flight.capacity?.availableSeats ?? flight.seats_available ?? 'N/A'}
               </div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide">Available Seats</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.availableSeats')}</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-gray-900">
+                {maxPassengers}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.totalSeats')}</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-lg font-bold text-gray-900">
                 {flight.operator || 'N/A'}
               </div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide">Operator</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.operator')}</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <div className="text-lg font-bold text-gray-900">
-                {flight.duration || 'N/A'}
+                {flight.flight_time || 'N/A'}
               </div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide">Flight Time</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.flightTime')}</div>
             </div>
           </div>
         </div>
@@ -194,9 +267,9 @@ export default function FlightDetailsPage() {
             {/* Flight Route */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden h-full">
               <div className="p-6 border-b">
-                <h2 className="text-xl font-bold text-gray-900">Flight Route</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('flightDetails.flightRoute')}</h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  {flight.origin || flight.origin_city || 'TBD'} to {flight.destination || flight.destination_city || 'TBD'} • {flight.duration || 'TBD'}
+                  {flight.originCode || flight.origin_code || 'TBD'} {t('flightDetails.routeTo')} {flight.destinationCode || flight.destination_code || 'TBD'} • {flight.flight_time || 'TBD'}
                 </p>
               </div>
               <div className="relative">
@@ -207,34 +280,34 @@ export default function FlightDetailsPage() {
 
           {/* Right Panel - Pricing */}
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm p-6 h-full">
+            <div className="bg-white rounded-2xl shadow-sm p-6 h-full relative">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Pricing</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('flightDetails.pricing')}</h2>
               </div>
 
               {/* Price Comparison Cards */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 mb-8">
                 {/* Market Price Card - Now on the LEFT */}
-                {originalPrice > price ? (
-                  <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="text-xs text-red-600 font-medium mb-1">MARKET RATE</div>
-                    <div className="text-2xl font-bold text-red-400 line-through">${originalPrice.toLocaleString()}</div>
-                    <div className="text-xs text-red-600 mt-1">Standard Pricing</div>
+                {marketPrice > charterPrice ? (
+                  <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="text-xs text-red-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
+                    <div className="text-2xl font-bold text-red-400 line-through">{formatCOP(marketPrice)}</div>
+                    <div className="text-xs text-red-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
                   </div>
                 ) : (
-                  <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div className="text-xs text-gray-600 font-medium mb-1">GREAT VALUE</div>
-                    <div className="text-2xl font-bold text-gray-700">${price.toLocaleString()}</div>
-                    <div className="text-xs text-gray-600 mt-1">Competitive Rate</div>
+                  <div className="text-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="text-xs text-gray-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
+                    <div className="text-2xl font-bold text-gray-700">{formatCOP(marketPrice)}</div>
+                    <div className="text-xs text-gray-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
                   </div>
                 )}
 
                 {/* Charter Price Card - Now on the RIGHT */}
-                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg relative">
-                  <div className="text-xs text-blue-600 font-medium mb-1">CHARTER PRICE</div>
-                  <div className="text-2xl font-bold text-blue-700">${price.toLocaleString()}</div>
-                  <div className="text-xs text-blue-600 mt-1">Empty Leg Deal</div>
-                  {originalPrice > price && savingsPercentage > 0 && (
+                <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg relative">
+                  <div className="text-xs text-blue-600 font-medium mb-1">{t('flightDetails.charterPrice')}</div>
+                  <div className="text-2xl font-bold text-blue-700">{formatCOP(charterPrice)}</div>
+                  <div className="text-xs text-blue-600 mt-1">{formatCOP(pricePerSeat)} {t('flightDetails.perSeat')}</div>
+                  {marketPrice > charterPrice && savingsPercentage > 0 && (
                     <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full rotate-12">
                       -{savingsPercentage}%
                     </div>
@@ -242,12 +315,14 @@ export default function FlightDetailsPage() {
                 </div>
               </div>
 
-              {/* Passenger Selection */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+              {/* Passenger Selection - Positioned above button, shifts up when warning appears */}
+              <div className={`absolute left-6 right-6 p-4 bg-gray-50 rounded-xl transition-all duration-200 ${
+                (showPrivacyWarning || showSharedFlightWarning) ? 'bottom-40' : 'bottom-28'
+              }`}>
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-gray-900">Passengers</h3>
-                    <p className="text-sm text-gray-600">{flight.seats_available || 8} seats available</p>
+                    <h3 className="font-semibold text-gray-900">{t('flightDetails.passengers')}</h3>
+                    <p className="text-sm text-gray-600">{availableSeats} {t('flightDetails.seatsAvailable')}</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
@@ -258,7 +333,7 @@ export default function FlightDetailsPage() {
                     </button>
                     <span className="font-semibold text-lg w-8 text-center">{selectedPassengers}</span>
                     <button
-                      onClick={() => setSelectedPassengers(Math.min(flight.seats_available || 8, selectedPassengers + 1))}
+                      onClick={() => setSelectedPassengers(Math.min(availableSeats, selectedPassengers + 1))}
                       className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
                     >
                       <span className="text-lg">+</span>
@@ -267,30 +342,47 @@ export default function FlightDetailsPage() {
                 </div>
               </div>
 
-              {/* Simple Summary */}
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-lg font-semibold text-gray-900">Total per person</span>
-                  <span className="text-2xl font-bold text-blue-600">
-                    ${Math.round(price / selectedPassengers).toLocaleString()}
-                  </span>
+              {/* Privacy Warning - Appears between passenger selector and button when needed */}
+              {showPrivacyWarning && (
+                <div className="absolute left-6 right-6 bottom-28">
+                  <p className="text-xs text-gray-500 flex items-center justify-center transition-all duration-200">
+                    <span className="mr-1">⚠</span>
+                    {t('flightDetails.privateFlightWarning').replace('{remainingSeats}', remainingSeatsForPrivacy)}
+                  </p>
                 </div>
-                <div className="text-sm text-gray-600 text-right">
-                  {selectedPassengers} passenger{selectedPassengers !== 1 ? 's' : ''} • ${price.toLocaleString()} total charter
-                </div>
-              </div>
+              )}
 
-              {/* Action Button */}
-              <button 
-                onClick={startBookingProcess}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Book Charter - ${Math.round(price / selectedPassengers).toLocaleString()} per person
-              </button>
-              
-              <p className="text-xs text-gray-500 text-center mt-3">
-                Final price confirmed before payment
-              </p>
+              {/* Shared Flight Warning - Appears when flight already has bookings */}
+              {showSharedFlightWarning && (
+                <div className="absolute left-6 right-6 bottom-28">
+                  <p className="text-xs text-gray-500 flex items-center justify-center transition-all duration-200">
+                    <span className="mr-1">⚠</span>
+                    {t('flightDetails.sharedFlightWarning').replace('{bookedSeats}', bookedSeats)}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Button - Fixed position at bottom */}
+              <div className="absolute bottom-6 left-6 right-6">
+                <button 
+                  onClick={startBookingProcess}
+                  disabled={isOperator}
+                  className={`w-full py-3 px-4 rounded-xl font-semibold transition-colors ${
+                    isOperator 
+                      ? 'bg-blue-600 text-white cursor-not-allowed opacity-60' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {t('flightDetails.bookCharter')} - {formatCOP(price)} {t('flightDetails.total')}
+                </button>
+                
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  {isOperator 
+                    ? t('flightDetails.operatorCannotBook')
+                    : t('flightDetails.finalPriceConfirmed')
+                  }
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -298,7 +390,7 @@ export default function FlightDetailsPage() {
         {/* Aircraft Images Gallery */}
         {flight.images && flight.images.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Aircraft Images</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('flightDetails.aircraftImages')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {flight.images.map((image, index) => (
                 <div key={index} className="group relative overflow-hidden rounded-xl bg-gray-100 aspect-[4/3]">
@@ -329,7 +421,7 @@ export default function FlightDetailsPage() {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  View All Images ({flight.images ? flight.images.length : 0})
+                  {t('flightDetails.viewAllImages')} ({flight.images ? flight.images.length : 0})
                 </button>
               </div>
             )}

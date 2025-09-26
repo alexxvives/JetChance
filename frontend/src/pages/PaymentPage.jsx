@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeftIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import StripePaymentForm from '../components/StripePaymentForm';
+import { ArrowLeftIcon, CheckCircleIcon, ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '../contexts/TranslationContext';
+import { useAuth } from '../contexts/AuthContext';
+import PayUPaymentForm from '../components/PayUPaymentForm';
 import { flightsAPI } from '../api/flightsAPI';
 
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
+
 export default function PaymentPage() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const { flightId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,6 +27,40 @@ export default function PaymentPage() {
   const [price, setPrice] = useState(location.state?.price || 0);
   const [loading, setLoading] = useState(!flight);
   const [error, setError] = useState(null);
+
+  // New state for multi-step process
+  const [currentStep, setCurrentStep] = useState(1);
+  const [passengerData, setPassengerData] = useState([]);
+  const [contactInfo, setContactInfo] = useState({
+    email: user?.email || '',
+    phone: ''
+  });
+  const [completedSections, setCompletedSections] = useState({});
+
+  // Initialize passenger data when component mounts or passenger count changes
+  useEffect(() => {
+    if (selectedPassengers > 0) {
+      const initialData = Array.from({ length: selectedPassengers }, (_, index) => ({
+        id: index + 1,
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
+        documentType: '',
+        documentNumber: ''
+      }));
+      setPassengerData(initialData);
+    }
+  }, [selectedPassengers]);
+
+  // Update contact info when user data becomes available
+  useEffect(() => {
+    if (user?.email && !contactInfo.email) {
+      setContactInfo(prev => ({
+        ...prev,
+        email: user.email
+      }));
+    }
+  }, [user?.email]);
 
   // Fetch flight data if not passed via navigation
   useEffect(() => {
@@ -87,6 +133,8 @@ export default function PaymentPage() {
 
   const handlePaymentSuccess = (result) => {
     console.log('Payment success result:', result);
+    console.log('Flight data:', flight);
+    console.log('Selected passengers:', selectedPassengers);
     
     // Navigate to success page with booking details
     navigate('/booking-success', {
@@ -95,7 +143,8 @@ export default function PaymentPage() {
         flight: flight,
         customerData: result.customerData,
         transactionId: result.transactionId,
-        amount: result.amount
+        amount: result.amount,
+        paymentMethod: result.paymentMethod
       }
     });
   };
@@ -103,6 +152,67 @@ export default function PaymentPage() {
   const handlePaymentError = (error) => {
     console.error('Payment failed:', error);
     // Could show error modal or toast notification
+  };
+
+  // Helper functions for passenger data
+  const updatePassengerData = (passengerId, field, value) => {
+    setPassengerData(prev => prev.map(passenger => 
+      passenger.id === passengerId 
+        ? { ...passenger, [field]: value }
+        : passenger
+    ));
+  };
+
+  const isPassengerComplete = (passenger) => {
+    return passenger.firstName && 
+           passenger.lastName && 
+           passenger.dateOfBirth && 
+           passenger.documentType && 
+           passenger.documentNumber;
+  };
+
+  const canContinueToContact = passengerData.length > 0 && 
+    passengerData.every(passenger => isPassengerComplete(passenger));
+
+  const handleContinueToContact = () => {
+    if (canContinueToContact) {
+      setCurrentStep(2);
+    }
+  };
+
+  const canContinueToPayment = contactInfo.email && contactInfo.phone;
+
+  const handleContinueToPayment = () => {
+    if (canContinueToPayment) {
+      setCurrentStep(3);
+    }
+  };
+
+  const isContactInfoComplete = () => {
+    return contactInfo.email && contactInfo.phone;
+  };
+
+  const canProceedToStep = (step) => {
+    switch (step) {
+      case 2: // Contact info step
+        return passengerData.every(isPassengerComplete);
+      case 3: // Payment step
+        return passengerData.every(isPassengerComplete) && isContactInfoComplete();
+      default:
+        return true;
+    }
+  };
+
+  const handleStepChange = (step) => {
+    if (canProceedToStep(step)) {
+      setCurrentStep(step);
+    }
+  };
+
+  const getStepStatus = (step) => {
+    if (step < currentStep) return 'completed';
+    if (step === currentStep) return 'current';
+    return 'upcoming';
   };
 
   const handleGoBack = () => {
@@ -114,7 +224,7 @@ export default function PaymentPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading flight details...</p>
+          <p className="text-gray-600">{t('payment.loadingFlightDetails')}</p>
         </div>
       </div>
     );
@@ -125,13 +235,13 @@ export default function PaymentPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Flight</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('payment.errorLoadingFlight')}</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={handleGoBack}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Go Back
+            {t('payment.goBack')}
           </button>
         </div>
       </div>
@@ -142,7 +252,7 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Flight not found</p>
+          <p className="text-gray-600">{t('payment.flightNotFound')}</p>
         </div>
       </div>
     );
@@ -159,12 +269,12 @@ export default function PaymentPage() {
               className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Flight Details
+              {t('payment.backToFlightDetails')}
             </button>
             
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
-                Booking Reference: Processing...
+                {t('payment.bookingReference')}
               </div>
             </div>
           </div>
@@ -172,12 +282,13 @@ export default function PaymentPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Flight Summary - Left Side */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Flight Summary</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">{t('payment.flightSummary')}</h2>
               
               {/* Route */}
               <div className="mb-6">
@@ -207,21 +318,21 @@ export default function PaymentPage() {
               {/* Flight Details */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Departure:</span>
+                  <span className="text-gray-600">{t('payment.departure')}:</span>
                   <span className="font-medium">
                     {formatDateTime(flight.departure_time || flight.departure_datetime)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Aircraft:</span>
-                  <span className="font-medium">{flight.aircraft_name}</span>
+                  <span className="text-gray-600">{t('payment.aircraft')}:</span>
+                  <span className="font-medium">{flight.aircraft_model || flight.aircraft_name || t('payment.notSpecified')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Operator:</span>
-                  <span className="font-medium">{flight.operator || flight.operator_name || 'Not specified'}</span>
+                  <span className="text-gray-600">{t('payment.operator')}:</span>
+                  <span className="font-medium">{flight.operator || flight.operator_name || t('payment.notSpecified')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Passengers:</span>
+                  <span className="text-gray-600">{t('payment.passengers')}:</span>
                   <span className="font-medium">{selectedPassengers}</span>
                 </div>
               </div>
@@ -229,29 +340,29 @@ export default function PaymentPage() {
               {/* Pricing */}
               <div className="border-t pt-4">
                 <div className="space-y-2 mb-4">
-                  {flight.original_price && flight.empty_leg_price < flight.original_price && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">{t('payment.emptyLegPricePerSeat')}:</span>
+                    <span className="font-medium">{formatCOP(flight.empty_leg_price || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">{t('payment.passengersMultiplied').replace('{count}', selectedPassengers)}:</span>
+                    <span className="font-medium">{formatCOP(price)}</span>
+                  </div>
+                  {flight.original_price && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Regular Price:</span>
+                      <span className="text-gray-600">{t('payment.marketPrice')}:</span>
                       <span className="text-gray-500 line-through">
-                        ${flight.original_price.toLocaleString()}
+                        {formatCOP(flight.original_price * selectedPassengers)}
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Empty Leg Price:</span>
-                    <span className="font-medium">${price.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Passengers × {selectedPassengers}:</span>
-                    <span className="font-medium">${(price * selectedPassengers).toLocaleString()}</span>
-                  </div>
                 </div>
                 
                 <div className="border-t pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-gray-900">Total:</span>
+                    <span className="text-lg font-bold text-gray-900">{t('payment.total')}:</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${(price * selectedPassengers).toLocaleString()} USD
+                      {formatCOP(price)}
                     </span>
                   </div>
                 </div>
@@ -263,10 +374,10 @@ export default function PaymentPage() {
                       <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
                       <div>
                         <div className="text-sm font-medium text-green-800">
-                          You're saving ${((flight.original_price - flight.empty_leg_price) * selectedPassengers).toLocaleString()}!
+                          {t('payment.youAreSaving').replace('{amount}', formatCOP((flight.original_price - flight.empty_leg_price) * selectedPassengers))}
                         </div>
                         <div className="text-xs text-green-600">
-                          {Math.round(((flight.original_price - flight.empty_leg_price) / flight.original_price) * 100)}% off regular price
+                          {t('payment.percentOffRegularPrice').replace('{percent}', Math.round(((flight.original_price - flight.empty_leg_price) / flight.original_price) * 100))}
                         </div>
                       </div>
                     </div>
@@ -283,9 +394,9 @@ export default function PaymentPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">Secure Payment</h3>
+                    <h3 className="text-sm font-medium text-blue-800">{t('payment.securePayment')}</h3>
                     <p className="text-xs text-blue-600 mt-1">
-                      Your payment is protected by 256-bit SSL encryption and processed securely by Stripe.
+                      {t('payment.securePaymentDescription')}
                     </p>
                   </div>
                 </div>
@@ -293,24 +404,82 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {/* Payment Form - Right Side */}
+          {/* Multi-Step Payment Form - Right Side */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {/* Progress Indicator */}
+              <div className="bg-gray-50 px-6 py-4 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`flex items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
+                        1
+                      </div>
+                      <span className="ml-2 text-sm font-medium">Passenger Info</span>
+                    </div>
+                    
+                    <div className={`w-8 h-0.5 ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
+                        2
+                      </div>
+                      <span className="ml-2 text-sm font-medium">Contact Info</span>
+                    </div>
+                    
+                    <div className={`w-8 h-0.5 ${currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
+                        3
+                      </div>
+                      <span className="ml-2 text-sm font-medium">Payment</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step Content */}
               <div className="p-6">
-                <StripePaymentForm
-                  amount={price * selectedPassengers}
-                  currency="USD"
-                  flightId={flight.id}
-                  onPaymentSuccess={handlePaymentSuccess}
-                  onPaymentError={handlePaymentError}
-                  flightDetails={{
-                    route: `${flight.origin_code} → ${flight.destination_code}`,
-                    passengers: selectedPassengers,
-                    date: flight.departure_time || flight.departure_datetime,
-                    aircraft: flight.aircraft_name,
-                    operator: flight.operator_name || flight.operator
-                  }}
-                />
+                {currentStep === 1 && (
+                  <PassengerInformationStep
+                    passengerData={passengerData}
+                    updatePassengerData={updatePassengerData}
+                    isPassengerComplete={isPassengerComplete}
+                    onContinue={handleContinueToContact}
+                    canContinue={canContinueToContact}
+                    flight={flight}
+                    t={t}
+                  />
+                )}
+
+                {currentStep === 2 && (
+                  <ContactInformationStep
+                    contactInfo={contactInfo}
+                    setContactInfo={setContactInfo}
+                    onBack={() => setCurrentStep(1)}
+                    onContinue={handleContinueToPayment}
+                    canContinue={canContinueToPayment}
+                    user={user}
+                    t={t}
+                  />
+                )}
+
+                {currentStep === 3 && (
+                  <PaymentStep
+                    amount={price}
+                    currency="COP"
+                    flightId={flight.id}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onPaymentError={handlePaymentError}
+                    onBack={() => setCurrentStep(2)}
+                    flight={flight}
+                    selectedPassengers={selectedPassengers}
+                    passengerData={passengerData}
+                    contactInfo={contactInfo}
+                    t={t}
+                  />
+                )}
               </div>
             </div>
 
@@ -324,8 +493,8 @@ export default function PaymentPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-semibold text-gray-900">Instant Confirmation</h3>
-                    <p className="text-xs text-gray-600">Immediate booking confirmation</p>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('payment.instantConfirmation')}</h3>
+                    <p className="text-xs text-gray-600">{t('payment.instantConfirmationDescription')}</p>
                   </div>
                 </div>
               </div>
@@ -338,8 +507,8 @@ export default function PaymentPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-semibold text-gray-900">Secure Payment</h3>
-                    <p className="text-xs text-gray-600">PCI DSS compliant processing</p>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('payment.securePayment')}</h3>
+                    <p className="text-xs text-gray-600">{t('payment.pciCompliantDescription')}</p>
                   </div>
                 </div>
               </div>
@@ -352,8 +521,8 @@ export default function PaymentPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-semibold text-gray-900">24/7 Support</h3>
-                    <p className="text-xs text-gray-600">Round-the-clock assistance</p>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('payment.support247')}</h3>
+                    <p className="text-xs text-gray-600">{t('payment.support247Description')}</p>
                   </div>
                 </div>
               </div>
@@ -364,3 +533,344 @@ export default function PaymentPage() {
     </div>
   );
 }
+
+// Step 1: Passenger Information Component
+const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassengerComplete, onContinue, canContinue, flight, t }) => {
+  const [expandedPassenger, setExpandedPassenger] = useState(1);
+
+  // Check if flight is international to determine document requirements
+  const isInternationalFlight = flight.origin_country !== flight.destination_country;
+  
+  const documentTypes = isInternationalFlight 
+    ? [
+        { value: 'passport', label: 'Passport' },
+      ]
+    : [
+        { value: 'cc', label: 'Cédula de Ciudadanía' },
+        { value: 'ce', label: 'Cédula de Extranjería' },
+        { value: 'passport', label: 'Passport' },
+        { value: 'ti', label: 'Tarjeta de Identidad' },
+      ];
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <h2 className="text-xl font-bold">Passenger Information</h2>
+        <p className="text-blue-100 text-sm mt-1">Please provide details for all passengers</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="space-y-4">
+          {passengerData.map((passenger) => (
+            <div key={passenger.id} className="border border-gray-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setExpandedPassenger(expandedPassenger === passenger.id ? null : passenger.id)}
+                className={`w-full px-4 py-3 flex items-center justify-between text-left transition-colors ${
+                  isPassengerComplete(passenger) 
+                    ? 'bg-green-50 hover:bg-green-100 border-green-200' 
+                    : expandedPassenger === passenger.id 
+                      ? 'bg-blue-50 hover:bg-blue-100' 
+                      : 'bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                    isPassengerComplete(passenger)
+                      ? 'bg-green-600 text-white'
+                      : 'bg-blue-600 text-white'
+                  }`}>
+                    {isPassengerComplete(passenger) ? '✓' : passenger.id}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">
+                      {passenger.firstName && passenger.lastName 
+                        ? `${passenger.firstName} ${passenger.lastName}` 
+                        : `Passenger ${passenger.id}`
+                      }
+                    </h3>
+                    <p className={`text-sm ${isPassengerComplete(passenger) ? 'text-green-600' : 'text-gray-500'}`}>
+                      {isPassengerComplete(passenger) ? 'Complete' : 'Information required'}
+                    </p>
+                  </div>
+                </div>
+                {expandedPassenger === passenger.id ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+              </button>
+
+              {expandedPassenger === passenger.id && (
+                <div className="px-4 py-4 border-t bg-white">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={passenger.firstName}
+                        onChange={(e) => updatePassengerData(passenger.id, 'firstName', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={passenger.lastName}
+                        onChange={(e) => updatePassengerData(passenger.id, 'lastName', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth *
+                      </label>
+                      <input
+                        type="date"
+                        value={passenger.dateOfBirth}
+                        onChange={(e) => updatePassengerData(passenger.id, 'dateOfBirth', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Document Type *
+                      </label>
+                      <select
+                        value={passenger.documentType}
+                        onChange={(e) => updatePassengerData(passenger.id, 'documentType', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value="">Select document type</option>
+                        {documentTypes.map(doc => (
+                          <option key={doc.value} value={doc.value}>{doc.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Document Number *
+                      </label>
+                      <input
+                        type="text"
+                        value={passenger.documentNumber}
+                        onChange={(e) => updatePassengerData(passenger.id, 'documentNumber', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Enter document number"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={onContinue}
+            disabled={!canContinue}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              canContinue
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Continue to Contact Information
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Step 2: Contact Information Component
+const ContactInformationStep = ({ contactInfo, setContactInfo, onBack, onContinue, canContinue, user, t }) => {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <h2 className="text-xl font-bold">Contact Information</h2>
+        <p className="text-blue-100 text-sm mt-1">We'll use this information to send you booking confirmations</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              value={contactInfo.email}
+              onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="your.email@example.com"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {user?.email && contactInfo.email === user.email ? 
+                'Pre-filled with your account email. You can edit if needed.' :
+                'You\'ll receive booking confirmation and flight updates at this email'
+              }
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              value={contactInfo.phone}
+              onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+57 300 123 4567"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              We'll contact you if there are any changes to your flight
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-between">
+          <button
+            onClick={onBack}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Back to Passengers
+          </button>
+          <button
+            onClick={onContinue}
+            disabled={!canContinue}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              canContinue
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Continue to Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Step 3: Payment Component
+const PaymentStep = ({ amount, currency, flightId, onPaymentSuccess, onPaymentError, onBack, flight, selectedPassengers, passengerData, contactInfo, t }) => {
+  return (
+    <div className="space-y-6">
+      {/* Summary of provided information */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
+        <div className="space-y-3">
+          <div>
+            <h4 className="font-medium text-gray-700">Passengers:</h4>
+            <div className="text-sm text-gray-600 space-y-1">
+              {passengerData.map(passenger => (
+                <div key={passenger.id}>
+                  {passenger.firstName} {passenger.lastName} - {passenger.documentType?.toUpperCase()} {passenger.documentNumber}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-700">Contact Information:</h4>
+            <div className="text-sm text-gray-600">
+              <div>{contactInfo.email}</div>
+              <div>{contactInfo.phone}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Payment Form */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <h2 className="text-xl font-bold">Payment Information</h2>
+          <p className="text-blue-100 text-sm mt-1">Secure payment powered by PayU</p>
+        </div>
+        
+        <div className="p-6">
+          <PayUPaymentForm
+            amount={amount}
+            currency={currency}
+            flightId={flightId}
+            onPaymentSuccess={onPaymentSuccess}
+            onPaymentError={onPaymentError}
+            passengerData={passengerData}
+            contactInfo={contactInfo}
+            flightDetails={{
+              route: `${flight.origin_code} → ${flight.destination_code}`,
+              passengers: selectedPassengers,
+              date: flight.departure_time || flight.departure_datetime,
+              aircraft: flight.aircraft_model || flight.aircraft_name,
+              operator: flight.operator_name || flight.operator,
+              originCity: flight.origin_city,
+              destinationCity: flight.destination_city,
+              originCode: flight.origin_code,
+              destinationCode: flight.destination_code,
+              originCountry: flight.origin_country || 'CO',
+              destinationCountry: flight.destination_country || 'CO'
+            }}
+          />
+        </div>
+
+        <div className="px-6 pb-6">
+          <button
+            onClick={onBack}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Back to Contact Info
+          </button>
+        </div>
+      </div>
+
+      {/* Trust Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-semibold text-gray-900">{t('payment.instantConfirmation')}</h3>
+              <p className="text-xs text-gray-600">{t('payment.instantConfirmationDescription')}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-semibold text-gray-900">{t('payment.securePayment')}</h3>
+              <p className="text-xs text-gray-600">{t('payment.pciCompliantDescription')}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-semibold text-gray-900">{t('payment.support247')}</h3>
+              <p className="text-xs text-gray-600">{t('payment.support247Description')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

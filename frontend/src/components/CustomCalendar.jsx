@@ -31,12 +31,9 @@ const CustomCalendar = ({
 
   const formatDate = (date) => {
     if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    // Parse the YYYY-MM-DD string directly without timezone conversion
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const getDaysInMonth = (date) => {
@@ -64,7 +61,12 @@ const CustomCalendar = ({
 
   const handleDateClick = (date) => {
     if (date) {
-      onChange(date.toISOString().split('T')[0]);
+      // Format date in local timezone to avoid timezone shift issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
+      onChange(dateString);
       setIsOpen(false);
     }
   };
@@ -80,7 +82,11 @@ const CustomCalendar = ({
   const isDateDisabled = (date) => {
     if (!date) return false;
     
-    const dateStr = date.toISOString().split('T')[0];
+    // Format date in local timezone
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
     if (minDate && dateStr < minDate) return true;
     if (maxDate && dateStr > maxDate) return true;
@@ -90,7 +96,12 @@ const CustomCalendar = ({
 
   const isDateSelected = (date) => {
     if (!date || !value) return false;
-    return date.toISOString().split('T')[0] === value;
+    // Format date in local timezone
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return dateStr === value;
   };
 
   const isDateToday = (date) => {
@@ -229,9 +240,13 @@ const CustomCalendar = ({
             <button
               type="button"
               onClick={() => {
-                const today = new Date().toISOString().split('T')[0];
-                if (!isDateDisabled(new Date(today))) {
-                  onChange(today);
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                if (!isDateDisabled(today)) {
+                  onChange(todayStr);
                   setIsOpen(false);
                 }
               }}

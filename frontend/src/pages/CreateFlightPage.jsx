@@ -5,9 +5,22 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
+import AirportAutocomplete from '../components/AirportAutocomplete';
+import CurrencyInput from '../components/CurrencyInput';
 import CustomCalendar from '../components/CustomCalendar';
 import CustomTimePicker from '../components/CustomTimePicker';
-import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
+import { searchAirports } from '../data/airportsAndCities';
+import { getCountryByAirportCode } from '../utils/airportCountries';
+
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
 
 // Function to get high-quality private jet images based on aircraft type
 const getDefaultAircraftImage = (aircraftType) => {
@@ -86,6 +99,26 @@ export default function CreateFlightPage() {
     const departure = new Date(formData.departureTime);
     const arrival = new Date(formData.arrivalTime);
     const durationMs = arrival - departure;
+    
+    // Check if arrival is before departure
+    if (durationMs < 0) {
+      return (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="text-red-800 font-medium">Invalid Flight Times</p>
+              <p className="text-red-700 text-sm">
+                Arrival time cannot be before departure time. Please check your flight schedule.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     const durationMinutes = Math.round(durationMs / (1000 * 60));
     const hours = Math.floor(durationMinutes / 60);
     
@@ -101,10 +134,6 @@ export default function CreateFlightPage() {
   };
 
   const [formData, setFormData] = useState({
-    origin: '',
-    destination: '',
-    originCode: '',
-    destinationCode: '',
     departureTime: '',
     arrivalTime: '',
     aircraftType: '',
@@ -113,7 +142,7 @@ export default function CreateFlightPage() {
     seatsAvailable: '',
     aircraftImages: [],
     description: '',
-    // Store selected airport objects
+    // Store selected airport objects - these contain all info we need
     originAirport: null,
     destinationAirport: null
   });
@@ -170,182 +199,41 @@ export default function CreateFlightPage() {
     setImagePreviews(newPreviews);
   };
 
-  // Render functions for autocomplete options
-  const renderCityOption = (city, isSelected) => {
-    if (isSelected) {
-      return city.city;
-    }
-    return (
-      <div>
-        <div className="font-medium">{city.city}</div>
-        <div className="text-sm text-gray-500">
-          {city.state ? `${city.state}, ` : ''}{city.country}
-        </div>
-      </div>
-    );
-  };
-
-  const renderAirportOption = (airport, isSelected) => {
-    if (isSelected) {
-      return `${airport.code} - ${airport.name}`;
-    }
-    return (
-      <div>
-        <div className="font-medium">{airport.code} - {airport.name}</div>
-        <div className="text-sm text-gray-500">
-          {airport.city}, {airport.state ? `${airport.state}, ` : ''}{airport.country}
-        </div>
-      </div>
-    );
-  };
-
-  // Smart airport search functions - filter by city if city is selected
-  const searchOriginAirports = (query, limit = 10) => {
-    // If origin city is selected, show airports in that city
-    if (formData.origin && formData.origin.trim() !== '') {
-      const cityAirports = getCityAirports(formData.origin);
-      
-      // If no query (empty string), return all airports in the city
-      if (!query || query.length === 0) {
-        return cityAirports.slice(0, limit);
-      }
-      
-      // If query exists, filter the city airports
-      const lowercaseQuery = query.toLowerCase();
-      return cityAirports
-        .filter(airport => 
-          airport.code.toLowerCase().includes(lowercaseQuery) ||
-          airport.name.toLowerCase().includes(lowercaseQuery)
-        )
-        .slice(0, limit);
-    }
+  // Validation function to check if dates/times are valid
+  const isFormValid = () => {
+    if (!formData.departureTime || !formData.arrivalTime) return true; // Let normal required field validation handle this
     
-    // If no city selected, search all airports only if query exists
-    if (!query || query.length < 1) return [];
-    return searchAirports(query, limit);
-  };
-
-  const searchDestinationAirports = (query, limit = 10) => {
-    // If destination city is selected, show airports in that city
-    if (formData.destination && formData.destination.trim() !== '') {
-      const cityAirports = getCityAirports(formData.destination);
-      
-      // If no query (empty string), return all airports in the city
-      if (!query || query.length === 0) {
-        return cityAirports.slice(0, limit);
-      }
-      
-      // If query exists, filter the city airports
-      const lowercaseQuery = query.toLowerCase();
-      return cityAirports
-        .filter(airport => 
-          airport.code.toLowerCase().includes(lowercaseQuery) ||
-          airport.name.toLowerCase().includes(lowercaseQuery)
-        )
-        .slice(0, limit);
-    }
+    const departure = new Date(formData.departureTime);
+    const arrival = new Date(formData.arrivalTime);
     
-    // If no city selected, search all airports only if query exists
-    if (!query || query.length < 1) return [];
-    return searchAirports(query, limit);
+    return arrival > departure; // Arrival must be after departure
   };
 
-  // Handlers for autocomplete selections
-  const handleOriginCityChange = (value) => {
-    if (typeof value === 'object' && value.city) {
-      const cityAirports = getCityAirports(value.city);
-      const newFormData = {
-        ...formData, 
-        origin: value.city,
-        // Clear airport selection if city changes to a different city
-        ...(formData.origin !== value.city && {
-          originCode: '',
-          originAirport: null
-        })
-      };
-
-      // Auto-fill airport if city has only one airport
-      if (cityAirports.length === 1) {
-        newFormData.originCode = cityAirports[0].code;
-        newFormData.originAirport = cityAirports[0];
-      }
-
-      setFormData(newFormData);
-    } else {
-      setFormData({
-        ...formData, 
-        origin: value,
-        // Clear airport if city is being typed (not from dropdown)
-        ...(value !== formData.origin && {
-          originCode: '',
-          originAirport: null
-        })
-      });
-    }
+  // Simple airport change handlers
+  const handleOriginAirportChange = (airport) => {
+    setFormData({
+      ...formData,
+      originAirport: airport
+    });
   };
 
-  const handleDestinationCityChange = (value) => {
-    if (typeof value === 'object' && value.city) {
-      const cityAirports = getCityAirports(value.city);
-      const newFormData = {
-        ...formData, 
-        destination: value.city,
-        // Clear airport selection if city changes to a different city
-        ...(formData.destination !== value.city && {
-          destinationCode: '',
-          destinationAirport: null
-        })
-      };
-
-      // Auto-fill airport if city has only one airport
-      if (cityAirports.length === 1) {
-        newFormData.destinationCode = cityAirports[0].code;
-        newFormData.destinationAirport = cityAirports[0];
-      }
-
-      setFormData(newFormData);
-    } else {
-      setFormData({
-        ...formData, 
-        destination: value,
-        // Clear airport if city is being typed (not from dropdown)
-        ...(value !== formData.destination && {
-          destinationCode: '',
-          destinationAirport: null
-        })
-      });
-    }
-  };
-
-  const handleOriginAirportChange = (value) => {
-    if (typeof value === 'object' && value.code) {
-      setFormData({
-        ...formData,
-        originCode: value.code,
-        origin: value.city, // Auto-fill city based on airport
-        originAirport: value
-      });
-    } else {
-      setFormData({...formData, originCode: value, originAirport: null});
-    }
-  };
-
-  const handleDestinationAirportChange = (value) => {
-    if (typeof value === 'object' && value.code) {
-      setFormData({
-        ...formData,
-        destinationCode: value.code,
-        destination: value.city, // Auto-fill city based on airport
-        destinationAirport: value
-      });
-    } else {
-      setFormData({...formData, destinationCode: value, destinationAirport: null});
-    }
+  const handleDestinationAirportChange = (airport) => {
+    setFormData({
+      ...formData,
+      destinationAirport: airport
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    // Validate that arrival time is after departure time
+    if (!isFormValid()) {
+      alert('Error: Arrival time cannot be before departure time. Please check your flight schedule.');
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
       let uploadedImageUrls = [];
@@ -389,27 +277,27 @@ export default function CreateFlightPage() {
       const flightData = {
         // Required backend fields
         aircraftType: formData.aircraftType,
-        originCode: formData.originCode,
-        destinationCode: formData.destinationCode,
+        originCode: formData.originAirport?.code || '',
+        destinationCode: formData.destinationAirport?.code || '',
         departureDateTime: formData.departureTime,
         originalPrice: parseFloat(formData.originalPrice),
         emptyLegPrice: parseFloat(formData.price),
         totalSeats: parseInt(formData.seatsAvailable),
         
-        // Optional fields
+        // Optional fields with improved airport naming format
         flightNumber: `CF${Date.now()}`, // Generate flight number
-        originName: formData.origin,
-        originCity: formData.origin,
-        originCountry: 'US', // Default for now
-        destinationName: formData.destination,
-        destinationCity: formData.destination,
-        destinationCountry: 'US', // Default for now
+        originName: formData.originAirport ? `${formData.originAirport.name} (${formData.originAirport.code})` : '',
+        originCity: formData.originAirport?.city || '',
+        originCountry: formData.originAirport?.country || getCountryByAirportCode(formData.originAirport?.code),
+        destinationName: formData.destinationAirport ? `${formData.destinationAirport.name} (${formData.destinationAirport.code})` : '',
+        destinationCity: formData.destinationAirport?.city || '',
+        destinationCountry: formData.destinationAirport?.country || getCountryByAirportCode(formData.destinationAirport?.code),
         arrivalDateTime: formData.arrivalTime,
         description: formData.description,
         
         // Additional frontend fields for display
-        origin: formData.origin,
-        destination: formData.destination,
+        origin: formData.originAirport?.city || '',
+        destination: formData.destinationAirport?.city || '',
         price: parseFloat(formData.price),
         seatsAvailable: parseInt(formData.seatsAvailable),
         aircraft_image: uploadedImageUrls.length > 0 ? uploadedImageUrls[0] : getDefaultAircraftImage(formData.aircraftType),
@@ -539,47 +427,37 @@ export default function CreateFlightPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <LocationAutocomplete
-                label="Origin City"
-                placeholder="Bogotá"
-                value={formData.origin}
-                onChange={handleOriginCityChange}
-                searchFunction={searchCities}
-                renderOption={renderCityOption}
-                required
-              />
-
-              <LocationAutocomplete
+              <AirportAutocomplete
                 label="Origin Airport"
-                placeholder={formData.origin ? `Airports in ${formData.origin}` : "BOG - El Dorado International Airport"}
-                value={formData.originAirport ? `${formData.originAirport.code} - ${formData.originAirport.name}` : formData.originCode}
+                placeholder="Type city or airport... (e.g., 'Miami' or 'BOG')"
+                value={formData.originAirport}
                 onChange={handleOriginAirportChange}
-                searchFunction={searchOriginAirports}
-                renderOption={renderAirportOption}
-                showAllOnFocus={formData.origin && formData.origin.trim() !== ''}
                 required
               />
 
-              <LocationAutocomplete
-                label="Destination City"
-                placeholder="Mexico City"
-                value={formData.destination}
-                onChange={handleDestinationCityChange}
-                searchFunction={searchCities}
-                renderOption={renderCityOption}
-                required
-              />
-
-              <LocationAutocomplete
+              <AirportAutocomplete
                 label="Destination Airport"
-                placeholder={formData.destination ? `Airports in ${formData.destination}` : "MEX - Mexico City International Airport"}
-                value={formData.destinationAirport ? `${formData.destinationAirport.code} - ${formData.destinationAirport.name}` : formData.destinationCode}
+                placeholder="Type city or airport... (e.g., 'Mexico City' or 'MEX')"
+                value={formData.destinationAirport}
                 onChange={handleDestinationAirportChange}
-                searchFunction={searchDestinationAirports}
-                renderOption={renderAirportOption}
-                showAllOnFocus={formData.destination && formData.destination.trim() !== ''}
                 required
               />
+            </div>
+            
+            {/* Help text for custom airports */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-sm">
+                  <p className="text-blue-800 font-medium">Airport not in our database?</p>
+                  <p className="text-blue-700">
+                    No problem! If you're using a smaller airport or private airstrip, click "Airport not listed?" 
+                    in the dropdown to add custom airport details.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -806,49 +684,35 @@ export default function CreateFlightPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="group">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Charter Price (USD) <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    required
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                    placeholder="15000"
-                    min="0"
-                    step="100"
-                  />
-                </div>
+                <CurrencyInput
+                  label={t('createFlight.sections.pricing.fields.pricePerSeat')}
+                  value={formData.price}
+                  onChange={(value) => setFormData({...formData, price: value})}
+                  currency="COP"
+                  placeholder="1,500,000"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.pricePerSeatHelp')}</p>
               </div>
 
               <div className="group">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Original Price (USD) <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    required
-                    value={formData.originalPrice}
-                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                    placeholder="45000"
-                    min="0"
-                    step="100"
-                  />
-                </div>
+                <CurrencyInput
+                  label={t('createFlight.sections.pricing.fields.marketPricePerSeat')}
+                  value={formData.originalPrice}
+                  onChange={(value) => setFormData({...formData, originalPrice: value})}
+                  currency="COP"
+                  placeholder="10,000,000"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.marketPricePerSeatHelp')}</p>
               </div>
             </div>
 
             {formData.price && formData.originalPrice && (
               <div className="mt-4 p-4 bg-green-50 rounded-xl">
                 <div className="text-sm text-green-700">
-                  <strong>Savings:</strong> ${(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toLocaleString()} 
-                  ({Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% off)
+                  <strong>{t('createFlight.sections.pricing.savingsCalculation.savings')}:</strong> {formatCOP(parseFloat(formData.originalPrice) - parseFloat(formData.price))} {t('createFlight.sections.pricing.savingsCalculation.perSeat')} 
+                  ({Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% {t('createFlight.sections.pricing.savingsCalculation.off')})
                 </div>
               </div>
             )}
@@ -865,8 +729,12 @@ export default function CreateFlightPage() {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+              disabled={isSubmitting || !isFormValid()}
+              className={`px-8 py-3 font-semibold rounded-xl focus:ring-2 focus:ring-offset-2 transition-colors ${
+                !isFormValid() 
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+              } ${isSubmitting ? 'opacity-50' : ''}`}
             >
               {isSubmitting ? t('createFlight.buttons.creatingFlight') : t('createFlight.buttons.createFlight')}
             </button>

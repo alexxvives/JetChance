@@ -5,6 +5,24 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from './contexts/AuthContext';
 import AircraftImageFallback from './components/AircraftImageFallback';
 
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
+
+// Helper function to format COP with separate styling for currency label
+const formatCOPWithStyling = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return { number: formatted, currency: 'COP' };
+};
+
 // Function to get high-quality private jet images based on aircraft type
 const getDefaultAircraftImage = (aircraftType) => {
   const imageMap = {
@@ -78,8 +96,13 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const isSuperAdmin = user?.role === 'super-admin';
   const showAdminActions = isAdminView && isSuperAdmin;
   // Handle the new nested API response structure
-  const price = flight.pricing?.emptyLegPrice || flight.empty_leg_price || flight.price || 0;
-  const originalPrice = flight.pricing?.originalPrice || flight.original_price || 0;
+  const pricePerSeat = flight.pricing?.emptyLegPrice || flight.seat_leg_price || flight.empty_leg_price || flight.price || 0;
+  const originalPricePerSeat = flight.pricing?.originalPrice || flight.seat_market_price || flight.original_price || 0;
+  const maxPassengers = flight.max_passengers || flight.capacity?.maxPassengers || 8; // Use max passengers, not available seats
+  
+  // Calculate total prices (per-seat price × max passengers)
+  const price = pricePerSeat * maxPassengers;
+  const originalPrice = originalPricePerSeat * maxPassengers;
   const savings = flight.pricing?.savings || (originalPrice - price) || 0;
   const savingsPercent = flight.pricing?.savingsPercent || (originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0);
   
@@ -88,10 +111,10 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const destination = flight.destination?.code || flight.destination_code || flight.destination || '';
   const departureTime = flight.schedule?.departure || flight.departure_time || flight.departure_datetime || '';
   
-  // Prioritize aircraft_name from backend, fallback to constructed name or default
-  const aircraftName = flight.aircraft_name || flight.aircraft?.name;
-  const aircraftType = flight.aircraft?.type || flight.aircraft_type || 'Private Jet';
-  const aircraftModel = flight.aircraft?.model || flight.model || '';
+  // Prioritize aircraft_model from backend, fallback to other aircraft fields or default
+  const aircraftName = flight.aircraft_model || flight.aircraft_name || flight.aircraft?.name;
+  const aircraftType = flight.aircraft_model || flight.aircraft?.type || flight.aircraft_type || 'Private Jet';
+  const aircraftModel = flight.aircraft_model || flight.aircraft?.model || flight.model || '';
   const aircraftManufacturer = flight.aircraft?.manufacturer || flight.manufacturer || '';
   const fullAircraftName = aircraftName || (aircraftManufacturer && aircraftModel ? `${aircraftManufacturer} ${aircraftModel}` : aircraftType);
   
@@ -186,8 +209,11 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
             </div>
             <div className="text-right">
               <div className="flex items-center gap-2 justify-end mb-1">
-                <div className="text-2xl font-bold text-blue-600">
-                  ${price ? price.toLocaleString() : '0'}
+                <div className="text-2xl font-bold text-blue-600 flex items-baseline">
+                  <span className="text-xs font-normal text-gray-500 mr-1">
+                    {formatCOPWithStyling(price || 0).currency}
+                  </span>
+                  {formatCOPWithStyling(price || 0).number}
                 </div>
                 {savings > 0 && (
                   <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
@@ -196,8 +222,11 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
                 )}
               </div>
               {originalPrice && originalPrice > 0 && (
-                <div className="text-sm text-gray-400 line-through">
-                  ${originalPrice.toLocaleString()}
+                <div className="text-sm text-gray-400 line-through flex items-baseline justify-end">
+                  <span className="text-xs text-gray-400 mr-1">
+                    {formatCOPWithStyling(originalPrice).currency}
+                  </span>
+                  {formatCOPWithStyling(originalPrice).number}
                 </div>
               )}
             </div>
