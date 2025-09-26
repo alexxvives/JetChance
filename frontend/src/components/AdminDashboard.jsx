@@ -7,6 +7,16 @@ import FlightList from '../FlightList';
 import ErrorBoundary from './ErrorBoundary';
 import ConfirmationModal from './ConfirmationModal';
 
+// Helper function to format COP with separate styling for currency label
+const formatCOPWithStyling = (amount) => {
+  if (!amount) return { number: '0', currency: 'COP' };
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return { number: formatted, currency: 'COP' };
+};
+
 export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
@@ -207,7 +217,7 @@ export default function AdminDashboard({ user }) {
       console.log(`❌ Denying flight ${flightId}...`);
       
       if (shouldUseRealAPI()) {
-        await flightsAPI.updateFlightStatus(flightId, 'denied');
+  await flightsAPI.updateFlightStatus(flightId, 'declined');
         await fetchPendingFlights(); // Refresh the list
         console.log(`❌ Flight ${flightId} denied successfully`);
       }
@@ -348,14 +358,16 @@ export default function AdminDashboard({ user }) {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {activeTab === 'catalog' && (
             <ErrorBoundary>
-              <div>
+              <div className="px-6 py-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Flight Catalog</h2>
                 <p className="text-gray-600 mb-6">View all available flights as customers see them</p>
                 
                 <FlightFilters filters={filters} setFilters={setFilters} />
+              </div>
+              <div className="px-2">
                 <FlightList 
                   filters={filters} 
                   isAdminView={true} 
@@ -366,7 +378,7 @@ export default function AdminDashboard({ user }) {
           )}
 
           {activeTab === 'approvals' && (
-            <div>
+            <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Flight Approvals</h2>
               <p className="text-gray-600 mb-6">Review and approve pending flights from operators</p>
               
@@ -422,10 +434,16 @@ export default function AdminDashboard({ user }) {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-600">Price</p>
-                              <p className="text-sm text-gray-900">
-                                ${flight.pricing?.emptyLegPrice?.toLocaleString()} 
-                                <span className="text-gray-500 line-through ml-2">
-                                  ${flight.pricing?.originalPrice?.toLocaleString()}
+                              <p className="text-sm text-gray-900 flex items-baseline">
+                                <span className="text-xs font-normal text-gray-500 mr-1">
+                                  {formatCOPWithStyling(flight.pricing?.emptyLegPrice).currency}
+                                </span>
+                                {formatCOPWithStyling(flight.pricing?.emptyLegPrice).number}
+                                <span className="text-gray-500 line-through ml-2 flex items-baseline">
+                                  <span className="text-xs text-gray-500 mr-1">
+                                    {formatCOPWithStyling(flight.pricing?.originalPrice).currency}
+                                  </span>
+                                  {formatCOPWithStyling(flight.pricing?.originalPrice).number}
                                 </span>
                               </p>
                             </div>
@@ -470,7 +488,7 @@ export default function AdminDashboard({ user }) {
           )}
 
           {activeTab === 'operators' && (
-            <div>
+            <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Operator Approvals</h2>
               <p className="text-gray-600 mb-6">Review and approve pending operator registrations</p>
               
@@ -547,7 +565,7 @@ export default function AdminDashboard({ user }) {
           )}
 
           {activeTab === 'create' && (
-            <div>
+            <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Create Flight</h2>
               <p className="text-gray-600 mb-6">Create a new flight as a super admin</p>
               

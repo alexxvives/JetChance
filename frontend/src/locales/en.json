@@ -96,11 +96,20 @@
       },
       "flightCard": {
         "availableSeats": "Available Seats",
+        "totalSeats": "Total Seats",
         "totalPrice": "Total Price",
         "flightTime": "Flight Time",
         "origin": "Origin",
         "destination": "Destination",
-        "seats": "Seats"
+        "seats": "Seats",
+        "statuses": {
+          "available": "Available",
+          "partiallyBooked": "Partially Booked",
+          "fullyBooked": "Fully Booked",
+          "pending": "Pending Approval",
+          "denied": "Declined",
+          "noData": "No Data"
+        }
       },
       "messages": {
         "allPastFlights": "All your flights have departed. Consider creating new flights for upcoming trips."
@@ -164,7 +173,7 @@
       "aircraftDetails": {
         "title": "Aircraft Details",
         "fields": {
-          "aircraftType": "Aircraft Type",
+          "aircraftType": "Aircraft Model",
           "availableSeats": "Available Seats",
           "description": "Description (Optional)"
         },
@@ -486,7 +495,8 @@
     "notFound": "Flight not found",
     "backToDashboard": "Back to Dashboard",
     "backToFlights": "Back to Flights",
-    "availableSeats": "Available Seats",
+  "availableSeats": "Available Seats",
+  "totalSeats": "Total Seats",
     "operator": "Operator",
     "flightTime": "Flight Time",
     "flightRoute": "Flight Route",
@@ -618,6 +628,13 @@
     "completed": "✓ Completed",
     "origin": "Origin",
     "destination": "Destination",
-    "seats": "Seats"
+    "seats": "Seats",
+    "paymentMethod": "Payment Method",
+    "creditCard": "Credit Card",
+    "pse": "PSE Bank Transfer",
+    "cash": "Cash",
+    "notSpecified": "Not specified",
+    "Solo pasaporte para vuelos internacionales": "Passport only for international flights",
+    "Seleccione": "Select"
   }
 }

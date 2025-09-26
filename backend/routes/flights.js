@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, query, validationResult } = require('express-validator');
 const SimpleIDGenerator = require('../utils/idGenerator');
+const OperatorFlightCounter = require('../utils/operatorFlightCounter');
 const db = require('../config/database-sqlite');
 const { authenticate, authorize } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
@@ -17,8 +18,8 @@ router.get('/', [
   query('passengers').optional().isInt({ min: 1, max: 20 }),
   query('max_price').optional().isFloat({ min: 0 }),
   query('aircraft_type').optional().trim(),
-  query('user_id').optional().matches(/^[A-Z]{2,3}\d{3}$/),
-  query('status').optional().isIn(['pending', 'approved', 'denied']),
+  query('user_id').optional().matches(/^[A-Z]{2,3}\d{4}$/),
+  query('status').optional().isIn(['pending', 'approved', 'declined', 'available', 'cancelled', 'booked']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('sort_by').optional().isIn(['price', 'departure', 'duration']),
@@ -47,22 +48,22 @@ router.get('/', [
       sort_order = 'asc'
     } = req.query;
 
-    // Simple status filtering - default to approved flights for catalog
-    let statusFilter = req.query.status || 'approved';
+    // Simple status filtering - default to available flights for catalog
+    let statusFilter = req.query.status || 'available';
     let isOperatorOwned = false;
     let isSuperAdmin = false;
     let operatorId = null;
     
     // If user_id is provided, check if it's for operator viewing their own flights
     if (user_id) {
-      const userResult = await db.query('SELECT role FROM auth_users WHERE id = ?', [user_id]);
+      const userResult = await db.query('SELECT role FROM users WHERE id = ?', [user_id]);
       if (userResult.rows.length > 0) {
         const userRole = userResult.rows[0].role;
         if (userRole === 'operator') {
           // Operator viewing their own flights - show ALL statuses (pending, approved, declined)
           isOperatorOwned = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE auth_user_id = ?', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
@@ -71,7 +72,7 @@ router.get('/', [
           isOperatorOwned = true;
           isSuperAdmin = true;
           statusFilter = req.query.status || null; // Allow all statuses if no specific status requested
-          const operatorResult = await db.query('SELECT id FROM operators WHERE auth_user_id = ?', [user_id]);
+          const operatorResult = await db.query('SELECT id FROM operators WHERE user_id = ?', [user_id]);
           if (operatorResult.rows.length > 0) {
             operatorId = operatorResult.rows[0].id;
           }
@@ -94,17 +95,19 @@ router.get('/', [
       whereConditions.push(`f.departure_datetime > datetime('now')`);
     }
 
-    // Passenger capacity filter
-    whereConditions.push(`f.available_seats >= ?`);
-    params.push(parseInt(passengers));
+    // Passenger capacity filter - only apply for public searches, not for operators viewing their own flights
+    if (!isOperatorOwned && !isSuperAdmin) {
+      whereConditions.push(`f.available_seats >= ?`);
+      params.push(parseInt(passengers));
+    }
 
     if (origin) {
-      whereConditions.push(`(f.origin_code LIKE ? OR f.origin_city LIKE ?)`);
+      whereConditions.push(`(f.origin_city LIKE ? OR f.origin_name LIKE ?)`);
       params.push(`%${origin}%`, `%${origin}%`);
     }
 
     if (destination) {
-      whereConditions.push(`(f.destination_code LIKE ? OR f.destination_city LIKE ?)`);
+      whereConditions.push(`(f.destination_city LIKE ? OR f.destination_name LIKE ?)`);
       params.push(`%${destination}%`, `%${destination}%`);
     }
 
@@ -114,7 +117,7 @@ router.get('/', [
     }
 
     if (max_price) {
-      whereConditions.push(`f.empty_leg_price <= ?`);
+      whereConditions.push(`f.seat_leg_price <= ?`);
       params.push(parseFloat(max_price));
     }
 
@@ -132,45 +135,43 @@ router.get('/', [
     // Build ORDER BY clause
     let orderBy = 'f.departure_datetime ASC';
     if (sort_by === 'price') {
-      orderBy = `f.empty_leg_price ${sort_order.toUpperCase()}`;
+      orderBy = `f.seat_leg_price ${sort_order.toUpperCase()}`;
     } else if (sort_by === 'departure') {
       orderBy = `f.departure_datetime ${sort_order.toUpperCase()}`;
     } else if (sort_by === 'duration') {
-      orderBy = `f.estimated_duration_minutes ${sort_order.toUpperCase()}`;
+      // Calculate duration for sorting using SQLite julianday function
+      orderBy = `(julianday(f.arrival_datetime) - julianday(f.departure_datetime)) * 24 * 60 ${sort_order.toUpperCase()}`;
     }
 
     // Calculate offset
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
+    if (whereConditions.length === 0) {
+      whereConditions.push('1=1');
+    }
+
     // Main query
     const query = `
       SELECT 
         f.id,
-        f.flight_number,
-        f.origin_code,
+        f.operator_id,
+        f.aircraft_model,
         f.origin_name,
         f.origin_city,
         f.origin_country,
-        f.destination_code,
         f.destination_name,
         f.destination_city,
         f.destination_country,
         f.departure_datetime,
         f.arrival_datetime,
-        f.estimated_duration_minutes,
-        f.original_price,
-        f.empty_leg_price,
-        f.currency,
-        f.max_passengers,
         f.available_seats,
+        f.total_seats,
+        f.empty_leg_price,
+        f.market_price,
         f.status,
         f.description,
-        f.aircraft_name,
-        f.aircraft_image_url,
         f.images,
-        o.company_name as operator_name,
-        o.id as operator_id,
-        o.company_name as operator_company_name
+        o.company_name as operator_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
       WHERE ${whereConditions.join(' AND ')}
@@ -197,61 +198,104 @@ router.get('/', [
     const totalPages = Math.ceil(totalFlights / parseInt(limit));
 
     // Format response
-    const flights = result.rows.map(flight => ({
-      id: flight.id,
-      flightNumber: flight.flight_number,
-      origin: {
-        code: flight.origin_code,
-        name: flight.origin_name,
-        city: flight.origin_city,
-        country: flight.origin_country
-      },
-      destination: {
-        code: flight.destination_code,
-        name: flight.destination_name,
-        city: flight.destination_city,
-        country: flight.destination_country
-      },
-      schedule: {
-        departure: flight.departure_datetime,
-        arrival: flight.arrival_datetime,
-        duration: flight.estimated_duration_minutes
-      },
-      pricing: {
-        originalPrice: parseFloat(flight.original_price),
-        emptyLegPrice: parseFloat(flight.empty_leg_price),
-        currency: flight.currency,
-        savings: parseFloat(flight.original_price) - parseFloat(flight.empty_leg_price),
-        savingsPercent: Math.round(((parseFloat(flight.original_price) - parseFloat(flight.empty_leg_price)) / parseFloat(flight.original_price)) * 100)
-      },
-      capacity: {
-        totalSeats: flight.total_seats,
-        availableSeats: flight.available_seats
-      },
-      status: flight.status,
-      aircraft: {
-        name: flight.aircraft_name || 'Private Jet',
-        type: flight.aircraft_name || 'Private Jet',
-        manufacturer: flight.aircraft_name ? flight.aircraft_name.split(' ')[0] : 'Unknown',
-        model: flight.aircraft_name ? flight.aircraft_name.split(' ').slice(1).join(' ') : 'Private Jet',
-        image: flight.aircraft_image_url,
-        images: flight.images ? JSON.parse(flight.images) : (flight.aircraft_image_url ? [flight.aircraft_image_url] : [])
-      },
-      services: {
-        catering: flight.catering_available,
-        groundTransport: flight.ground_transport_available,
-        wifi: flight.wifi_available,
-        petsAllowed: flight.pets_allowed,
-        flexibleDeparture: flight.flexible_departure
-      },
-      operator: {
-        name: flight.operator_name,
-        companyName: flight.operator_company_name,
-        operatorId: flight.operator_id,
-        logo: flight.operator_logo
-      },
-      description: flight.description
-    }));
+    const flights = result.rows.map(flight => {
+      // Parse images from JSON and convert to full URLs
+      let images = [];
+      let imageUrls = [];
+      try {
+        images = flight.images ? JSON.parse(flight.images) : [];
+        // Convert to full URLs, handling both relative paths and existing full URLs
+        imageUrls = images.map(imagePath => {
+          // If it's already a full URL, return as-is
+          if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+          }
+          // If it's a relative path, convert to full URL
+          // Handle both "aircraft/..." and "uploads/aircraft/..." formats
+          const cleanPath = imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+          return `${req.protocol}://${req.get('host')}/uploads/${cleanPath}`;
+        });
+      } catch (e) {
+        console.warn('Error parsing flight images:', flight.images);
+        images = [];
+        imageUrls = [];
+      }
+
+      // Calculate flight time/duration
+      let flightTime = null;
+      let flightTimeMinutes = null;
+      if (flight.departure_datetime && flight.arrival_datetime) {
+        const departure = new Date(flight.departure_datetime);
+        const arrival = new Date(flight.arrival_datetime);
+        const durationMs = arrival - departure;
+        flightTimeMinutes = Math.round(durationMs / (1000 * 60));
+        
+        // Format flight time based on duration
+        const hours = Math.floor(flightTimeMinutes / 60);
+        const minutes = flightTimeMinutes % 60;
+        
+        if (flightTimeMinutes < 60) {
+          // Less than 1 hour: show only minutes (e.g., "45 minutes")
+          flightTime = `${flightTimeMinutes} minutes`;
+        } else {
+          // 1 hour or more: show hours and minutes (e.g., "2h 30m" or "3h")
+          if (minutes > 0) {
+            flightTime = `${hours}h ${minutes}m`;
+          } else {
+            flightTime = `${hours}h`;
+          }
+        }
+      }
+
+      // Extract airport codes from names (format: "Airport Name (CODE)")
+      const originCodeMatch = flight.origin_name?.match(/\(([^)]+)\)$/);
+      const destinationCodeMatch = flight.destination_name?.match(/\(([^)]+)\)$/);
+      const originCode = originCodeMatch ? originCodeMatch[1] : flight.origin_city;
+      const destinationCode = destinationCodeMatch ? destinationCodeMatch[1] : flight.destination_city;
+
+      return {
+        id: flight.id,
+        operator_id: flight.operator_id,
+        origin_name: flight.origin_name,
+        origin_city: flight.origin_city,
+        origin_country: flight.origin_country,
+        origin_code: originCode, // Extracted from parentheses
+        destination_name: flight.destination_name,
+        destination_city: flight.destination_city,
+        destination_country: flight.destination_country,
+        destination_code: destinationCode, // Extracted from parentheses
+        departure_time: flight.departure_datetime,
+        arrival_time: flight.arrival_datetime,
+        flight_time: flightTime,
+        duration: flightTimeMinutes, // Duration in minutes for sorting/filtering
+  empty_leg_price: parseFloat(flight.empty_leg_price),
+  market_price: parseFloat(flight.market_price),
+  available_seats: flight.available_seats,
+  total_seats: flight.total_seats,
+        status: flight.status,
+        description: flight.description,
+        images: imageUrls,
+        operator_name: flight.operator_name,
+        aircraft_model: flight.aircraft_model || null,
+        aircraft_name: flight.aircraft_model || null, // Use aircraft_model for backward compatibility
+        seat_leg_price: parseFloat(flight.empty_leg_price), // Legacy name
+        seat_market_price: parseFloat(flight.market_price), // Legacy name
+  seats_available: flight.available_seats,
+  max_passengers: flight.total_seats,
+        aircraft_image_url: imageUrls.length > 0 ? imageUrls[0] : null,
+        // Legacy format for backward compatibility
+        aircraft: {
+          name: 'Private Jet', // Generic since we removed aircraft table
+          image: imageUrls.length > 0 ? imageUrls[0] : null,
+          images: imageUrls
+        },
+        pricing: {
+          emptyLegPrice: parseFloat(flight.empty_leg_price),
+          originalPrice: parseFloat(flight.market_price),
+          savings: parseFloat(flight.market_price) - parseFloat(flight.empty_leg_price)
+        }
+      };
+    });
 
     res.json({
       flights,
@@ -292,8 +336,7 @@ router.get('/:id', async (req, res) => {
       SELECT 
         f.*,
         o.company_name as operator_name,
-        o.total_flights as operator_total_flights,
-        o.logo_url as operator_logo
+        o.total_flights as operator_total_flights
       FROM flights f
       LEFT JOIN operators o ON f.operator_id = o.id
       WHERE f.id = ?
@@ -312,45 +355,95 @@ router.get('/:id', async (req, res) => {
     const flight = result.rows[0];
     console.log('✅ Found flight:', flight);
 
-    // Format duration from database value
-    let formattedDuration = null;
-    if (flight.estimated_duration_minutes) {
-      const totalMinutes = flight.estimated_duration_minutes;
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
+    // Note: Duration calculation removed as estimated_duration_minutes column was removed in optimization
+
+    // Parse images from JSON and convert to full URLs
+    let images = [];
+    let imageUrls = [];
+    try {
+      images = flight.images ? JSON.parse(flight.images) : [];
+      // Convert to full URLs, handling both relative paths and existing full URLs
+      imageUrls = images.map(imagePath => {
+        // If it's already a full URL, return as-is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+          return imagePath;
+        }
+        // If it's a relative path, convert to full URL
+        // Handle both "aircraft/..." and "uploads/aircraft/..." formats
+        const cleanPath = imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+        return `${req.protocol}://${req.get('host')}/uploads/${cleanPath}`;
+      });
+    } catch (e) {
+      console.warn('Error parsing flight images:', flight.images);
+      images = [];
+      imageUrls = [];
+    }
+
+    // Calculate flight time/duration
+    let flightTime = null;
+    let flightTimeMinutes = null;
+    if (flight.departure_datetime && flight.arrival_datetime) {
+      const departure = new Date(flight.departure_datetime);
+      const arrival = new Date(flight.arrival_datetime);
+      const durationMs = arrival - departure;
+      flightTimeMinutes = Math.round(durationMs / (1000 * 60));
       
-      if (hours > 0) {
-        formattedDuration = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+      // Format flight time based on duration
+      const hours = Math.floor(flightTimeMinutes / 60);
+      const minutes = flightTimeMinutes % 60;
+      
+      if (flightTimeMinutes < 60) {
+        // Less than 1 hour: show only minutes (e.g., "45 minutes")
+        flightTime = `${flightTimeMinutes} minutes`;
       } else {
-        formattedDuration = `${minutes}m`;
+        // 1 hour or more: show hours and minutes (e.g., "2h 30m" or "3h")
+        if (minutes > 0) {
+          flightTime = `${hours}h ${minutes}m`;
+        } else {
+          flightTime = `${hours}h`;
+        }
       }
     }
-    
-    console.log('✅ Database duration:', flight.estimated_duration_minutes, '→', formattedDuration);
+
+    // Extract airport codes from names (format: "Airport Name (CODE)")
+    const originCodeMatch = flight.origin_name?.match(/\(([^)]+)\)$/);
+    const destinationCodeMatch = flight.destination_name?.match(/\(([^)]+)\)$/);
+    const originCode = originCodeMatch ? originCodeMatch[1] : flight.origin_city;
+    const destinationCode = destinationCodeMatch ? destinationCodeMatch[1] : flight.destination_city;
 
     res.json({
       id: flight.id,
-      flightNumber: flight.flight_number,
-      origin: flight.origin_city,
-      destination: flight.destination_city,
-      origin_code: flight.origin_code,
-      destination_code: flight.destination_code,
+      operator_id: flight.operator_id,
+      aircraft_model: flight.aircraft_model,
+      origin_name: flight.origin_name,
+      origin_city: flight.origin_city,
+      origin_country: flight.origin_country,
+      origin_code: originCode,
+      destination_name: flight.destination_name,
+      destination_city: flight.destination_city,
+      destination_country: flight.destination_country,
+      destination_code: destinationCode,
       departure_time: flight.departure_datetime,
       arrival_time: flight.arrival_datetime,
-      duration: formattedDuration,
-      price: flight.price || flight.empty_leg_price,
-      empty_leg_price: flight.empty_leg_price,
-      original_price: flight.original_price,
-      aircraft_type: flight.aircraft_type,
-      aircraft_name: flight.aircraft_name,
-      seats_available: flight.available_seats,
+      flight_time: flightTime,
+      duration: flightTimeMinutes, // Duration in minutes
+  empty_leg_price: parseFloat(flight.empty_leg_price),
+  market_price: parseFloat(flight.market_price),
+  available_seats: flight.available_seats,
+  total_seats: flight.total_seats,
       status: flight.status,
-      operator: flight.operator_name || 'Private Operator',
-      operator_total_flights: flight.operator_total_flights,
       description: flight.description,
-      amenities: flight.amenities,
-      aircraft_image_url: flight.aircraft_image_url,
-      images: flight.images ? JSON.parse(flight.images) : (flight.aircraft_image_url ? [flight.aircraft_image_url] : [])
+      operator_name: flight.operator_name,
+      operator_total_flights: flight.operator_total_flights,
+      images: imageUrls,
+      aircraft_image_url: imageUrls.length > 0 ? imageUrls[0] : null,
+      // Legacy compatibility fields
+      price: parseFloat(flight.empty_leg_price),
+      original_price: parseFloat(flight.market_price),
+      aircraft_name: flight.aircraft_model,
+  seats_available: flight.available_seats,
+  max_passengers: flight.total_seats,
+      operator: flight.operator_name
     });
 
   } catch (error) {
@@ -386,8 +479,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     // Get operator ID
     const operatorResult = await db.query(
-      'SELECT id FROM operators WHERE auth_user_id = ? AND status = ?',
-      [req.user.id, 'approved']
+      'SELECT id FROM operators WHERE user_id = ?',
+      [req.user.id]
     );
 
     if (operatorResult.rows.length === 0) {
@@ -401,7 +494,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     const {
       aircraftId,
-      aircraftType = 'Private Jet',
+      aircraftType,
+      aircraft_model,
       flightNumber,
       originCode,
       originName,
@@ -435,7 +529,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     // Get operator ID for this user
     const userOperatorResult = await db.query(
-      'SELECT id, company_name FROM operators WHERE auth_user_id = ?',
+      'SELECT id, company_name FROM operators WHERE user_id = ?',
       [req.user.id]
     );
     
@@ -447,7 +541,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
     const operatorName = userOperatorResult.rows[0].company_name;
 
     // Use aircraft name directly from user input, no aircraft table dependency
-    const aircraftName = aircraftType || 'Private Jet';
+    const aircraftName = aircraftType;
     
     // For backwards compatibility, we still need an aircraft_id in the database
     // But we'll just use a default one since we're not using the aircraft table anymore
@@ -457,62 +551,88 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
     const flightId = SimpleIDGenerator.generateFlightId();
 
     // Prepare images array - use provided images or fallback to single aircraft_image
+    // Normalize to relative paths to ensure consistency
     let imageUrls = [];
     if (images && Array.isArray(images) && images.length > 0) {
-      imageUrls = images;
+      imageUrls = images.map(imagePath => {
+        // If it's a full URL, extract just the relative path
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+          const url = new URL(imagePath);
+          // Extract path after /uploads/
+          const pathMatch = url.pathname.match(/\/uploads\/(.+)$/);
+          return pathMatch ? pathMatch[1] : imagePath;
+        }
+        // If it already starts with uploads/, remove it
+        return imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+      });
     } else if (aircraft_image) {
-      imageUrls = [aircraft_image];
+      // Normalize single image too
+      let normalizedImage = aircraft_image;
+      if (aircraft_image.startsWith('http://') || aircraft_image.startsWith('https://')) {
+        const url = new URL(aircraft_image);
+        const pathMatch = url.pathname.match(/\/uploads\/(.+)$/);
+        normalizedImage = pathMatch ? pathMatch[1] : aircraft_image;
+      } else if (aircraft_image.startsWith('uploads/')) {
+        normalizedImage = aircraft_image.substring(8);
+      }
+      imageUrls = [normalizedImage];
     }
     
     const result = await db.query(`
       INSERT INTO flights (
-        id, operator_id, aircraft_id, aircraft_name, aircraft_image_url, images, origin_code, origin_name, origin_city, origin_country,
-        destination_code, destination_name, destination_city, destination_country,
-        departure_datetime, arrival_datetime, estimated_duration_minutes,
-        original_price, empty_leg_price, available_seats, max_passengers,
-        status, description, currency
+        id, operator_id, aircraft_model, images,
+        origin_name, origin_city, origin_country,
+        destination_name, destination_city, destination_country,
+        departure_datetime, arrival_datetime,
+        market_price, empty_leg_price, available_seats, total_seats,
+        status, description
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?,
+        ?, ?,
+        ?, ?, ?, ?,
+        ?, ?
       )
       RETURNING *
     `, [
       flightId,
-      userOperatorId, // Use the actual operator ID, not user ID
-      selectedAircraftId,
-      aircraftName, // Store the aircraft name directly
-      imageUrls.length > 0 ? imageUrls[0] : null, // Keep first image for backwards compatibility
+      userOperatorId,
+      aircraftType || aircraft_model || null, // Use aircraftType from form or aircraft_model
       JSON.stringify(imageUrls), // Store all images as JSON array
-      originCode,
       originName || originCode,
-      originName || originCode,
-      originCountry || 'US',
-      destinationCode,
+      originCity || originCode,
+      originCountry,
       destinationName || destinationCode,
-      destinationName || destinationCode,
-      destinationCountry || 'US',
+      destinationCity || destinationCode,
+      destinationCountry,
       departureDateTime,
       arrivalDateTime,
-      parseInt(estimatedDuration), // Duration in minutes - calculated from departure/arrival times
-      originalPrice,
-      emptyLegPrice,
-      totalSeats,
-      totalSeats,
+      originalPrice, // market_price for comparison
+      emptyLegPrice,  // actual selling price
+      totalSeats, // available_seats
+      totalSeats, // total_seats
       'pending',
-      description || 'Private jet flight',
-      'USD'
+      description
     ]);
 
     const newFlight = result.rows[0];
+
+    // Update operator's flight count
+    try {
+      await OperatorFlightCounter.incrementFlightCount(userOperatorId);
+    } catch (counterError) {
+      console.error('❌ Failed to update operator flight count:', counterError);
+      // Don't fail flight creation if counter update fails
+    }
 
     // Create notification for the operator about successful flight submission
     try {
       await createNotification(
         db,
         req.user.id, // The operator's user ID
-        'flight_submitted',
         'Flight Submitted for Review',
-        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review.`,
-        newFlight.id
+        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review.`
       );
       console.log(`✅ Created submission notification for user ${req.user.id} and flight ${newFlight.id}`);
     } catch (notificationError) {
@@ -528,8 +648,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
         destination: `${newFlight.destination_city} (${newFlight.destination_code})`,
         departure: newFlight.departure_datetime,
         arrival: newFlight.arrival_datetime,
-        price: parseFloat(newFlight.empty_leg_price),
-        originalPrice: parseFloat(newFlight.original_price),
+        price: parseFloat(newFlight.seat_leg_price),
+        originalPrice: parseFloat(newFlight.seat_market_price),
         seatsAvailable: newFlight.available_seats,
         maxPassengers: newFlight.max_passengers,
         duration: newFlight.estimated_duration_minutes,
@@ -590,7 +710,6 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
     // Complete field mapping from DATABASE_SCHEMA.md reference
     const fieldMapping = {
       // Basic Info
-      flightNumber: 'flight_number',
       aircraftName: 'aircraft_name',
       aircraftImage: 'aircraft_image_url',
       
@@ -615,8 +734,8 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
       bookingDeadline: 'booking_deadline',
       
       // Pricing
-      originalPrice: 'original_price',
-      emptyLegPrice: 'empty_leg_price',
+      originalPrice: 'seat_market_price',
+      emptyLegPrice: 'seat_leg_price',
       currency: 'currency',
       
       // Capacity
@@ -704,8 +823,8 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
 router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), async (req, res) => {
   try {
     const { status, reason } = req.body;
-    
-    // Validate status
+
+    // Validate incoming status (API contract remains approved/declined)
     if (!['approved', 'declined'].includes(status)) {
       return res.status(400).json({
         error: 'Status must be either "approved" or "declined"'
@@ -729,20 +848,23 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
       });
     }
 
+    // Map external status to database-safe value (schema allows available/pending/booked/cancelled)
+    const databaseStatus = status === 'approved' ? 'available' : 'cancelled';
+
     // Update flight status
     const result = await db.query(`
       UPDATE flights 
       SET status = ?, updated_at = datetime('now')
       WHERE id = ?
       RETURNING *
-    `, [status, flightId]);
+    `, [databaseStatus, flightId]);
 
     // Get operator details to send notification
     const operatorSql = `
       SELECT au.id as user_id, au.email, o.company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN auth_users au ON o.auth_user_id = au.id
+      JOIN users au ON o.user_id = au.id
       WHERE f.id = ?
     `;
     
@@ -763,10 +885,8 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
         await createNotification(
           db,
           operator.user_id,
-          notificationType,
           notificationTitle,
-          notificationMessage,
-          flightId
+          notificationMessage
         );
         
         console.log(`✅ Created ${status} notification for operator ${operator.email}`);
@@ -778,9 +898,14 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
 
     console.log(`Flight ${flightId} ${status} by admin ${req.user.email}`);
 
+    const flightResponse = {
+      ...result.rows[0],
+      status: databaseStatus
+    };
+
     res.json({
       message: `Flight ${status} successfully`,
-      flight: result.rows[0]
+      flight: flightResponse
     });
 
   } catch (error) {
@@ -804,7 +929,7 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
       SELECT f.*, o.id as operator_id, au.id as user_id, au.email as operator_email, o.company_name
       FROM flights f
       JOIN operators o ON f.operator_id = o.id
-      JOIN auth_users au ON o.auth_user_id = au.id
+      JOIN users au ON o.user_id = au.id
       WHERE f.id = ?
     `;
 
@@ -826,6 +951,14 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
     const deleteSql = 'DELETE FROM flights WHERE id = ?';
     await db.query(deleteSql, [id]);
 
+    // Update operator's flight count
+    try {
+      await OperatorFlightCounter.decrementFlightCount(flight.operator_id);
+    } catch (counterError) {
+      console.error('❌ Failed to update operator flight count:', counterError);
+      // Don't fail deletion if counter update fails
+    }
+
     // Create notification for the operator (but not if they're deleting their own flight)
     try {
       // Check if the flight owner is the same as the person deleting it
@@ -844,10 +977,8 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
         await createNotification(
           db,
           flight.user_id,  // Use user_id instead of operator_id
-          'flight_deleted',
           'Flight Deleted by Administration',
-          `Your flight ${flight.origin_code} → ${flight.destination_code} (${flight.id}) has been deleted by administration.`,
-          flight.id
+          `Your flight ${flight.origin_code} → ${flight.destination_code} (${flight.id}) has been deleted by administration.`
         );
         console.log('✅ Admin deletion notification sent to operator:', flight.operator_email);
       } else {

@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { getCharterPrice, getMarketPrice, formatPrice } from '../utils/flightDataUtils';
+import { getTotalCharterPrice, getTotalMarketPrice, formatPrice } from '../utils/flightDataUtils';
+
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
+
+// Helper function to format COP with separate styling for currency label
+const formatCOPWithStyling = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return { number: formatted, currency: 'COP' };
+};
 
 export default function FlightCardsAlt({ onNavigate }) {
   const [flights, setFlights] = useState([]);
@@ -38,7 +55,9 @@ export default function FlightCardsAlt({ onNavigate }) {
           const approvedFlights = (response.flights || response)
             .filter(flight => {
               // Filter for approved status
-              if (flight.status !== 'approved') return false;
+              const status = (flight.status || '').toLowerCase();
+              const allowedStatuses = ['approved', 'available'];
+              if (!allowedStatuses.includes(status)) return false;
               
               // Filter out past flights (additional safety check)
               const departureTime = new Date(flight.schedule?.departure || flight.departure_time);
@@ -77,21 +96,21 @@ export default function FlightCardsAlt({ onNavigate }) {
       hour12: true 
     });
     
-    const charterPrice = getCharterPrice(flight);
-    const marketPrice = getMarketPrice(flight);
+    const charterPrice = getTotalCharterPrice(flight);
+    const marketPrice = getTotalMarketPrice(flight);
     const savings = marketPrice - charterPrice;
     const savingsPercent = marketPrice > 0 ? Math.round((savings / marketPrice) * 100) : 0;
     
     const originCode = flight.origin_code || flight.origin?.code;
     const destinationCode = flight.destination_code || flight.destination?.code;
     
-    const aircraftType = flight.aircraft_name || flight.aircraft?.type || 'Aircraft';
+    const aircraftType = flight.aircraft_model || flight.aircraft_name || flight.aircraft?.type || 'Aircraft';
     const availableSeats = flight.available_seats || flight.capacity?.availableSeats || 0;
     
     return {
       id: flight.id,
       route: `${originCode} → ${destinationCode}`,
-      price: formatPrice(charterPrice),
+      price: formatCOPWithStyling(charterPrice),
       originalPrice: marketPrice,
       charterPrice: charterPrice,
       time: `${departureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeString}`,
@@ -187,7 +206,12 @@ export default function FlightCardsAlt({ onNavigate }) {
                     {/* Price Section */}
                     <div className="card-alt-price">
                       <div className="price-row">
-                        <span className="price-amount">{flight.price}</span>
+                        <span className="price-amount">
+                          <span className="text-xs opacity-75 mr-1">
+                            {flight.price.currency}
+                          </span>
+                          {flight.price.number}
+                        </span>
                         {flight.savings > 0 && (
                           <span className="discount-badge">
                             -{flight.savingsPercent}%

@@ -4,6 +4,15 @@ import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/ou
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import ConfirmationModal from './ConfirmationModal';
 
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
+
 export default function OperatorDashboard({ user }) {
   // Immediate safety check before any hooks
   if (!user) {
@@ -143,8 +152,8 @@ export default function OperatorDashboard({ user }) {
           destination: flight.destination_code || flight.destination, 
           departureTime: flight.departure_datetime || flight.departureTime,
           seatsAvailable: flight.available_seats || flight.seatsAvailable,
-          // Always show charter price (mandatory field)
-          price: flight.pricing?.emptyLegPrice || flight.empty_leg_price,
+          // Always show charter price (mandatory field) 
+          price: flight.pricing?.emptyLegPrice || flight.seat_leg_price || flight.empty_leg_price,
           bookings: flight.bookings || 0 // Add default bookings if not present
         }));
         
@@ -280,7 +289,7 @@ export default function OperatorDashboard({ user }) {
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="text-2xl font-bold text-blue-600">
-              ${flights.reduce((sum, f) => sum + ((f.price || 0) * (f.bookings || 0)), 0).toLocaleString()}
+              {formatCOP(flights.reduce((sum, f) => sum + ((f.price || 0) * (f.bookings || 0)), 0))}
             </div>
             <div className="text-sm text-gray-600">Revenue</div>
           </div>
@@ -345,7 +354,7 @@ export default function OperatorDashboard({ user }) {
                         })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">
-                        ${flight.price.toLocaleString()}
+                        {formatCOP(flight.price)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                         {flight.seatsAvailable}
@@ -354,20 +363,34 @@ export default function OperatorDashboard({ user }) {
                         {flight.bookings}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-3 py-2 text-sm font-semibold rounded-full ${
-                          flight.status === 'approved'
+                        {(() => {
+                          const status = (flight.status || '').toLowerCase();
+                          const isApproved = ['approved', 'available'].includes(status);
+                          const isPending = status === 'pending';
+                          const isDeclined = ['declined', 'denied', 'rejected', 'cancelled'].includes(status);
+
+                          const badgeClass = isApproved
                             ? 'bg-green-100 text-green-800'
-                            : flight.status === 'pending'
+                            : isPending
                             ? 'bg-yellow-100 text-yellow-800'
-                            : flight.status === 'declined'
+                            : isDeclined
                             ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {flight.status === 'approved' ? '✅ Approved' :
-                           flight.status === 'pending' ? '⏳ Pending' :
-                           flight.status === 'declined' ? '❌ Declined' :
-                           flight.status || 'Unknown'}
-                        </span>
+                            : 'bg-gray-100 text-gray-800';
+
+                          const badgeLabel = isApproved
+                            ? '✅ Approved'
+                            : isPending
+                            ? '⏳ Pending'
+                            : isDeclined
+                            ? '❌ Declined'
+                            : (flight.status || 'Unknown');
+
+                          return (
+                            <span className={`inline-flex px-3 py-2 text-sm font-semibold rounded-full ${badgeClass}`}>
+                              {badgeLabel}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-2">

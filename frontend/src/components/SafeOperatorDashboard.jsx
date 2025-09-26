@@ -2,13 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
-import { getCharterPrice, formatPrice, transformFlightsArray } from '../utils/flightDataUtils';
+import { getTotalCharterPrice, formatPrice, transformFlightsArray } from '../utils/flightDataUtils';
+
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
 import ConfirmationModal from './ConfirmationModal';
 import { useTranslation } from '../contexts/TranslationContext';
 
 // Safe wrapper component
 export default function SafeOperatorDashboard({ user }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  
+  // Debug translations
+  console.log('🌐 Current language:', currentLanguage);
+  console.log('🔍 Translation test - origin:', t('dashboard.operator.flightCard.origin'));
+  console.log('🔍 Translation test - destination:', t('dashboard.operator.flightCard.destination'));
+  console.log('🔍 Translation test - seats:', t('dashboard.operator.flightCard.seats'));
   
   try {
     // Immediate safety checks
@@ -73,7 +88,7 @@ export default function SafeOperatorDashboard({ user }) {
 
 // The actual dashboard component
 function ActualOperatorDashboard({ user }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [flights, setFlights] = useState([]);
@@ -145,7 +160,7 @@ function ActualOperatorDashboard({ user }) {
     const pastFlights = [];
 
     flights.forEach(flight => {
-      const departureDate = new Date(flight.departure_datetime || flight.schedule?.departure);
+      const departureDate = new Date(flight.departure_time || flight.departure_datetime || flight.schedule?.departure);
       if (departureDate > now) {
         currentFlights.push(flight);
       } else {
@@ -213,7 +228,7 @@ function ActualOperatorDashboard({ user }) {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.operator.title')}</h1>
                 <p className="mt-1 text-sm text-gray-600">
-                  {t('dashboard.operator.welcome', { name: user.name })}
+                  {t('dashboard.operator.welcome')}
                 </p>
               </div>
               <button
@@ -354,7 +369,7 @@ function ActualOperatorDashboard({ user }) {
 
 // Flight Card Component - Modern Design
 function FlightCard({ flight, navigate, isPast = false, onDelete }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   
   console.log('🎯 FlightCard flight data:', flight);
   console.log('🎯 Available seats:', flight.capacity?.availableSeats);
@@ -365,28 +380,71 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
   
   const cardOpacity = isPast ? 'opacity-75' : '';
   
-  // Status styling
-  const getStatusBadge = (status) => {
-    const styles = {
-      'approved': 'bg-green-500 text-white',
-      'pending': 'bg-amber-500 text-white', 
-      'denied': 'bg-red-500 text-white',
-      'available': 'bg-blue-500 text-white',
-      'booked': 'bg-purple-500 text-white',
-      'completed': 'bg-gray-500 text-white'
+  // Status styling - for past flights show booking status, for future flights show approval status
+  const getStatusBadge = (flight, isPast) => {
+    const normalizeNumber = (value, fallback = 0) => {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : fallback;
     };
-    return styles[status] || 'bg-gray-400 text-white';
+
+    const maxPassengers = normalizeNumber(flight.max_passengers ?? flight.capacity?.maxPassengers, 0);
+    const rawAvailableSeats =
+      flight.available_seats ??
+      flight.capacity?.availableSeats ??
+      flight.seats_available ??
+      maxPassengers;
+    const availableSeats = Math.min(
+      Math.max(normalizeNumber(rawAvailableSeats, maxPassengers), 0),
+      maxPassengers || normalizeNumber(rawAvailableSeats, 0)
+    );
+    const bookedSeats = Math.max(maxPassengers - availableSeats, 0);
+
+    const seatStatus = () => {
+      if (maxPassengers <= 0) {
+        return { style: 'bg-gray-400 text-white', text: t('dashboard.operator.flightCard.statuses.noData') };
+      }
+
+      if (availableSeats === 0) {
+        return { style: 'bg-green-600 text-white', text: t('dashboard.operator.flightCard.statuses.fullyBooked') };
+      }
+
+      if (bookedSeats > 0) {
+        return { style: 'bg-orange-500 text-white', text: t('dashboard.operator.flightCard.statuses.partiallyBooked') };
+      }
+
+      return { style: 'bg-blue-500 text-white', text: t('dashboard.operator.flightCard.statuses.available') };
+    };
+
+    if (isPast) {
+      return seatStatus();
+    }
+
+    const status = flight.status ? String(flight.status).toLowerCase() : '';
+    const pendingStatuses = ['pending', 'pending_approval', 'submitted', 'in_review', 'review'];
+  const declinedStatuses = ['denied', 'declined', 'rejected', 'cancelled'];
+
+    if (pendingStatuses.includes(status)) {
+      return { style: 'bg-violet-500 text-white', text: t('dashboard.operator.flightCard.statuses.pending') };
+    }
+
+    if (declinedStatuses.includes(status)) {
+      return { style: 'bg-red-500 text-white', text: t('dashboard.operator.flightCard.statuses.denied') };
+    }
+
+    return seatStatus();
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    const dateStr = date.toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
     });
+    // Capitalize the first letter
+    return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
   };
 
   return (
@@ -404,16 +462,21 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 truncate">
-                  {flight.aircraft?.name || flight.aircraft?.manufacturer || 'Private Jet'}
+                  {flight.aircraft_model || flight.aircraft?.name || flight.aircraft?.manufacturer || 'Private Jet'}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  {formatDate(flight.departure_datetime || flight.schedule?.departure)}
+                  {formatDate(flight.departure_time || flight.departure_datetime || flight.schedule?.departure)}
                 </p>
               </div>
               <div className="flex-shrink-0">
-                <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusBadge(flight.status)}`}>
-                  {flight.status || 'Unknown'}
-                </span>
+                {(() => {
+                  const statusInfo = getStatusBadge(flight, isPast);
+                  return (
+                    <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-semibold ${statusInfo.style}`}>
+                      {statusInfo.text}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -424,10 +487,10 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
           <div className="flex items-center justify-between">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900 mb-1">
-                {flight.origin?.code || 'N/A'}
+                {flight.origin_code || flight.origin?.code || 'N/A'}
               </div>
               <div className="text-xs text-gray-500 uppercase tracking-wide">
-                {flight.origin?.city || 'Origin'}
+                {flight.origin?.city || t('dashboard.operator.flightCard.origin')}
               </div>
             </div>
             
@@ -448,34 +511,40 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
             
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900 mb-1">
-                {flight.destination?.code || 'N/A'}
+                {flight.destination_code || flight.destination?.code || 'N/A'}
               </div>
               <div className="text-xs text-gray-500 uppercase tracking-wide">
-                {flight.destination?.city || 'Destination'}
+                {flight.destination?.city || t('dashboard.operator.flightCard.destination')}
               </div>
             </div>
           </div>
         </div>
 
         {/* Quick Info Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             <div className="text-lg font-bold text-gray-900">
-              {flight.capacity?.availableSeats}
+              {flight.available_seats ?? flight.capacity?.availableSeats ?? flight.seats_available ?? 'N/A'}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Available Seats</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.availableSeats')}</div>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             <div className="text-lg font-bold text-gray-900">
-              ${flight.pricing?.emptyLegPrice?.toLocaleString()}
+              {flight.max_passengers || flight.capacity?.maxPassengers || 'N/A'}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Total Price</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.totalSeats')}</div>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             <div className="text-lg font-bold text-gray-900">
-              {flight.schedule?.duration ? `${Math.floor(flight.schedule.duration / 60)}h ${flight.schedule.duration % 60}m` : 'N/A'}
+              {formatCOP(getTotalCharterPrice(flight))}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">Flight Time</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.totalPrice')}</div>
+          </div>
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-lg font-bold text-gray-900">
+              {flight.flight_time || 'N/A'}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.flightTime')}</div>
           </div>
         </div>
 

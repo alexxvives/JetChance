@@ -59,7 +59,76 @@
       "title": "Panel de Operador",
       "welcome": "¡Bienvenido de nuevo! Gestiona tus vuelos y rastrea su estado.",
       "createFlight": "Crear Vuelo",
-      "createFirstFlight": "Crea Tu Primer Vuelo"
+      "createFirstFlight": "Crea Tu Primer Vuelo",
+      "loading": {
+        "title": "Cargando Panel",
+        "message": "Configurando tu panel de operador...",
+        "flights": "Cargando vuelos..."
+      },
+      "error": {
+        "title": "Error en el Panel",
+        "message": "Ocurrió un problema al cargar tu panel.",
+        "auth": {
+          "title": "Error de Autenticación",
+          "message": "No pudimos verificar tu información de usuario."
+        }
+      },
+      "noFlights": {
+        "title": "Aún no tienes vuelos",
+        "message": "Empieza creando tu primer vuelo para que los clientes puedan encontrarlo y reservarlo."
+      },
+      "sections": {
+        "upcoming": {
+          "title": "Próximos Vuelos",
+          "status": "Vuelos activos y pendientes"
+        },
+        "past": {
+          "title": "Vuelos Pasados",
+          "status": "Historial de vuelos completados"
+        }
+      },
+      "actions": {
+        "show": "Mostrar",
+        "hide": "Ocultar",
+        "viewDetails": "Ver Detalles"
+      },
+      "delete": {
+        "title": "Confirmar Eliminación",
+        "message": "¿Estás seguro que deseas eliminar este vuelo?",
+        "confirm": "Eliminar Vuelo"
+      },
+      "flightCard": {
+        "availableSeats": "Asientos Disponibles",
+        "origin": "Origen",
+        "destination": "Destino",
+        "seats": "Asientos",
+        "totalSeats": "Asientos Totales",
+        "price": "Precio",
+        "totalPrice": "Precio Total",
+        "flightTime": "Tiempo de Vuelo",
+        "status": "Estado",
+        "departure": "Salida",
+        "statuses": {
+          "fullyBooked": "Totalmente Reservado",
+          "partiallyBooked": "Parcialmente Reservado",
+          "available": "Disponible",
+          "pending": "Pendiente de aprobación",
+          "approved": "Aprobado",
+          "cancelled": "Cancelado",
+          "denied": "Declinado",
+          "booked": "Reservado",
+          "completed": "Completado",
+          "fewBookings": "Pocas Reservas",
+          "noBookings": "Sin Reservas",
+          "noData": "Sin Datos"
+        },
+        "actions": {
+          "edit": "Editar",
+          "delete": "Eliminar",
+          "view": "Ver Detalles",
+          "viewDetails": "Ver Detalles"
+        }
+      }
     },
     "customer": {
       "title": "Vuelos Empty-Leg Disponibles",
@@ -71,7 +140,8 @@
     "notFound": "Vuelo no encontrado",
     "backToDashboard": "Volver al Panel",
     "backToFlights": "Volver a Vuelos",
-    "availableSeats": "Asientos Disponibles",
+  "availableSeats": "Asientos Disponibles",
+  "totalSeats": "Asientos Totales",
     "operator": "Operador",
     "flightTime": "Tiempo de Vuelo",
     "flightRoute": "Ruta de Vuelo",
@@ -171,10 +241,78 @@
       }
     }
   },
+  "createFlight": {
+    "title": "Crear Nuevo Vuelo",
+    "subtitle": "Agrega un nuevo vuelo empty-leg a tu flota",
+    "sections": {
+      "routeDetails": {
+        "title": "Detalles de la Ruta"
+      },
+      "aircraftDetails": {
+        "title": "Detalles de la Aeronave",
+        "fields": {
+          "aircraftType": "Modelo de Aeronave",
+          "availableSeats": "Asientos Disponibles",
+          "description": "Descripción (Opcional)"
+        },
+        "placeholders": {
+          "aircraftType": "Gulfstream G650",
+          "availableSeats": "12",
+          "description": "Vuelo internacional de lujo de Colombia a México con amenidades premium, Wi-Fi y servicio de catering..."
+        }
+      },
+      "pricing": {
+        "title": "Precios"
+      }
+    },
+    "submitFlight": "Crear Vuelo",
+    "submittingFlight": "Creando vuelo..."
+  },
   "hero": {
     "title": "¿Y si volar privado fuera tan accesible como un boleto comercial?",
     "subtitle": "Reserva vuelos empty-leg de jets privados entre Colombia, México y las Américas hasta 95% de descuento en precios regulares de charter. Viajes de lujo accesibles en toda Latinoamérica.",
     "browseFlights": "Explorar Vuelos",
     "learnMore": "Saber Más"
-  }
+  },
+  "bookingSuccess": {
+    "title": "¡Reserva Confirmada!",
+    "subtitle": "Tu vuelo en jet privado ha sido reservado exitosamente",
+    "bookingReference": "Referencia de Reserva",
+    "keepReference": "Guarda esta referencia para tus registros",
+    "flightDetails": "Detalles del Vuelo",
+    "passengerInfo": "Información de Pasajeros",
+    "paymentSummary": "Resumen de Pago",
+    "specialRequests": "Solicitudes Especiales",
+    "whatNext": "¿Qué Sigue?",
+    "confirmationEmail": "Correo de Confirmación",
+    "confirmationEmailDesc": "Revisa tu correo para la confirmación detallada de reserva e información del vuelo.",
+    "flightPreparation": "Preparación del Vuelo",
+    "flightPreparationDesc": "Llega al aeropuerto 30 minutos antes de la salida. Trae identificación válida.",
+    "customerSupport": "Atención al Cliente",
+    "customerSupportDesc": "Nuestro equipo está disponible 24/7 para cualquier pregunta o cambio.",
+    "viewBookings": "Ver Mis Reservas",
+    "bookAnother": "Reservar Otro Vuelo",
+    "needHelp": "¿Necesitas Ayuda?",
+    "supportDesc": "Nuestro equipo de atención al cliente está aquí para ayudarte",
+    "departure": "Salida",
+    "time": "Hora",
+    "flightTime": "Tiempo de Vuelo",
+    "aircraft": "Aeronave",
+    "operator": "Operador",
+    "passengers": "Pasajeros",
+    "amountPaid": "Monto Pagado",
+    "transactionId": "ID de Transacción",
+    "paymentStatus": "Estado del Pago",
+    "completed": "✓ Completado",
+    "origin": "Origen",
+    "destination": "Destino",
+    "seats": "Asientos",
+    "paymentMethod": "Método de Pago",
+    "creditCard": "Tarjeta de Crédito",
+    "pse": "Transferencia Bancaria PSE",
+    "cash": "Efectivo",
+    "notSpecified": "No especificado"
+  },
+  "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
+  "Seleccione": "Seleccione"
 }
