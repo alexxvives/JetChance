@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const CustomCalendar = ({ 
   value, 
   onChange, 
   minDate, 
   maxDate, 
-  placeholder = "Select date", 
+  placeholder, 
   theme = "default" // "departure", "arrival", "default"
 }) => {
+  const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t('customCalendar.selectDate');
   const [isOpen, setIsOpen] = useState(false);
   const [displayDate, setDisplayDate] = useState(() => {
     const date = value ? new Date(value) : new Date();
@@ -163,7 +166,7 @@ const CustomCalendar = ({
         `}
       >
         <span className={value ? 'text-gray-900' : 'text-gray-500'}>
-          {value ? formatDate(value) : placeholder}
+          {value ? formatDate(value) : defaultPlaceholder}
         </span>
         <CalendarIcon className={`h-5 w-5 ${colors.primary}`} />
       </div>

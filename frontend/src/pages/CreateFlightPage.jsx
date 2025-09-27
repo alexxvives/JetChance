@@ -281,7 +281,8 @@ export default function CreateFlightPage() {
         destinationCode: formData.destinationAirport?.code || '',
         departureDateTime: formData.departureTime,
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        emptyLegPrice: parseFloat(formData.price),
+        emptyLegPrice: parseFloat(formData.price) * 1.3, // Customer price with 30% commission
+        operatorPrice: parseFloat(formData.price), // Operator's base price (stored for reference)
         totalSeats: parseInt(formData.seatsAvailable),
         
         // Optional fields with improved airport naming format
@@ -428,7 +429,7 @@ export default function CreateFlightPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AirportAutocomplete
-                label="Origin Airport"
+                label={t('createFlight.sections.routeInformation.fields.originAirport')}
                 placeholder="Type city or airport... (e.g., 'Miami' or 'BOG')"
                 value={formData.originAirport}
                 onChange={handleOriginAirportChange}
@@ -689,10 +690,20 @@ export default function CreateFlightPage() {
                   value={formData.price}
                   onChange={(value) => setFormData({...formData, price: value})}
                   currency="COP"
-                  placeholder="1,500,000"
+                  placeholder=""
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.pricePerSeatHelp')}</p>
+                {formData.price && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>Customer Price:</strong> {formatCOP(parseFloat(formData.price) * 1.3)} per seat
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      We add a 30% commission. Customers will see the price above.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="group">

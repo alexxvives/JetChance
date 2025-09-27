@@ -269,9 +269,47 @@
   "createFlight": {
     "title": "Crear Nuevo Vuelo",
     "subtitle": "Agrega un nuevo vuelo empty-leg a tu flota",
+    "backToDashboard": "Volver al Panel",
     "sections": {
-      "routeDetails": {
-        "title": "Detalles de la Ruta"
+      "aircraftImages": {
+        "title": "Imágenes de la Aeronave",
+        "uploadArea": {
+          "title": "Arrastra las imágenes de tu aeronave aquí",
+          "subtitle": "o",
+          "browse": "examinar archivos",
+          "formats": "PNG, JPG, WebP, GIF, SVG hasta 5MB cada uno • Múltiples archivos soportados",
+          "dragText": "Suelta los archivos aquí..."
+        }
+      },
+      "routeInformation": {
+        "title": "Información de la Ruta",
+        "fields": {
+          "originCity": "Ciudad de Origen",
+          "originAirport": "Aeropuerto de Origen",
+          "destinationCity": "Ciudad de Destino", 
+          "destinationAirport": "Aeropuerto de Destino"
+        },
+        "placeholders": {
+          "originCity": "Bogotá",
+          "originAirport": "BOG - Aeropuerto Internacional El Dorado",
+          "destinationCity": "Ciudad de México",
+          "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
+          "airportsIn": "Aeropuertos en {{city}}"
+        }
+      },
+      "flightSchedule": {
+        "title": "Horario del Vuelo",
+        "departure": "Salida",
+        "arrival": "Llegada",
+        "fields": {
+          "date": "Fecha",
+          "time": "Hora"
+        },
+        "placeholders": {
+          "selectDate": "Seleccionar fecha de salida",
+          "selectArrivalDate": "Seleccionar fecha de llegada"
+        },
+        "warning": "Duración de vuelo inusualmente larga. Por favor verifica tus fechas."
       },
       "aircraftDetails": {
         "title": "Detalles de la Aeronave",
@@ -287,8 +325,28 @@
         }
       },
       "pricing": {
-        "title": "Precios"
+        "title": "Precios",
+        "fields": {
+          "pricePerSeat": "Precio por Asiento (COP)",
+          "pricePerSeatHelp": "Tu precio base por asiento (se agregará 30% de comisión para los clientes)",
+          "marketPricePerSeat": "Precio de Mercado por Asiento (COP) - Opcional",
+          "marketPricePerSeatHelp": "Opcional: Tarifa regular del mercado por asiento para comparación"
+        },
+        "savingsCalculation": {
+          "savings": "Ahorro",
+          "perSeat": "por asiento",
+          "off": "de descuento"
+        }
       }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "createFlight": "Crear Vuelo",
+      "creatingFlight": "Creando Vuelo..."
+    },
+    "validation": {
+      "invalidFlightTimes": "Horarios de Vuelo Inválidos",
+      "arrivalBeforeDeparture": "La hora de llegada no puede ser anterior a la hora de salida. Por favor verifica el horario de tu vuelo."
     },
     "submitFlight": "Crear Vuelo",
     "submittingFlight": "Creando vuelo..."
@@ -495,6 +553,27 @@
     "clearFilters": "Limpiar Filtros",
     "sortByPrice": "Ordenar por Precio",
     "sortByDate": "Ordenar por Fecha"
+  },
+  "airportAutocomplete": {
+    "placeholder": "Escribe ciudad o nombre del aeropuerto...",
+    "notListed": "¿Aeropuerto no está listado?",
+    "addCustom": "Agregar detalles de aeropuerto personalizado",
+    "addCustomAirport": "Agregar Aeropuerto Personalizado",
+    "smallerAirportsNote": "Para aeropuertos más pequeños o pistas privadas que no están en nuestra base de datos",
+    "airportCode": "Código del Aeropuerto",
+    "airportName": "Nombre del Aeropuerto", 
+    "city": "Ciudad",
+    "country": "País",
+    "addAirport": "Agregar Aeropuerto",
+    "cancel": "Cancelar",
+    "placeholders": {
+      "code": "ej., ABC",
+      "name": "ej., Aeropuerto Regional Privado",
+      "city": "ej., Medellín"
+    }
+  },
+  "customCalendar": {
+    "selectDate": "Seleccionar fecha"
   },
   "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
   "Seleccione": "Seleccione"

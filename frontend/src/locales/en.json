@@ -212,7 +212,7 @@
         "title": "Pricing",
         "fields": {
           "pricePerSeat": "Price per Seat (COP)",
-          "pricePerSeatHelp": "Your charter price per individual seat",
+          "pricePerSeatHelp": "Your base price per seat (30% commission will be added for customers)",
           "marketPricePerSeat": "Market Price per Seat (COP) - Optional", 
           "marketPricePerSeatHelp": "Optional: Regular market rate per seat for comparison"
         },

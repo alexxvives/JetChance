@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { searchAirports } from '../data/airportsAndCities';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const AirportAutocomplete = ({ 
   label, 
@@ -10,6 +11,7 @@ const AirportAutocomplete = ({
   required = false, 
   className = '' 
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -207,7 +209,7 @@ const AirportAutocomplete = ({
           ref={inputRef}
           type="text"
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          placeholder={placeholder || "Type city or airport name..."}
+          placeholder={placeholder || t('airportAutocomplete.placeholder')}
           value={inputValue}
           onChange={handleInputChange}
           onFocus={handleFocus}
@@ -257,8 +259,8 @@ const AirportAutocomplete = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <div>
-                  <div className="font-medium text-blue-700">Airport not listed?</div>
-                  <div className="text-sm text-blue-600">Add custom airport details</div>
+                  <div className="font-medium text-blue-700">{t('airportAutocomplete.notListed')}</div>
+                  <div className="text-sm text-blue-600">{t('airportAutocomplete.addCustom')}</div>
                 </div>
               </div>
             </button>
@@ -271,7 +273,7 @@ const AirportAutocomplete = ({
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4">
           <div className="mb-3">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-medium text-gray-900">Add Custom Airport</h4>
+              <h4 className="text-sm font-medium text-gray-900">{t('airportAutocomplete.addCustomAirport')}</h4>
               <button
                 type="button"
                 onClick={() => setShowCustomForm(false)}
@@ -280,19 +282,19 @@ const AirportAutocomplete = ({
                 <XMarkIcon className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-gray-500">For smaller airports or private airstrips not in our database</p>
+            <p className="text-xs text-gray-500">{t('airportAutocomplete.smallerAirportsNote')}</p>
           </div>
 
           <div className="space-y-3">
             {/* Airport Code */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Airport Code <span className="text-red-500">*</span>
+                {t('airportAutocomplete.airportCode')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., ABC"
+                placeholder={t('airportAutocomplete.placeholders.code')}
                 value={customAirport.code}
                 onChange={(e) => handleCustomInputChange('code', e.target.value.toUpperCase())}
                 maxLength={4}
@@ -302,12 +304,12 @@ const AirportAutocomplete = ({
             {/* Airport Name */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Airport Name <span className="text-red-500">*</span>
+                {t('airportAutocomplete.airportName')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., Private Regional Airport"
+                placeholder={t('airportAutocomplete.placeholders.name')}
                 value={customAirport.name}
                 onChange={(e) => handleCustomInputChange('name', e.target.value)}
               />
@@ -317,12 +319,12 @@ const AirportAutocomplete = ({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
+                  {t('airportAutocomplete.city')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Medellín"
+                  placeholder={t('airportAutocomplete.placeholders.city')}
                   value={customAirport.city}
                   onChange={(e) => handleCustomInputChange('city', e.target.value)}
                 />
@@ -330,7 +332,7 @@ const AirportAutocomplete = ({
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Country <span className="text-red-500">*</span>
+                  {t('airportAutocomplete.country')} <span className="text-red-500">*</span>
                 </label>
                 <select
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -361,14 +363,14 @@ const AirportAutocomplete = ({
                 disabled={!customAirport.code || !customAirport.name || !customAirport.city}
                 className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                Add Airport
+                {t('airportAutocomplete.addAirport')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCustomForm(false)}
                 className="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                Cancel
+                {t('airportAutocomplete.cancel')}
               </button>
             </div>
           </div>
