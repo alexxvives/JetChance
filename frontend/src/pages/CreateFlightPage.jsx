@@ -280,7 +280,7 @@ export default function CreateFlightPage() {
         originCode: formData.originAirport?.code || '',
         destinationCode: formData.destinationAirport?.code || '',
         departureDateTime: formData.departureTime,
-        originalPrice: parseFloat(formData.originalPrice),
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
         emptyLegPrice: parseFloat(formData.price),
         totalSeats: parseInt(formData.seatsAvailable),
         
@@ -701,8 +701,7 @@ export default function CreateFlightPage() {
                   value={formData.originalPrice}
                   onChange={(value) => setFormData({...formData, originalPrice: value})}
                   currency="COP"
-                  placeholder="10,000,000"
-                  required
+                  placeholder=""
                 />
                 <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.marketPricePerSeatHelp')}</p>
               </div>

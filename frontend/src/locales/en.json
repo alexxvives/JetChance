@@ -213,8 +213,8 @@
         "fields": {
           "pricePerSeat": "Price per Seat (COP)",
           "pricePerSeatHelp": "Your charter price per individual seat",
-          "marketPricePerSeat": "Market Price per Seat (COP)", 
-          "marketPricePerSeatHelp": "Regular market rate per seat for comparison"
+          "marketPricePerSeat": "Market Price per Seat (COP) - Optional", 
+          "marketPricePerSeatHelp": "Optional: Regular market rate per seat for comparison"
         },
         "savingsCalculation": {
           "savings": "Savings",

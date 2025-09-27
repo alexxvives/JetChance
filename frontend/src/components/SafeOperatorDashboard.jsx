@@ -221,6 +221,12 @@ function ActualOperatorDashboard({ user }) {
 
   const { currentFlights, pastFlights } = categorizeFlights(flights);
 
+  // Tabs configuration to match AdminDashboard style
+  const tabs = [
+    { id: 'flights', name: t('dashboard.operator.tabs.flights') || 'My Flights', icon: Plane },
+    { id: 'bookings', name: t('dashboard.operator.tabs.bookings') || 'Bookings CRM', icon: BarChart3 }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto pt-16 pb-6 sm:px-6 lg:px-8">
@@ -245,31 +251,26 @@ function ActualOperatorDashboard({ user }) {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="mb-6">
+        {/* Tab Navigation - Matching AdminDashboard Style */}
+        <div className="mb-8">
           <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('flights')}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === 'flights'
-                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Plane className="w-4 h-4 mr-2" />
-              {t('dashboard.operator.tabs.flights') || 'My Flights'}
-            </button>
-            <button
-              onClick={() => setActiveTab('bookings')}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === 'bookings'
-                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              {t('dashboard.operator.tabs.bookings') || 'Bookings CRM'}
-            </button>
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mr-2" />
+                  {tab.name}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
