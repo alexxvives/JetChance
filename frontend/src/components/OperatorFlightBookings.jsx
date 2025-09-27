@@ -52,6 +52,7 @@ export default function OperatorFlightBookings({ user }) {
             commission: confirmedRevenue * 0.1,
             operator: confirmedRevenue * 0.9
           },
+          totalFlights: data.totalFlights || 0,
           bookings: data.bookings.map(booking => ({
             id: booking.id,
             status: booking.status,
@@ -127,46 +128,46 @@ export default function OperatorFlightBookings({ user }) {
       <p className="text-gray-600 mb-6">View all your flight bookings, revenue analytics, and customer details</p>
       
       <div className="space-y-6">
-        {/* Revenue Summary */}
+        {/* Operator Summary */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-green-100 p-2 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900">Revenue Summary</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Operator Summary</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-2xl font-bold text-gray-900">
-                  {formatCOPWithStyling(crmData.revenue.total).number}
-                </span>
-                <span className="text-sm font-medium text-gray-500">
-                  {formatCOPWithStyling(crmData.revenue.total).currency}
-                </span>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <p className="text-sm font-medium text-gray-600">Platform Commission (10%)</p>
+              <p className="text-sm font-medium text-gray-600">Your Revenue</p>
               <div className="flex items-baseline space-x-2">
                 <span className="text-2xl font-bold text-green-600">
-                  {formatCOPWithStyling(crmData.revenue.commission).number}
-                </span>
-                <span className="text-sm font-medium text-gray-500">
-                  {formatCOPWithStyling(crmData.revenue.commission).currency}
-                </span>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <p className="text-sm font-medium text-gray-600">Your Revenue (90%)</p>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-2xl font-bold text-blue-600">
                   {formatCOPWithStyling(crmData.revenue.operator).number}
                 </span>
                 <span className="text-sm font-medium text-gray-500">
                   {formatCOPWithStyling(crmData.revenue.operator).currency}
+                </span>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <p className="text-sm font-medium text-gray-600">Total Flights Submitted</p>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-bold text-blue-600">
+                  {crmData.totalFlights || 0}
+                </span>
+                <span className="text-sm font-medium text-gray-500">
+                  flights
+                </span>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-bold text-purple-600">
+                  {crmData.bookings.length}
+                </span>
+                <span className="text-sm font-medium text-gray-500">
+                  bookings
                 </span>
               </div>
             </div>

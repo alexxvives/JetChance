@@ -137,7 +137,19 @@ router.get('/operator', authenticate, async (req, res) => {
       };
     });
 
-    res.json({ bookings });
+    // Get flight count for this operator
+    const flightCountResult = await db.query(`
+      SELECT COUNT(*) as total_flights
+      FROM flights
+      WHERE operator_id = ?
+    `, [operator.id]);
+
+    const totalFlights = flightCountResult.rows[0]?.total_flights || 0;
+
+    res.json({ 
+      bookings,
+      totalFlights
+    });
 
   } catch (error) {
     console.error('Operator bookings fetch error:', error);

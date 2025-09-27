@@ -7,8 +7,7 @@ import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import AirportAutocomplete from '../components/AirportAutocomplete';
 import CurrencyInput from '../components/CurrencyInput';
-import CustomCalendar from '../components/CustomCalendar';
-import CustomTimePicker from '../components/CustomTimePicker';
+import CustomDateTimePicker from '../components/CustomDateTimePicker';
 import { searchAirports } from '../data/airportsAndCities';
 import { getCountryByAirportCode } from '../utils/airportCountries';
 
@@ -473,50 +472,15 @@ export default function CreateFlightPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Departure Section */}
               <div className="space-y-4">
-                <div className="flex items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">{t('createFlight.sections.flightSchedule.departure')}</h3>
-                </div>
-                
                 {/* Departure Date & Time */}
-                <div className="flex space-x-4">
-                  {/* Departure Date - 75% width */}
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date <span className="text-red-500">*</span>
-                    </label>
-                    <CustomCalendar
-                      value={formData.departureTime ? formData.departureTime.split('T')[0] : ''}
-                      onChange={(date) => {
-                        const time = formData.departureTime ? formData.departureTime.split('T')[1] || '' : '';
-                        if (time) {
-                          setFormData({...formData, departureTime: `${date}T${time}`});
-                        } else {
-                          setFormData({...formData, departureTime: date});
-                        }
-                      }}
-                      minDate={new Date().toISOString().split('T')[0]}
-                      placeholder={t('createFlight.sections.flightSchedule.placeholders.selectDate')}
-                      theme="departure"
-                    />
-                  </div>
-
-                  {/* Departure Time - 25% width */}
-                  <div className="w-32">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Time <span className="text-red-500">*</span>
-                    </label>
-                    <CustomTimePicker
-                      value={formData.departureTime ? formData.departureTime.split('T')[1]?.substring(0, 5) || '' : ''}
-                      onChange={(time) => {
-                        const date = formData.departureTime ? 
-                          (formData.departureTime.includes('T') ? formData.departureTime.split('T')[0] : formData.departureTime) : 
-                          new Date().toISOString().split('T')[0];
-                        setFormData({...formData, departureTime: `${date}T${time}`});
-                      }}
-                      placeholder="Time"
-                    />
-                  </div>
-                </div>
+                <CustomDateTimePicker
+                  value={formData.departureTime}
+                  onChange={(datetime) => setFormData({...formData, departureTime: datetime})}
+                  minDate={new Date()}
+                  placeholder={t('createFlight.sections.flightSchedule.placeholders.selectDate')}
+                  label={t('createFlight.sections.flightSchedule.departureDateTimeTitle')}
+                  required
+                />
                 
                 {/* Departure Preview */}
                 {formData.departureTime && formData.departureTime.includes('T') && formData.departureTime.split('T')[1] && (
@@ -542,54 +506,14 @@ export default function CreateFlightPage() {
 
               {/* Arrival Section */}
               <div className="space-y-4">
-                <div className="flex items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                    {t('createFlight.sections.flightSchedule.arrival')}
-                  </h3>
-                </div>
-                
-                {/* Arrival Date & Time */}
-                <div className="flex space-x-4">
-                  {/* Arrival Date - 75% width */}
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date <span className="text-red-500">*</span>
-                    </label>
-                    <CustomCalendar
-                      value={formData.arrivalTime ? formData.arrivalTime.split('T')[0] : ''}
-                      onChange={(date) => {
-                        const time = formData.arrivalTime ? formData.arrivalTime.split('T')[1] || '' : '';
-                        if (time) {
-                          setFormData({...formData, arrivalTime: `${date}T${time}`});
-                        } else {
-                          setFormData({...formData, arrivalTime: date});
-                        }
-                      }}
-                      minDate={formData.departureTime ? formData.departureTime.split('T')[0] : new Date().toISOString().split('T')[0]}
-                      placeholder={t('createFlight.sections.flightSchedule.placeholders.selectArrivalDate')}
-                      theme="arrival"
-                    />
-                  </div>
-
-                  {/* Arrival Time - 25% width */}
-                  <div className="w-32">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Time <span className="text-red-500">*</span>
-                    </label>
-                    <CustomTimePicker
-                      value={formData.arrivalTime ? formData.arrivalTime.split('T')[1]?.substring(0, 5) || '' : ''}
-                      onChange={(time) => {
-                        const date = formData.arrivalTime ? 
-                          (formData.arrivalTime.includes('T') ? formData.arrivalTime.split('T')[0] : formData.arrivalTime) : 
-                          (formData.departureTime ? 
-                            (formData.departureTime.includes('T') ? formData.departureTime.split('T')[0] : formData.departureTime) : 
-                            new Date().toISOString().split('T')[0]);
-                        setFormData({...formData, arrivalTime: `${date}T${time}`});
-                      }}
-                      placeholder="Time"
-                    />
-                  </div>
-                </div>
+                <CustomDateTimePicker
+                  value={formData.arrivalTime}
+                  onChange={(datetime) => setFormData({...formData, arrivalTime: datetime})}
+                  minDate={formData.departureTime ? new Date(formData.departureTime) : new Date()}
+                  placeholder={t('createFlight.sections.flightSchedule.placeholders.selectArrivalDate')}
+                  label={t('createFlight.sections.flightSchedule.arrivalDateTimeTitle')}
+                  required
+                />
                 
                 {/* Arrival Preview */}
                 {formData.arrivalTime && formData.arrivalTime.includes('T') && formData.arrivalTime.split('T')[1] && (

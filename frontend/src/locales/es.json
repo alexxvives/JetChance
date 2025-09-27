@@ -307,6 +307,8 @@
         "title": "Horario del Vuelo",
         "departure": "Salida",
         "arrival": "Llegada",
+        "departureDateTimeTitle": "Fecha y hora de salida",
+        "arrivalDateTimeTitle": "Fecha y hora de retorno",
         "fields": {
           "date": "Fecha",
           "time": "Hora"
@@ -579,7 +581,9 @@
     }
   },
   "customCalendar": {
-    "selectDate": "Seleccionar fecha"
+    "selectDate": "Seleccionar fecha",
+    "selectDateTime": "Seleccionar fecha y hora",
+    "selectTime": "Seleccionar hora"
   },
   "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
   "Seleccione": "Seleccione"
