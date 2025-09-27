@@ -123,15 +123,15 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
       {filteredFlights.length === 0 && flightsArray.length === 0 && (
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">✈️</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.noFlights')}</h3>
-          <p className="text-gray-600">{t('flightList.noFlightsDesc')}</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('dashboard.operator.flightList.noFlights')}</h3>
+          <p className="text-gray-600">{t('dashboard.operator.flightList.noFlightsDesc')}</p>
         </div>
       )}
       {filteredFlights.length === 0 && flightsArray.length > 0 && (
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.noResults')}</h3>
-          <p className="text-gray-600">{t('flightList.noResultsDesc')}</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('dashboard.operator.flightList.noResults')}</h3>
+          <p className="text-gray-600">{t('dashboard.operator.flightList.noResultsDesc')}</p>
         </div>
       )}
     </div>

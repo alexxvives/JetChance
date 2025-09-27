@@ -338,6 +338,146 @@
     "cash": "Efectivo",
     "notSpecified": "No especificado"
   },
+  "admin": {
+    "dashboard": {
+      "title": "Panel de Administración",
+      "welcome": "Panel de Control de ChanceFly",
+      "welcomeBack": "Bienvenido de nuevo,",
+      "superAdmin": "Super Admin",
+      "allOperators": "Todos los Operadores",
+      "tabs": {
+        "catalog": "Catálogo de Vuelos",
+        "approvals": "Aprobaciones de Vuelos", 
+        "operators": "Gestión de Operadores",
+        "create": "Crear Vuelo",
+        "crm": "CRM y Analíticas"
+      },
+      "create": {
+        "title": "Crear Vuelo",
+        "subtitle": "Crear un nuevo vuelo como super administrador",
+        "navigateButton": "Crear Nuevo Vuelo"
+      },
+      "crm": {
+        "title": "Panel CRM",
+        "subtitle": "Ver todas las reservas, análisis de ingresos y detalles de clientes"
+      },
+      "catalog": {
+        "title": "Catálogo de Vuelos",
+        "subtitle": "Ver todos los vuelos disponibles como los ven los clientes"
+      },
+      "approvals": {
+        "title": "Aprobaciones de Vuelos",
+        "subtitle": "Revisar y aprobar vuelos pendientes de operadores",
+        "loading": "Cargando vuelos pendientes...",
+        "allCaughtUp": "¡Todo al día!",
+        "noPendingFlights": "No hay vuelos pendientes que requieran aprobación en este momento.",
+        "actions": {
+          "approve": "Aprobar",
+          "deny": "Denegar",
+          "view": "Ver",
+          "delete": "Eliminar",
+          "processing": "Procesando..."
+        }
+      },
+      "operators": {
+        "title": "Gestión de Operadores",
+        "subtitle": "Ver y gestionar todos los operadores de aerolíneas",
+        "noOperators": "No se encontraron operadores",
+        "noOperatorsMessage": "No hay operadores registrados en el sistema.",
+        "companyNameFallback": "Nombre de Empresa No Establecido",
+        "flightsTitle": "Vuelos",
+        "flightCount": {
+          "single": "vuelo",
+          "plural": "vuelos"
+        },
+        "noFlightsFound": "No se encontraron vuelos para este operador",
+        "stats": {
+          "flights": "Vuelos",
+          "bookings": "Reservas",
+          "revenue": "Ingresos"
+        },
+        "flightDetails": {
+          "title": "Detalles de Vuelos",
+          "showFlights": "Mostrar Vuelos",
+          "hideFlights": "Ocultar Vuelos",
+          "headers": {
+            "route": "Ruta",
+            "date": "Fecha",
+            "bookings": "Reservas",
+            "seats": "Asientos",
+            "revenue": "Ingresos",
+            "status": "Estado"
+          },
+          "loading": "Cargando vuelos del operador...",
+          "error": "Error cargando vuelos",
+          "noFlights": "No hay vuelos disponibles para este operador."
+        },
+        "actions": {
+          "approve": "Aprobar",
+          "deny": "Denegar",
+          "processing": "Procesando..."
+        }
+      },
+      "flights": {
+        "title": "Gestión de Vuelos",
+        "subtitle": "Revisar y gestionar todos los vuelos del sistema",
+        "approved": "Aprobados",
+        "pending": "Pendientes",
+        "actions": {
+          "approve": "Aprobar",
+          "deny": "Denegar",
+          "view": "Ver",
+          "delete": "Eliminar",
+          "processing": "Procesando..."
+        },
+        "confirmDelete": {
+          "title": "Confirmar Eliminación",
+          "message": "¿Estás seguro que deseas eliminar este vuelo? Esta acción no se puede deshacer.",
+          "confirm": "Eliminar",
+          "cancel": "Cancelar"
+        },
+        "filters": {
+          "all": "Todos los Vuelos",
+          "pending": "Pendientes de Aprobación",
+          "approved": "Aprobados"
+        },
+        "status": {
+          "pending": "Pendiente Aprobación",
+          "approved": "Disponible",
+          "declined": "Denegado",
+          "available": "Disponible",
+          "partiallyBooked": "Parcialmente Reservado",
+          "fullyBooked": "Totalmente Reservado",
+          "cancelled": "Cancelado"
+        }
+      },
+      "bookings": {
+        "title": "Gestión de Reservas",
+        "subtitle": "Ver y gestionar todas las reservas del sistema",
+        "showBookings": "Mostrar Reservas",
+        "hideBookings": "Ocultar Reservas",
+        "loading": "Cargando reservas...",
+        "error": "Error cargando reservas",
+        "noBookings": "No hay reservas para este vuelo.",
+        "customer": "Cliente",
+        "email": "Correo",
+        "phone": "Teléfono",
+        "passengers": "Pasajeros",
+        "amount": "Monto",
+        "bookingDate": "Fecha de Reserva",
+        "status": "Estado"
+      },
+      "errors": {
+        "networkError": "Error de red: No se puede conectar al servidor. Por favor verifica si el backend está funcionando.",
+        "deleteFailed": "Error al eliminar vuelo",
+        "deleteFailedUnknown": "Error al eliminar vuelo: Error desconocido",
+        "approveFailed": "Error al aprobar operador",
+        "approveError": "Error aprobando operador",
+        "denyFailed": "Error al denegar operador",
+        "denyError": "Error denegando operador"
+      }
+    }
+  },
   "flightCard": {
     "departure": "Salida",
     "operator": "Operador",
@@ -350,7 +490,7 @@
     "from": "Desde",
     "to": "Hacia",
     "date": "Fecha",
-    "passengers": "pasajeros",
+    "passengers": "Pasajeros",
     "passenger": "pasajero",
     "clearFilters": "Limpiar Filtros",
     "sortByPrice": "Ordenar por Precio",

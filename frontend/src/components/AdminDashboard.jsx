@@ -6,6 +6,7 @@ import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
 import ErrorBoundary from './ErrorBoundary';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from '../contexts/TranslationContext';
 
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {
@@ -18,6 +19,7 @@ const formatCOPWithStyling = (amount) => {
 };
 
 export default function AdminDashboard({ user }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
   const [pendingFlights, setPendingFlights] = useState([]);
@@ -257,11 +259,11 @@ export default function AdminDashboard({ user }) {
       }
       
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        alert(`Network error: Unable to connect to server. Please check if the backend is running.`);
+        alert(t('admin.dashboard.errors.networkError'));
       } else if (error.message) {
-        alert(`Failed to delete flight: ${error.message}`);
+        alert(`${t('admin.dashboard.errors.deleteFailed')}: ${error.message}`);
       } else {
-        alert('Failed to delete flight: Unknown error occurred');
+        alert(t('admin.dashboard.errors.deleteFailedUnknown'));
       }
     } finally {
       setProcessingFlights(prev => {
@@ -323,11 +325,11 @@ export default function AdminDashboard({ user }) {
         console.log(`✅ Operator ${operatorId} approved successfully`);
       } else {
         console.error('❌ Failed to approve operator:', response.status);
-        alert('Failed to approve operator');
+        alert(t('admin.dashboard.errors.approveFailed'));
       }
     } catch (error) {
       console.error(`❌ Error approving operator ${operatorId}:`, error);
-      alert('Error approving operator');
+      alert(t('admin.dashboard.errors.approveError'));
     } finally {
       setProcessingOperators(prev => {
         const newSet = new Set(prev);
@@ -358,11 +360,11 @@ export default function AdminDashboard({ user }) {
         console.log(`❌ Operator ${operatorId} denied successfully`);
       } else {
         console.error('❌ Failed to deny operator:', response.status);
-        alert('Failed to deny operator');
+        alert(t('admin.dashboard.errors.denyFailed'));
       }
     } catch (error) {
       console.error(`❌ Error denying operator ${operatorId}:`, error);
-      alert('Error denying operator');
+      alert(t('admin.dashboard.errors.denyError'));
     } finally {
       setProcessingOperators(prev => {
         const newSet = new Set(prev);
@@ -445,24 +447,24 @@ export default function AdminDashboard({ user }) {
 
     switch (status) {
       case 'pending':
-        config = { color: 'bg-yellow-100 text-yellow-800', text: '⏳ Pending Approval', icon: '⏳' };
+        config = { color: 'bg-yellow-100 text-yellow-800', text: `⏳ ${t('admin.dashboard.flights.status.pending')}`, icon: '⏳' };
         break;
       case 'approved':
       case 'available':
-        config = { color: 'bg-blue-100 text-blue-800', text: '✅ Available', icon: '✅' };
+        config = { color: 'bg-blue-100 text-blue-800', text: `✅ ${t('admin.dashboard.flights.status.available')}`, icon: '✅' };
         break;
       case 'declined':
-        config = { color: 'bg-red-100 text-red-800', text: '❌ Declined', icon: '❌' };
+        config = { color: 'bg-red-100 text-red-800', text: `❌ ${t('admin.dashboard.flights.status.declined')}`, icon: '❌' };
         break;
       case 'partially_booked':
-        config = { color: 'bg-orange-100 text-orange-800', text: '📋 Partially Booked', icon: '📋' };
+        config = { color: 'bg-orange-100 text-orange-800', text: `📋 ${t('admin.dashboard.flights.status.partiallyBooked')}`, icon: '📋' };
         break;
       case 'fully_booked':
       case 'booked':
-        config = { color: 'bg-green-100 text-green-800', text: '🎫 Fully Booked', icon: '🎫' };
+        config = { color: 'bg-green-100 text-green-800', text: `🎫 ${t('admin.dashboard.flights.status.fullyBooked')}`, icon: '🎫' };
         break;
       case 'cancelled':
-        config = { color: 'bg-gray-100 text-gray-800', text: '⛔ Cancelled', icon: '⛔' };
+        config = { color: 'bg-gray-100 text-gray-800', text: `⛔ ${t('admin.dashboard.flights.status.cancelled')}`, icon: '⛔' };
         break;
       default:
         config = { color: 'bg-gray-100 text-gray-800', text: status, icon: '❓' };
@@ -487,11 +489,11 @@ export default function AdminDashboard({ user }) {
   }, [activeTab]);
 
   const tabs = [
-    { id: 'catalog', name: 'Flight Catalog', icon: EyeIcon },
-    { id: 'approvals', name: 'Flight Approvals', icon: CheckIcon, badge: pendingFlights.length },
-    { id: 'operators', name: 'Operator Management', icon: UsersIcon, badge: pendingOperators.length },
-    { id: 'create', name: 'Create Flight', icon: PlusIcon },
-    ...(user?.role === 'super-admin' ? [{ id: 'crm', name: 'CRM & Analytics', icon: ChartBarIcon }] : [])
+    { id: 'catalog', name: t('admin.dashboard.tabs.catalog'), icon: EyeIcon },
+    { id: 'approvals', name: t('admin.dashboard.tabs.approvals'), icon: CheckIcon, badge: pendingFlights.length },
+    { id: 'operators', name: t('admin.dashboard.tabs.operators'), icon: UsersIcon, badge: pendingOperators.length },
+    { id: 'create', name: t('admin.dashboard.tabs.create'), icon: PlusIcon },
+    ...(user?.role === 'super-admin' ? [{ id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon }] : [])
   ];
 
   return (
@@ -503,9 +505,9 @@ export default function AdminDashboard({ user }) {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
               <p className="text-gray-600 mt-1">
-                Welcome back, {user?.firstName} {user?.lastName}
+                {t('admin.dashboard.welcomeBack')} {user?.firstName} {user?.lastName}
                 <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Super Admin
+                  {t('admin.dashboard.superAdmin')}
                 </span>
               </p>
             </div>
@@ -545,8 +547,8 @@ export default function AdminDashboard({ user }) {
           {activeTab === 'catalog' && (
             <ErrorBoundary>
               <div className="px-6 py-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Flight Catalog</h2>
-                <p className="text-gray-600 mb-6">View all available flights as customers see them</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.catalog.title')}</h2>
+                <p className="text-gray-600 mb-6">{t('admin.dashboard.catalog.subtitle')}</p>
                 
                 <FlightFilters filters={filters} setFilters={setFilters} />
               </div>
@@ -562,19 +564,19 @@ export default function AdminDashboard({ user }) {
 
           {activeTab === 'approvals' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Flight Approvals</h2>
-              <p className="text-gray-600 mb-6">Review and approve pending flights from operators</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.approvals.title')}</h2>
+              <p className="text-gray-600 mb-6">{t('admin.dashboard.approvals.subtitle')}</p>
               
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading pending flights...</p>
+                  <p className="text-gray-600">{t('admin.dashboard.approvals.loading')}</p>
                 </div>
               ) : pendingFlights.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">All Caught Up!</h3>
-                  <p className="text-gray-600">No pending flights require approval at this time.</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">{t('admin.dashboard.approvals.allCaughtUp')}</h3>
+                  <p className="text-gray-600">{t('admin.dashboard.approvals.noPendingFlights')}</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -672,13 +674,13 @@ export default function AdminDashboard({ user }) {
 
           {activeTab === 'operators' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Operator Management</h2>
-              <p className="text-gray-600 mb-6">Manage all operators and their flight status</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.operators.title')}</h2>
+              <p className="text-gray-600 mb-6">{t('admin.dashboard.operators.subtitle')}</p>
               
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading operators...</p>
+                  <p className="text-gray-600">{t('admin.dashboard.operators.flightDetails.loading')}</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -712,14 +714,14 @@ export default function AdminDashboard({ user }) {
                                   onClick={() => approveOperator(operator.id)}
                                   className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
                                 >
-                                  {processingOperators.has(operator.id) ? 'Processing...' : 'Approve'}
+                                  {processingOperators.has(operator.id) ? t('admin.dashboard.operators.actions.processing') : t('admin.dashboard.operators.actions.approve')}
                                 </button>
                                 <button
                                   disabled={processingOperators.has(operator.id)}
                                   onClick={() => denyOperator(operator.id)}
                                   className="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
                                 >
-                                  {processingOperators.has(operator.id) ? 'Processing...' : 'Deny'}
+                                  {processingOperators.has(operator.id) ? t('admin.dashboard.operators.actions.processing') : t('admin.dashboard.operators.actions.deny')}
                                 </button>
                               </div>
                             </div>
@@ -739,7 +741,7 @@ export default function AdminDashboard({ user }) {
                   ) : (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        All Operators ({allOperators.length})
+                        {t('admin.dashboard.allOperators')} ({allOperators.length})
                       </h3>
                       
                       {allOperators.map((operator) => (
@@ -764,43 +766,42 @@ export default function AdminDashboard({ user }) {
                                 </div>
                                 <div>
                                   <h4 className="font-semibold text-lg text-gray-900">
-                                    {operator.company_name || 'Company Name Not Set'}
+                                    {operator.company_name || t('admin.dashboard.operators.companyNameFallback')}
                                   </h4>
                                   <p className="text-sm text-blue-600 font-medium">{operator.email}</p>
                                 </div>
                               </div>
                               
-                              <div className="flex items-center">
-                                <button
-                                  onClick={() => toggleOperatorExpansion(operator.user_id)}
-                                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                  {expandedOperators.has(operator.user_id) ? (
-                                    <ChevronDownIcon className="h-5 w-5" />
-                                  ) : (
-                                    <ChevronRightIcon className="h-5 w-5" />
-                                  )}
-                                </button>
+                              {/* Statistics Containers spanning all remaining area */}
+                              <div className="flex-1 grid grid-cols-3 gap-4 px-6">
+                                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                  <p className="text-lg font-bold text-gray-900">{operator.flightStats.total}</p>
+                                  <p className="text-xs text-gray-600">{t('admin.dashboard.operators.stats.flights')}</p>
+                                </div>
+                                <div className="bg-blue-50 rounded-lg p-3 text-center">
+                                  <p className="text-lg font-bold text-blue-600">{operator.bookingStats.confirmed}</p>
+                                  <p className="text-xs text-gray-600">{t('admin.dashboard.operators.stats.bookings')}</p>
+                                </div>
+                                <div className="bg-green-50 rounded-lg p-3 text-center">
+                                  <p className="text-lg font-bold text-green-600">
+                                    {formatCOPWithStyling(operator.bookingStats.totalRevenue).number} {formatCOPWithStyling(operator.bookingStats.totalRevenue).currency}
+                                  </p>
+                                  <p className="text-xs text-gray-600">{t('admin.dashboard.operators.stats.revenue')}</p>
+                                </div>
                               </div>
+                                
+                              <button
+                                onClick={() => toggleOperatorExpansion(operator.user_id)}
+                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                              >
+                                {expandedOperators.has(operator.user_id) ? (
+                                  <ChevronDownIcon className="h-5 w-5" />
+                                ) : (
+                                  <ChevronRightIcon className="h-5 w-5" />
+                                )}
+                              </button>
                             </div>
 
-                            {/* Operator Statistics */}
-                            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                              <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                <p className="text-2xl font-bold text-gray-900">{operator.flightStats.total}</p>
-                                <p className="text-xs text-gray-600">Total Flights</p>
-                              </div>
-                              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                <p className="text-2xl font-bold text-blue-600">{operator.bookingStats.confirmed}</p>
-                                <p className="text-xs text-gray-600">Confirmed Bookings</p>
-                              </div>
-                              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                                <p className="text-lg font-bold text-purple-600">
-                                  {formatCOPWithStyling(operator.bookingStats.totalRevenue).number} {formatCOPWithStyling(operator.bookingStats.totalRevenue).currency}
-                                </p>
-                                <p className="text-xs text-gray-600">Total Revenue</p>
-                              </div>
-                            </div>
                           </div>
 
                           {/* Expandable Flights List */}
@@ -808,17 +809,17 @@ export default function AdminDashboard({ user }) {
                             <div className="border-t border-gray-200">
                               <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                  <h4 className="text-lg font-semibold text-gray-900">Flights</h4>
+                                  <h4 className="text-lg font-semibold text-gray-900">{t('admin.dashboard.operators.flightsTitle')}</h4>
                                   {operatorFlights.length > 0 && (
                                     <span className="text-sm text-gray-600">
-                                      {operatorFlights.length} flight{operatorFlights.length !== 1 ? 's' : ''}
+                                      {operatorFlights.length} {operatorFlights.length === 1 ? t('admin.dashboard.operators.flightCount.single') : t('admin.dashboard.operators.flightCount.plural')}
                                     </span>
                                   )}
                                 </div>
                                 
                                 {operatorFlights.length === 0 ? (
                                   <div className="text-center py-6">
-                                    <p className="text-gray-500">No flights found for this operator</p>
+                                    <p className="text-gray-500">{t('admin.dashboard.operators.noFlightsFound')}</p>
                                   </div>
                                 ) : (
                                   <div className="space-y-2">
@@ -826,22 +827,22 @@ export default function AdminDashboard({ user }) {
                                     <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
                                       <div className="grid grid-cols-6 gap-4">
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Route</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.route')}</p>
                                         </div>
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Date</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.date')}</p>
                                         </div>
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Bookings</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.bookings')}</p>
                                         </div>
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Seats</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.seats')}</p>
                                         </div>
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Revenue</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.revenue')}</p>
                                         </div>
                                         <div className="text-center">
-                                          <p className="text-xs font-semibold text-gray-700 uppercase">Status</p>
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">{t('admin.dashboard.operators.flightDetails.headers.status')}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -901,23 +902,23 @@ export default function AdminDashboard({ user }) {
 
           {activeTab === 'create' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Create Flight</h2>
-              <p className="text-gray-600 mb-6">Create a new flight as a super admin</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.create.title')}</h2>
+              <p className="text-gray-600 mb-6">{t('admin.dashboard.create.subtitle')}</p>
               
               <button
                 onClick={() => navigate('/create-flight')}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Create New Flight
+                {t('admin.dashboard.create.navigateButton')}
               </button>
             </div>
           )}
 
           {activeTab === 'crm' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">CRM Dashboard</h2>
-              <p className="text-gray-600 mb-6">View all bookings, revenue analytics, and customer details</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.crm.title')}</h2>
+              <p className="text-gray-600 mb-6">{t('admin.dashboard.crm.subtitle')}</p>
               
               {crmLoading ? (
                 <div className="text-center py-8">
