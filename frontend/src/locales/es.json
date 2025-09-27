@@ -294,7 +294,13 @@
           "originAirport": "BOG - Aeropuerto Internacional El Dorado",
           "destinationCity": "Ciudad de México",
           "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
-          "airportsIn": "Aeropuertos en {{city}}"
+          "airportsIn": "Aeropuertos en {{city}}",
+          "originPlaceholder": "Escribe ciudad o aeropuerto... (ej., 'Miami' o 'BOG')",
+          "destinationPlaceholder": "Escribe ciudad o aeropuerto... (ej., 'Ciudad de México' o 'MEX')"
+        },
+        "help": {
+          "notInDatabase": "¿Aeropuerto no está en nuestra base de datos?",
+          "noProblem": "¡No hay problema! Si estás usando un aeropuerto más pequeño o pista privada, haz clic en \"¿Aeropuerto no está listado?\" en el menú desplegable para agregar detalles del aeropuerto personalizado."
         }
       },
       "flightSchedule": {

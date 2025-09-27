@@ -430,7 +430,7 @@ export default function CreateFlightPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AirportAutocomplete
                 label={t('createFlight.sections.routeInformation.fields.originAirport')}
-                placeholder="Type city or airport... (e.g., 'Miami' or 'BOG')"
+                placeholder={t('createFlight.sections.routeInformation.placeholders.originPlaceholder')}
                 value={formData.originAirport}
                 onChange={handleOriginAirportChange}
                 required
@@ -438,7 +438,7 @@ export default function CreateFlightPage() {
 
               <AirportAutocomplete
                 label="Destination Airport"
-                placeholder="Type city or airport... (e.g., 'Mexico City' or 'MEX')"
+                placeholder={t('createFlight.sections.routeInformation.placeholders.destinationPlaceholder')}
                 value={formData.destinationAirport}
                 onChange={handleDestinationAirportChange}
                 required
@@ -452,10 +452,9 @@ export default function CreateFlightPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="text-sm">
-                  <p className="text-blue-800 font-medium">Airport not in our database?</p>
+                  <p className="text-blue-800 font-medium">{t('createFlight.sections.routeInformation.help.notInDatabase')}</p>
                   <p className="text-blue-700">
-                    No problem! If you're using a smaller airport or private airstrip, click "Airport not listed?" 
-                    in the dropdown to add custom airport details.
+                    {t('createFlight.sections.routeInformation.help.noProblem')}
                   </p>
                 </div>
               </div>
@@ -496,7 +495,7 @@ export default function CreateFlightPage() {
                         }
                       }}
                       minDate={new Date().toISOString().split('T')[0]}
-                      placeholder="Select departure date"
+                      placeholder={t('createFlight.sections.flightSchedule.placeholders.selectDate')}
                       theme="departure"
                     />
                   </div>
@@ -567,7 +566,7 @@ export default function CreateFlightPage() {
                         }
                       }}
                       minDate={formData.departureTime ? formData.departureTime.split('T')[0] : new Date().toISOString().split('T')[0]}
-                      placeholder="Select arrival date"
+                      placeholder={t('createFlight.sections.flightSchedule.placeholders.selectArrivalDate')}
                       theme="arrival"
                     />
                   </div>
@@ -639,7 +638,7 @@ export default function CreateFlightPage() {
                   value={formData.aircraftType}
                   onChange={(e) => setFormData({...formData, aircraftType: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                  placeholder="Gulfstream G650"
+                  placeholder={t('createFlight.sections.aircraftDetails.placeholders.aircraftType')}
                 />
               </div>
 
@@ -653,7 +652,7 @@ export default function CreateFlightPage() {
                   value={formData.seatsAvailable}
                   onChange={(e) => setFormData({...formData, seatsAvailable: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
-                  placeholder="12"
+                  placeholder={t('createFlight.sections.aircraftDetails.placeholders.availableSeats')}
                   min="1"
                   max="50"
                 />
@@ -668,7 +667,7 @@ export default function CreateFlightPage() {
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 hover:border-gray-400"
-                  placeholder="Luxury international flight from Colombia to Mexico with premium amenities, Wi-Fi, and catering service..."
+                  placeholder={t('createFlight.sections.aircraftDetails.placeholders.description')}
                 />
               </div>
             </div>
