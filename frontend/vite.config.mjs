@@ -10,5 +10,12 @@ export default defineConfig({
     port: 8000,
     host: true,
     // Remove HTTPS for now - Stripe should work with localhost over HTTP
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
 });

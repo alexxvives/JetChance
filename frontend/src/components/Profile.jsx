@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   User, 
   Phone, 
@@ -16,6 +17,7 @@ import {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
   const [operator, setOperator] = useState(null);
   const [profileData, setProfileData] = useState({});
@@ -29,7 +31,7 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -40,10 +42,58 @@ const Profile = () => {
         const data = await response.json();
         setUser(data.user);
         setOperator(data.operator);
-        setProfileData(data.profile || {});
+        
+        // Initialize profile data with API data first, then fall back to authUser data
+        const initialProfileData = {
+          ...data.profile,
+          firstName: data.profile?.firstName || data.user?.firstName || authUser?.firstName || '',
+          lastName: data.profile?.lastName || data.user?.lastName || authUser?.lastName || '',
+          email: data.profile?.email || data.user?.email || authUser?.email || '',
+          phone: data.profile?.phone || data.user?.phone || authUser?.phone || '',
+          companyName: data.profile?.companyName || data.operator?.company_name || authUser?.companyName || '',
+          companyAddress: data.profile?.companyAddress || data.operator?.company_address || authUser?.companyAddress || ''
+        };
+        setProfileData(initialProfileData);
+      } else {
+        // If API fails, use authUser data as fallback
+        if (authUser) {
+          setUser(authUser);
+          const fallbackProfileData = {
+            firstName: authUser.firstName || '',
+            lastName: authUser.lastName || '',
+            email: authUser.email || '',
+            phone: authUser.phone || ''
+          };
+          
+          // Add operator-specific data if user is an operator
+          if (authUser.role === 'operator') {
+            fallbackProfileData.companyName = authUser.companyName || '';
+            fallbackProfileData.companyAddress = authUser.companyAddress || '';
+          }
+          
+          setProfileData(fallbackProfileData);
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // If API fails, use authUser data as fallback
+      if (authUser) {
+        setUser(authUser);
+        const errorFallbackData = {
+          firstName: authUser.firstName || '',
+          lastName: authUser.lastName || '',
+          email: authUser.email || '',
+          phone: authUser.phone || ''
+        };
+        
+        // Add operator-specific data if user is an operator
+        if (authUser.role === 'operator') {
+          errorFallbackData.companyName = authUser.companyName || '';
+          errorFallbackData.companyAddress = authUser.companyAddress || '';
+        }
+        
+        setProfileData(errorFallbackData);
+      }
     } finally {
       setLoading(false);
     }
@@ -61,7 +111,7 @@ const Profile = () => {
     setMessage('');
     
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
@@ -96,7 +146,8 @@ const Profile = () => {
     );
   }
 
-  const userRole = user?.role || 'customer';
+  const userRole = user?.role || authUser?.role || 'customer';
+  const currentUser = user || authUser;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -144,7 +195,7 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    value={profileData.firstName || user?.firstName || ''}
+                    value={profileData.firstName || ''}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -155,7 +206,7 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    value={profileData.lastName || user?.lastName || ''}
+                    value={profileData.lastName || ''}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -167,7 +218,7 @@ const Profile = () => {
                   </label>
                   <input
                     type="email"
-                    value={profileData.email || user?.email || ''}
+                    value={profileData.email || ''}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -185,32 +236,17 @@ const Profile = () => {
                   />
                 </div>
                 
-                {/* Date of Birth for Operators */}
-                {userRole === 'operator' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Calendar className="inline h-4 w-4 mr-1" />
-                      Date of Birth
-                    </label>
-                    <input
-                      type="date"
-                      value={profileData.dateOfBirth || ''}
-                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                )}
-                
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <MapPin className="inline h-4 w-4 mr-1" />
                     Address
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     value={profileData.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your address"
                   />
                 </div>
               </div>
@@ -241,7 +277,7 @@ const Profile = () => {
                     </label>
                     <input
                       type="text"
-                      value={operator?.operatorId || ''}
+                      value={operator?.operatorId || operator?.id || currentUser?.operatorId || currentUser?.id || ''}
                       disabled
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                     />
@@ -250,11 +286,12 @@ const Profile = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Company Address
                     </label>
-                    <textarea
+                    <input
+                      type="text"
                       value={profileData.companyAddress || ''}
                       onChange={(e) => handleInputChange('companyAddress', e.target.value)}
-                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter company address"
                     />
                   </div>
                 </div>
@@ -268,34 +305,57 @@ const Profile = () => {
                   <Bell className="h-5 w-5 mr-2 text-blue-600" />
                   Notification Preferences
                 </h2>
-                <div className="space-y-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={profileData.emailNotifications !== false}
-                      onChange={(e) => handleInputChange('emailNotifications', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Email notifications</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={profileData.smsNotifications !== false}
-                      onChange={(e) => handleInputChange('smsNotifications', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">SMS notifications</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={profileData.marketingEmails !== false}
-                      onChange={(e) => handleInputChange('marketingEmails', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Marketing emails</span>
-                  </label>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-4">Choose how you'd like to receive updates about your bookings and account.</p>
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3 p-3 bg-white rounded-md border border-gray-200">
+                      <input
+                        type="checkbox"
+                        id="emailNotifications"
+                        checked={profileData.emailNotifications !== false}
+                        onChange={(e) => handleInputChange('emailNotifications', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor="emailNotifications" className="text-sm font-medium text-gray-900 cursor-pointer">
+                          Email Notifications
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">Receive booking confirmations, flight updates, and important account information</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 bg-white rounded-md border border-gray-200">
+                      <input
+                        type="checkbox"
+                        id="smsNotifications"
+                        checked={profileData.smsNotifications !== false}
+                        onChange={(e) => handleInputChange('smsNotifications', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor="smsNotifications" className="text-sm font-medium text-gray-900 cursor-pointer">
+                          SMS Notifications
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">Get text message alerts for time-sensitive flight changes and reminders</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 bg-white rounded-md border border-gray-200">
+                      <input
+                        type="checkbox"
+                        id="marketingEmails"
+                        checked={profileData.marketingEmails !== false}
+                        onChange={(e) => handleInputChange('marketingEmails', e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor="marketingEmails" className="text-sm font-medium text-gray-900 cursor-pointer">
+                          Marketing Communications
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">Receive promotional offers, flight deals, and news about our services</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -227,17 +227,17 @@ const NotificationBell = () => {
       {/* Bell Icon Button */}
       <button
         onClick={toggleDropdown}
-        className="relative p-2 text-white/80 hover:text-violet-300 hover:bg-violet-500/20 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-transparent rounded-lg transition-all duration-200 backdrop-blur-sm border border-violet-400/20 shadow-lg hover:shadow-xl"
+        className="relative flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 text-white/90 hover:text-white min-w-[50px]"
       >
         {unreadCount > 0 ? (
-          <BellSolidIcon className="h-5 w-5 text-violet-300 animate-pulse" />
+          <BellSolidIcon className="h-4 w-4 text-white animate-pulse" />
         ) : (
-          <BellIcon className="h-5 w-5" />
+          <BellIcon className="h-4 w-4" />
         )}
         
         {/* Badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce shadow-lg">
+          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

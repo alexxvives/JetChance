@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { Plane, BarChart3 } from 'lucide-react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { getTotalCharterPrice, formatPrice, transformFlightsArray } from '../utils/flightDataUtils';
+import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from '../contexts/TranslationContext';
+import OperatorFlightBookings from './OperatorFlightBookings';
 
 // Helper function to format Colombian Peso currency
 const formatCOP = (amount) => {
@@ -12,8 +16,6 @@ const formatCOP = (amount) => {
   }).format(amount);
   return `COP ${formatted}`;
 };
-import ConfirmationModal from './ConfirmationModal';
-import { useTranslation } from '../contexts/TranslationContext';
 
 // Safe wrapper component
 export default function SafeOperatorDashboard({ user }) {
@@ -95,6 +97,7 @@ function ActualOperatorDashboard({ user }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(true); // Collapsed by default
   const [isUpcomingFlightsCollapsed, setIsUpcomingFlightsCollapsed] = useState(false); // Expanded by default
+  const [activeTab, setActiveTab] = useState('flights');
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     flightId: null,
@@ -242,17 +245,46 @@ function ActualOperatorDashboard({ user }) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">{t('dashboard.operator.loading.flights')}</p>
-            </div>
-          ) : flights.length === 0 ? (
-            <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.operator.noFlights.title')}</h3>
-              <p className="text-gray-600 mb-4">{t('dashboard.operator.noFlights.message')}</p>
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('flights')}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === 'flights'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Plane className="w-4 h-4 mr-2" />
+              {t('dashboard.operator.tabs.flights') || 'My Flights'}
+            </button>
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === 'bookings'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              {t('dashboard.operator.tabs.bookings') || 'Bookings CRM'}
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'flights' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">{t('dashboard.operator.loading.flights')}</p>
+              </div>
+            ) : flights.length === 0 ? (
+              <div className="text-center py-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.operator.noFlights.title')}</h3>
+                <p className="text-gray-600 mb-4">{t('dashboard.operator.noFlights.message')}</p>
               <button
                 onClick={() => navigate('/create-flight')}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -349,7 +381,14 @@ function ActualOperatorDashboard({ user }) {
               )}
             </div>
           )}
-        </div>
+          </div>
+        )}
+
+        {activeTab === 'bookings' && (
+          <div>
+            <OperatorFlightBookings user={user} />
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from './contexts/AuthContext';
+import { useTranslation } from './contexts/TranslationContext';
 import AircraftImageFallback from './components/AircraftImageFallback';
 
 // Helper function to format Colombian Peso currency
@@ -91,6 +92,7 @@ const getDefaultAircraftImage = (aircraftType) => {
 export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   // Check if user is super admin
   const isSuperAdmin = user?.role === 'super-admin';
@@ -234,16 +236,16 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
 
         <div className="space-y-2 mb-4">
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Departure:</span> {departureTime ? new Date(departureTime).toLocaleDateString() : 'TBD'} at {departureTime ? new Date(departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}
+            <span className="font-medium">{t('flightCard.departure')}:</span> {departureTime ? new Date(departureTime).toLocaleDateString() : 'TBD'} at {departureTime ? new Date(departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Operator:</span> {operatorName}
+            <span className="font-medium">{t('flightCard.operator')}:</span> {operatorName}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Aircraft:</span> {fullAircraftName}
+            <span className="font-medium">{t('flightCard.aircraft')}:</span> {fullAircraftName}
           </div>
           <div className="text-sm text-gray-600">
-            <span className="font-medium">Available Seats:</span> {seatsAvailable}
+            <span className="font-medium">{t('flightCard.availableSeats')}:</span> {seatsAvailable}
           </div>
         </div>
 
@@ -251,7 +253,7 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
             className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
             onClick={handleViewDetails}
           >
-            View Details & Book
+            {t('flightCard.viewDetailsBook')}
           </button>
 
           {/* Admin Actions - Only visible to super admins in admin view */}
@@ -262,7 +264,7 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
                 className="w-full flex items-center justify-center py-1.5 px-3 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors"
               >
                 <TrashIcon className="h-3 w-3 mr-1.5" />
-                Delete Flight
+                {t('flightCard.deleteFlight')}
               </button>
             </div>
           )}

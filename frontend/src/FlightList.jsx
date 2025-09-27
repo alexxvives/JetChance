@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import FlightCard from './FlightCard';
 import { flightsAPI, shouldUseRealAPI } from './api/flightsAPI';
+import { useTranslation } from './contexts/TranslationContext';
 
 export default function FlightList({ filters = {}, isAdminView = false, onDeleteFlight }) {
+  const { t } = useTranslation();
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +78,7 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-4xl mb-4">⏳</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading flights...</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.loading')}</h3>
         </div>
       </div>
     );
@@ -121,15 +123,15 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
       {filteredFlights.length === 0 && flightsArray.length === 0 && (
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">✈️</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No flights available</h3>
-          <p className="text-gray-600">Check back later for new flight options</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.noFlights')}</h3>
+          <p className="text-gray-600">{t('flightList.noFlightsDesc')}</p>
         </div>
       )}
       {filteredFlights.length === 0 && flightsArray.length > 0 && (
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No flights found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.noResults')}</h3>
+          <p className="text-gray-600">{t('flightList.noResultsDesc')}</p>
         </div>
       )}
     </div>

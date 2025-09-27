@@ -27,6 +27,9 @@ const run = (sql, params = []) => {
   }
 };
 
+// Add query method to db object for backwards compatibility
+db.query = query;
+
 module.exports = {
   query,
   run,

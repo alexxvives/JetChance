@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { getTotalCharterPrice, getTotalMarketPrice, formatPrice } from '../utils/flightDataUtils';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const formatCOP = (amount) => {
   const formatted = new Intl.NumberFormat('es-CO', {
@@ -20,6 +21,7 @@ const formatCOPWithStyling = (amount) => {
 };
 
 export default function FlightCardsAlt({ onNavigate }) {
+  const { t } = useTranslation();
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
@@ -115,7 +117,7 @@ export default function FlightCardsAlt({ onNavigate }) {
       charterPrice: charterPrice,
       time: `${departureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeString}`,
       aircraft: aircraftType,
-      seats: `${availableSeats} seats available`,
+      seats: `${availableSeats} ${t('flightCatalog.seatsAvailable')}`,
       savings: savings,
       savingsPercent: savingsPercent,
       originCode,
@@ -128,7 +130,7 @@ export default function FlightCardsAlt({ onNavigate }) {
       <section className="py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mx-auto"></div>
-          <p className="text-white/80 mt-4">Loading available flights...</p>
+          <p className="text-white/80 mt-4">{t('flightCatalog.loading')}</p>
         </div>
       </section>
     );
@@ -154,9 +156,9 @@ export default function FlightCardsAlt({ onNavigate }) {
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
             <div className="text-6xl mb-4">✈️</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Flights Available Yet</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">{t('flightCatalog.noFlights')}</h3>
             <p className="text-white/70">
-              Operators can add new flights through the dashboard to get started.
+              {t('flightCatalog.noFlightsDesc')}
             </p>
           </div>
         </div>
@@ -168,10 +170,10 @@ export default function FlightCardsAlt({ onNavigate }) {
     <section className="py-8 overflow-hidden">
       <div className="mb-8 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          Available Flights Right Now
+          {t('flightCatalog.title')}
         </h2>
         <p className="text-white/80 text-lg">
-          Discover luxury flights at unbeatable prices
+          {t('flightCatalog.subtitle')}
         </p>
       </div>
       
@@ -250,7 +252,7 @@ export default function FlightCardsAlt({ onNavigate }) {
                       onClick={() => onNavigate && onNavigate('signup')}
                       className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                     >
-                      Book Now
+                      {t('flightCatalog.bookNow')}
                     </button>
                   </div>
                 </div>

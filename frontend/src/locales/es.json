@@ -77,6 +77,10 @@
         "title": "Aún no tienes vuelos",
         "message": "Empieza creando tu primer vuelo para que los clientes puedan encontrarlo y reservarlo."
       },
+      "tabs": {
+        "flights": "Mis Vuelos",
+        "bookings": "CRM de Reservas"
+      },
       "sections": {
         "upcoming": {
           "title": "Próximos Vuelos",
@@ -108,6 +112,10 @@
         "flightTime": "Tiempo de Vuelo",
         "status": "Estado",
         "departure": "Salida",
+        "operator": "Operador",
+        "aircraft": "Aeronave",
+        "viewDetailsBook": "Ver Detalles y Reservar",
+        "deleteFlight": "Eliminar Vuelo",
         "statuses": {
           "fullyBooked": "Totalmente Reservado",
           "partiallyBooked": "Parcialmente Reservado",
@@ -128,6 +136,22 @@
           "view": "Ver Detalles",
           "viewDetails": "Ver Detalles"
         }
+      },
+      "flightCatalog": {
+        "loading": "Cargando vuelos disponibles...",
+        "title": "Vuelos Disponibles Ahora Mismo",
+        "subtitle": "Descubre vuelos de lujo a precios increíbles",
+        "noFlights": "Aún No Hay Vuelos Disponibles",
+        "noFlightsDesc": "Los operadores pueden agregar nuevos vuelos a través del panel de control para comenzar.",
+        "bookNow": "Reservar Ahora",
+        "seatsAvailable": "asientos disponibles"
+      },
+      "flightList": {
+        "loading": "Cargando vuelos...",
+        "noFlights": "No hay vuelos disponibles",
+        "noFlightsDesc": "Vuelve más tarde para ver nuevas opciones de vuelo",
+        "noResults": "No se encontraron vuelos",
+        "noResultsDesc": "Intenta ajustar tus criterios de búsqueda"
       }
     },
     "customer": {
@@ -313,6 +337,24 @@
     "pse": "Transferencia Bancaria PSE",
     "cash": "Efectivo",
     "notSpecified": "No especificado"
+  },
+  "flightCard": {
+    "departure": "Salida",
+    "operator": "Operador",
+    "aircraft": "Aeronave",
+    "availableSeats": "Asientos Disponibles",
+    "viewDetailsBook": "Ver Detalles y Reservar",
+    "deleteFlight": "Eliminar Vuelo"
+  },
+  "flightFilters": {
+    "from": "Desde",
+    "to": "Hacia",
+    "date": "Fecha",
+    "passengers": "pasajeros",
+    "passenger": "pasajero",
+    "clearFilters": "Limpiar Filtros",
+    "sortByPrice": "Ordenar por Precio",
+    "sortByDate": "Ordenar por Fecha"
   },
   "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
   "Seleccione": "Seleccione"

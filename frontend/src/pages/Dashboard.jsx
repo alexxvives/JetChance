@@ -3,9 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import FlightFilters from '../components/FlightFilters';
 import FlightList from '../FlightList';
+import CustomerBookings from '../components/CustomerBookings';
 import SafeOperatorDashboard from '../components/SafeOperatorDashboard';
 import AdminDashboard from '../components/AdminDashboard';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { Plane, BookOpen } from 'lucide-react';
 
 export default function Dashboard({ user, onNavigate, onLogout }) {
   const { user: authUser } = useAuth();
@@ -18,6 +20,8 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
     date: '',
     passengers: 1
   });
+
+  const [activeTab, setActiveTab] = useState('flights');
 
   // Show admin dashboard for admins and super-admins
   if (currentUser?.role === 'admin' || currentUser?.role === 'super-admin') {
@@ -50,8 +54,57 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
           </p>
         </div>
 
-        <FlightFilters filters={filters} setFilters={setFilters} />
-        <FlightList filters={filters} />
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('flights')}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === 'flights'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Plane className="w-4 h-4 mr-2" />
+              Available Flights
+            </button>
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === 'bookings'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              My Bookings
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'flights' && (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Flights</h2>
+              <p className="text-gray-600 mb-6">Discover and book your next luxury flight</p>
+            </div>
+            
+            <FlightFilters filters={filters} setFilters={setFilters} />
+            <FlightList filters={filters} />
+          </div>
+        )}
+
+        {activeTab === 'bookings' && (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
+              <p className="text-gray-600 mb-6">View and manage your flight reservations</p>
+            </div>
+            
+            <CustomerBookings />
+          </div>
+        )}
       </main>
     </div>
   );

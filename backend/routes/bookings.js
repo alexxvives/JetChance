@@ -26,7 +26,8 @@ router.get('/', authenticate, async (req, res) => {
       FROM bookings b
       JOIN flights f ON b.flight_id = f.id
       JOIN operators o ON f.operator_id = o.id
-      WHERE b.customer_id = ?
+      JOIN customers c ON b.customer_id = c.id
+      WHERE c.user_id = ?
       ORDER BY b.created_at DESC
     `, [req.user.id]);
 
@@ -63,6 +64,85 @@ router.get('/', authenticate, async (req, res) => {
     console.error('Bookings fetch error:', error);
     res.status(500).json({
       error: 'Failed to fetch bookings'
+    });
+  }
+});
+
+// @route   GET /api/bookings/operator
+// @desc    Get operator's flight bookings
+// @access  Private (Operators only)
+router.get('/operator', authenticate, async (req, res) => {
+  try {
+    // First, get the operator record for this user
+    const operatorResult = await db.query('SELECT * FROM operators WHERE user_id = ?', [req.user.id]);
+    
+    if (!operatorResult.rows.length) {
+      return res.status(403).json({
+        error: 'Access denied. Operator account required.'
+      });
+    }
+
+    const operator = operatorResult.rows[0];
+
+    // Get all bookings for flights operated by this operator
+    const result = await db.query(`
+      SELECT 
+        b.*,
+        f.origin_city,
+        f.destination_city,
+        f.origin_name,
+        f.destination_name,
+        f.departure_datetime,
+        f.arrival_datetime,
+        f.aircraft_model as aircraft_name,
+        'COP' as currency,
+        c.first_name || ' ' || c.last_name as customer_name,
+        c.phone as customer_phone
+      FROM bookings b
+      JOIN flights f ON b.flight_id = f.id
+      JOIN customers c ON b.customer_id = c.id
+      WHERE f.operator_id = ?
+      ORDER BY b.created_at DESC
+    `, [operator.id]);
+
+    const bookings = result.rows.map(booking => {
+      // Extract airport codes from names (format: "Airport Name (CODE)")
+      const originCodeMatch = booking.origin_name?.match(/\(([^)]+)\)$/);
+      const destinationCodeMatch = booking.destination_name?.match(/\(([^)]+)\)$/);
+      const originCode = originCodeMatch ? originCodeMatch[1] : booking.origin_city;
+      const destinationCode = destinationCodeMatch ? destinationCodeMatch[1] : booking.destination_city;
+
+      return {
+        id: booking.id,
+        bookingReference: booking.id, // Use ID as booking reference
+        status: booking.status,
+        passengerCount: booking.total_passengers,
+        totalAmount: parseFloat(booking.total_amount),
+        currency: booking.currency,
+        customerName: booking.customer_name,
+        customerPhone: booking.customer_phone,
+        contact_email: booking.contact_email,
+        flight_id: booking.flight_id,
+        flight: {
+          origin: `${booking.origin_city} (${originCode})`,
+          destination: `${booking.destination_city} (${destinationCode})`,
+          departure: booking.departure_datetime,
+          arrival: booking.arrival_datetime,
+          aircraftName: booking.aircraft_name,
+          operator: operator.company_name
+        },
+        specialRequests: booking.special_requests,
+        bookingDate: booking.created_at,
+        paymentMethod: booking.payment_method
+      };
+    });
+
+    res.json({ bookings });
+
+  } catch (error) {
+    console.error('Operator bookings fetch error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch operator bookings'
     });
   }
 });

@@ -1,8 +1,11 @@
 import React from 'react';
 import LocationAutocomplete from './LocationAutocomplete';
 import { searchCities } from '../data/airportsAndCities';
+import { useTranslation } from '../contexts/TranslationContext';
 
 export default function FlightFilters({ filters, setFilters }) {
+  const { t } = useTranslation();
+  
   const renderCityOption = (city, isSelected) => {
     if (isSelected) {
       return city.city; // Just return city name for input display
@@ -38,7 +41,7 @@ export default function FlightFilters({ filters, setFilters }) {
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <LocationAutocomplete
-          label="From"
+          label={t('flightFilters.from')}
           placeholder="Medellín"
           value={filters.origin}
           onChange={handleOriginChange}
@@ -47,7 +50,7 @@ export default function FlightFilters({ filters, setFilters }) {
         />
 
         <LocationAutocomplete
-          label="To"
+          label={t('flightFilters.to')}
           placeholder="Cancún"
           value={filters.destination}
           onChange={handleDestinationChange}
@@ -57,7 +60,7 @@ export default function FlightFilters({ filters, setFilters }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Date
+            {t('flightFilters.date')}
           </label>
           <input
             type="date"
@@ -69,7 +72,7 @@ export default function FlightFilters({ filters, setFilters }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Passengers
+            {t('flightFilters.passengers')}
           </label>
           <select
             value={filters.passengers}
@@ -77,7 +80,7 @@ export default function FlightFilters({ filters, setFilters }) {
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {[1,2,3,4,5,6,7,8,9,10,11,12].map(num => (
-              <option key={num} value={num}>{num} passenger{num !== 1 ? 's' : ''}</option>
+              <option key={num} value={num}>{num} {num !== 1 ? t('flightFilters.passengers') : t('flightFilters.passenger')}</option>
             ))}
           </select>
         </div>
@@ -88,15 +91,15 @@ export default function FlightFilters({ filters, setFilters }) {
           onClick={() => setFilters({ origin: '', destination: '', date: '', passengers: 1 })}
           className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
         >
-          Clear Filters
+          {t('flightFilters.clearFilters')}
         </button>
         
         <div className="flex gap-2">
           <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-            Sort by Price
+            {t('flightFilters.sortByPrice')}
           </button>
           <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-            Sort by Date
+            {t('flightFilters.sortByDate')}
           </button>
         </div>
       </div>
