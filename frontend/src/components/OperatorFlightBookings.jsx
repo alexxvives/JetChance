@@ -7,6 +7,16 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
+// Helper function to format COP with separate styling for currency label
+const formatCOPWithStyling = (amount) => {
+  if (!amount) return { number: '0', currency: 'COP' };
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return { number: formatted, currency: 'COP' };
+};
+
 export default function OperatorFlightBookings({ user }) {
   const { t } = useTranslation();
   const [crmData, setCrmData] = useState(null);
@@ -31,11 +41,16 @@ export default function OperatorFlightBookings({ user }) {
         const data = await response.json();
         
         // Transform data to match super admin format
+        // Only count confirmed bookings for revenue calculation (same as super admin)
+        const confirmedRevenue = data.bookings.reduce((sum, booking) => {
+          return sum + (booking.status === 'confirmed' ? (booking.totalAmount || 0) : 0);
+        }, 0);
+        
         const transformedData = {
           revenue: {
-            total: data.bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0),
-            commission: data.bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0) * 0.1,
-            operator: data.bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0) * 0.9
+            total: confirmedRevenue,
+            commission: confirmedRevenue * 0.1,
+            operator: confirmedRevenue * 0.9
           },
           bookings: data.bookings.map(booking => ({
             id: booking.id,
@@ -124,21 +139,36 @@ export default function OperatorFlightBookings({ user }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">
-                ${crmData.revenue.total.toLocaleString()}
-              </p>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-bold text-gray-900">
+                  {formatCOPWithStyling(crmData.revenue.total).number}
+                </span>
+                <span className="text-sm font-medium text-gray-500">
+                  {formatCOPWithStyling(crmData.revenue.total).currency}
+                </span>
+              </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <p className="text-sm font-medium text-gray-600">Platform Commission (10%)</p>
-              <p className="text-2xl font-bold text-green-600">
-                ${crmData.revenue.commission.toLocaleString()}
-              </p>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-bold text-green-600">
+                  {formatCOPWithStyling(crmData.revenue.commission).number}
+                </span>
+                <span className="text-sm font-medium text-gray-500">
+                  {formatCOPWithStyling(crmData.revenue.commission).currency}
+                </span>
+              </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <p className="text-sm font-medium text-gray-600">Your Revenue (90%)</p>
-              <p className="text-2xl font-bold text-blue-600">
-                ${crmData.revenue.operator.toLocaleString()}
-              </p>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-2xl font-bold text-blue-600">
+                  {formatCOPWithStyling(crmData.revenue.operator).number}
+                </span>
+                <span className="text-sm font-medium text-gray-500">
+                  {formatCOPWithStyling(crmData.revenue.operator).currency}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -203,9 +233,14 @@ export default function OperatorFlightBookings({ user }) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-600">Total Price</p>
-                        <p className="text-sm font-bold text-gray-900">
-                          ${booking.totalPrice?.toLocaleString()}
-                        </p>
+                        <div className="flex items-baseline space-x-1">
+                          <span className="text-sm font-bold text-gray-900">
+                            {formatCOPWithStyling(booking.totalPrice).number}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {formatCOPWithStyling(booking.totalPrice).currency}
+                          </span>
+                        </div>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-600">Booked On</p>

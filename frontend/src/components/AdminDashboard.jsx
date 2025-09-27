@@ -22,6 +22,10 @@ export default function AdminDashboard({ user }) {
   const [activeTab, setActiveTab] = useState('catalog');
   const [pendingFlights, setPendingFlights] = useState([]);
   const [pendingOperators, setPendingOperators] = useState([]);
+  const [allOperators, setAllOperators] = useState([]);
+  const [selectedOperator, setSelectedOperator] = useState(null);
+  const [operatorFlights, setOperatorFlights] = useState([]);
+  const [expandedOperators, setExpandedOperators] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [processingFlights, setProcessingFlights] = useState(new Set());
   const [processingOperators, setProcessingOperators] = useState(new Set());
@@ -62,6 +66,73 @@ export default function AdminDashboard({ user }) {
       setPendingFlights([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fetch all operators with statistics
+  const fetchAllOperators = async () => {
+    try {
+      setIsLoading(true);
+      console.log('🔄 Admin fetching all operators...');
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('❌ No auth token found');
+        return;
+      }
+
+      const response = await fetch('/api/operators', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📡 Admin all operators:', data);
+        setAllOperators(data.operators || []);
+      } else {
+        console.error('❌ Failed to fetch all operators:', response.status);
+        setAllOperators([]);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching all operators:', error);
+      setAllOperators([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch operator flights
+  const fetchOperatorFlights = async (operatorId) => {
+    try {
+      console.log(`🔄 Fetching flights for operator ${operatorId}...`);
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('❌ No auth token found');
+        return;
+      }
+
+      const response = await fetch(`/api/operators/${operatorId}/flights`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`📡 Operator ${operatorId} flights:`, data);
+        setOperatorFlights(data.flights || []);
+      } else {
+        console.error(`❌ Failed to fetch operator ${operatorId} flights:`, response.status);
+        setOperatorFlights([]);
+      }
+    } catch (error) {
+      console.error(`❌ Error fetching operator ${operatorId} flights:`, error);
+      setOperatorFlights([]);
     }
   };
 
@@ -238,16 +309,16 @@ export default function AdminDashboard({ user }) {
       console.log(`✅ Approving operator ${operatorId}...`);
       
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/operators/${operatorId}/status`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/operators/${operatorId}/approve`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: 'approved' })
+        }
       });
 
       if (response.ok) {
+        await fetchAllOperators(); // Refresh the list
         await fetchPendingOperators(); // Refresh the list
         console.log(`✅ Operator ${operatorId} approved successfully`);
       } else {
@@ -273,16 +344,16 @@ export default function AdminDashboard({ user }) {
       console.log(`❌ Denying operator ${operatorId}...`);
       
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/operators/${operatorId}/status`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/operators/${operatorId}/deny`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: 'denied', reason })
+        }
       });
 
       if (response.ok) {
+        await fetchAllOperators(); // Refresh the list
         await fetchPendingOperators(); // Refresh the list
         console.log(`❌ Operator ${operatorId} denied successfully`);
       } else {
@@ -352,10 +423,63 @@ export default function AdminDashboard({ user }) {
     setExpandedBookings(newExpanded);
   };
 
+  const toggleOperatorExpansion = (operatorId) => {
+    const newExpanded = new Set(expandedOperators);
+    if (newExpanded.has(operatorId)) {
+      newExpanded.delete(operatorId);
+      if (selectedOperator === operatorId) {
+        setSelectedOperator(null);
+        setOperatorFlights([]);
+      }
+    } else {
+      newExpanded.add(operatorId);
+      setSelectedOperator(operatorId);
+      fetchOperatorFlights(operatorId);
+    }
+    setExpandedOperators(newExpanded);
+  };
+
+  const getFlightStatusBadge = (flight) => {
+    let status = flight.derivedStatus || flight.status;
+    let config = {};
+
+    switch (status) {
+      case 'pending':
+        config = { color: 'bg-yellow-100 text-yellow-800', text: '⏳ Pending Approval', icon: '⏳' };
+        break;
+      case 'approved':
+      case 'available':
+        config = { color: 'bg-blue-100 text-blue-800', text: '✅ Available', icon: '✅' };
+        break;
+      case 'declined':
+        config = { color: 'bg-red-100 text-red-800', text: '❌ Declined', icon: '❌' };
+        break;
+      case 'partially_booked':
+        config = { color: 'bg-orange-100 text-orange-800', text: '📋 Partially Booked', icon: '📋' };
+        break;
+      case 'fully_booked':
+      case 'booked':
+        config = { color: 'bg-green-100 text-green-800', text: '🎫 Fully Booked', icon: '🎫' };
+        break;
+      case 'cancelled':
+        config = { color: 'bg-gray-100 text-gray-800', text: '⛔ Cancelled', icon: '⛔' };
+        break;
+      default:
+        config = { color: 'bg-gray-100 text-gray-800', text: status, icon: '❓' };
+    }
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+        {config.text}
+      </span>
+    );
+  };
+
   useEffect(() => {
     if (activeTab === 'approvals') {
       fetchPendingFlights();
     } else if (activeTab === 'operators') {
+      fetchAllOperators();
       fetchPendingOperators();
     } else if (activeTab === 'crm' && user?.role === 'super-admin') {
       fetchCrmData();
@@ -365,7 +489,7 @@ export default function AdminDashboard({ user }) {
   const tabs = [
     { id: 'catalog', name: 'Flight Catalog', icon: EyeIcon },
     { id: 'approvals', name: 'Flight Approvals', icon: CheckIcon, badge: pendingFlights.length },
-    { id: 'operators', name: 'Operator Approvals', icon: UsersIcon, badge: pendingOperators.length },
+    { id: 'operators', name: 'Operator Management', icon: UsersIcon, badge: pendingOperators.length },
     { id: 'create', name: 'Create Flight', icon: PlusIcon },
     ...(user?.role === 'super-admin' ? [{ id: 'crm', name: 'CRM & Analytics', icon: ChartBarIcon }] : [])
   ];
@@ -548,76 +672,228 @@ export default function AdminDashboard({ user }) {
 
           {activeTab === 'operators' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Operator Approvals</h2>
-              <p className="text-gray-600 mb-6">Review and approve pending operator registrations</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Operator Management</h2>
+              <p className="text-gray-600 mb-6">Manage all operators and their flight status</p>
               
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading pending operators...</p>
-                </div>
-              ) : pendingOperators.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Operators</h3>
-                  <p className="text-gray-600">All operator registrations have been processed</p>
+                  <p className="text-gray-600">Loading operators...</p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {pendingOperators.map((operator) => (
-                    <div
-                      key={operator.id}
-                      className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="p-3 bg-yellow-100 rounded-full">
-                            <UsersIcon className="h-6 w-6 text-yellow-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-lg text-gray-900">
-                              {operator.firstName} {operator.lastName}
-                            </h4>
-                            <p className="text-sm text-blue-600 font-medium">{operator.email}</p>
-                            <p className="text-sm text-gray-600">{operator.companyName}</p>
-                          </div>
+                  {/* Pending Approvals Section */}
+                  {pendingOperators.length > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="p-2 bg-yellow-100 rounded-lg">
+                          <UsersIcon className="h-6 w-6 text-yellow-600" />
                         </div>
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
-                          ⏳ Pending Approval
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <span className="text-sm font-medium text-gray-500">Registration Date:</span>
-                          <p className="text-sm text-gray-900">{new Date(operator.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-gray-500">Status:</span>
-                          <p className="text-sm text-gray-900">{operator.status}</p>
+                        <div className="ml-4">
+                          <h3 className="text-lg font-semibold text-gray-900">Pending Approvals</h3>
+                          <p className="text-sm text-gray-600">{pendingOperators.length} operator{pendingOperators.length !== 1 ? 's' : ''} awaiting approval</p>
                         </div>
                       </div>
-
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          disabled={processingOperators.has(operator.id)}
-                          onClick={() => approveOperator(operator.id)}
-                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                        >
-                          <CheckIcon className="h-4 w-4 mr-2" />
-                          {processingOperators.has(operator.id) ? 'Processing...' : 'Approve'}
-                        </button>
-                        <button
-                          disabled={processingOperators.has(operator.id)}
-                          onClick={() => denyOperator(operator.id)}
-                          className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                        >
-                          <XMarkIcon className="h-4 w-4 mr-2" />
-                          {processingOperators.has(operator.id) ? 'Processing...' : 'Deny'}
-                        </button>
+                      
+                      <div className="space-y-4">
+                        {pendingOperators.map((operator) => (
+                          <div key={operator.id} className="bg-white border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-900">
+                                  {operator.firstName} {operator.lastName}
+                                </h4>
+                                <p className="text-sm text-gray-600">{operator.companyName}</p>
+                                <p className="text-sm text-blue-600">{operator.email}</p>
+                              </div>
+                              <div className="flex space-x-2">
+                                <button
+                                  disabled={processingOperators.has(operator.id)}
+                                  onClick={() => approveOperator(operator.id)}
+                                  className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  {processingOperators.has(operator.id) ? 'Processing...' : 'Approve'}
+                                </button>
+                                <button
+                                  disabled={processingOperators.has(operator.id)}
+                                  onClick={() => denyOperator(operator.id)}
+                                  className="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                >
+                                  {processingOperators.has(operator.id) ? 'Processing...' : 'Deny'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* All Operators Section */}
+                  {allOperators.length === 0 ? (
+                    <div className="text-center py-8">
+                      <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Operators Found</h3>
+                      <p className="text-gray-600">No operators have been registered yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        All Operators ({allOperators.length})
+                      </h3>
+                      
+                      {allOperators.map((operator) => (
+                        <div key={operator.user_id} className="bg-white border border-gray-200 rounded-xl shadow-sm">
+                          <div className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className={`p-3 rounded-full ${
+                                  operator.status === 'active' 
+                                    ? 'bg-green-100' 
+                                    : operator.status === 'pending'
+                                    ? 'bg-yellow-100'
+                                    : 'bg-red-100'
+                                }`}>
+                                  <UsersIcon className={`h-6 w-6 ${
+                                    operator.status === 'active'
+                                      ? 'text-green-600'
+                                      : operator.status === 'pending'
+                                      ? 'text-yellow-600'
+                                      : 'text-red-600'
+                                  }`} />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-lg text-gray-900">
+                                    {operator.company_name || 'Company Name Not Set'}
+                                  </h4>
+                                  <p className="text-sm text-blue-600 font-medium">{operator.email}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <button
+                                  onClick={() => toggleOperatorExpansion(operator.user_id)}
+                                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                  {expandedOperators.has(operator.user_id) ? (
+                                    <ChevronDownIcon className="h-5 w-5" />
+                                  ) : (
+                                    <ChevronRightIcon className="h-5 w-5" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Operator Statistics */}
+                            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                <p className="text-2xl font-bold text-gray-900">{operator.flightStats.total}</p>
+                                <p className="text-xs text-gray-600">Total Flights</p>
+                              </div>
+                              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                <p className="text-2xl font-bold text-blue-600">{operator.bookingStats.confirmed}</p>
+                                <p className="text-xs text-gray-600">Confirmed Bookings</p>
+                              </div>
+                              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                                <p className="text-lg font-bold text-purple-600">
+                                  {formatCOPWithStyling(operator.bookingStats.totalRevenue).number} {formatCOPWithStyling(operator.bookingStats.totalRevenue).currency}
+                                </p>
+                                <p className="text-xs text-gray-600">Total Revenue</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Expandable Flights List */}
+                          {expandedOperators.has(operator.user_id) && selectedOperator === operator.user_id && (
+                            <div className="border-t border-gray-200">
+                              <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h4 className="text-lg font-semibold text-gray-900">Flights</h4>
+                                  {operatorFlights.length > 0 && (
+                                    <span className="text-sm text-gray-600">
+                                      {operatorFlights.length} flight{operatorFlights.length !== 1 ? 's' : ''}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {operatorFlights.length === 0 ? (
+                                  <div className="text-center py-6">
+                                    <p className="text-gray-500">No flights found for this operator</p>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {/* Column Headers */}
+                                    <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
+                                      <div className="grid grid-cols-6 gap-4">
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Route</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Date</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Bookings</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Seats</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Revenue</p>
+                                        </div>
+                                        <div className="text-center">
+                                          <p className="text-xs font-semibold text-gray-700 uppercase">Status</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Flight Rows */}
+                                    {operatorFlights.map((flight) => (
+                                      <div key={flight.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                                        <div className="grid grid-cols-6 gap-4 items-center">
+                                          {/* Route */}
+                                          <div className="text-center">
+                                            <p className="font-semibold text-gray-900">
+                                              {flight.origin_code}-{flight.destination_code}
+                                            </p>
+                                          </div>
+                                          
+                                          {/* Date */}
+                                          <div className="text-center text-sm text-gray-600">
+                                            {new Date(flight.departure).toLocaleDateString()}
+                                          </div>
+                                          
+                                          {/* Bookings */}
+                                          <div className="text-center text-sm">
+                                            <span className="text-blue-600 font-medium">{flight.confirmed_bookings || 0}</span>
+                                          </div>
+                                          
+                                          {/* Seats */}
+                                          <div className="text-center text-sm">
+                                            <span className="text-gray-900 font-medium">{flight.seats_available || 0}</span>
+                                            <span className="text-gray-500">/{flight.total_seats || 0}</span>
+                                          </div>
+                                          
+                                          {/* Revenue */}
+                                          <div className="text-center text-sm text-green-600 font-medium">
+                                            {formatCOPWithStyling(flight.total_revenue || 0).number}
+                                          </div>
+                                          
+                                          {/* Status */}
+                                          <div className="flex justify-center">
+                                            {getFlightStatusBadge(flight)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -662,21 +938,36 @@ export default function AdminDashboard({ user }) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          ${crmData.revenue.total.toLocaleString()}
-                        </p>
+                        <div className="flex items-baseline space-x-2">
+                          <span className="text-2xl font-bold text-gray-900">
+                            {formatCOPWithStyling(crmData.revenue.total).number}
+                          </span>
+                          <span className="text-sm font-medium text-gray-500">
+                            {formatCOPWithStyling(crmData.revenue.total).currency}
+                          </span>
+                        </div>
                       </div>
                       <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <p className="text-sm font-medium text-gray-600">Platform Commission (10%)</p>
-                        <p className="text-2xl font-bold text-green-600">
-                          ${crmData.revenue.commission.toLocaleString()}
-                        </p>
+                        <div className="flex items-baseline space-x-2">
+                          <span className="text-2xl font-bold text-green-600">
+                            {formatCOPWithStyling(crmData.revenue.commission).number}
+                          </span>
+                          <span className="text-sm font-medium text-gray-500">
+                            {formatCOPWithStyling(crmData.revenue.commission).currency}
+                          </span>
+                        </div>
                       </div>
                       <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <p className="text-sm font-medium text-gray-600">Operator Revenue</p>
-                        <p className="text-2xl font-bold text-blue-600">
-                          ${crmData.revenue.operator.toLocaleString()}
-                        </p>
+                        <div className="flex items-baseline space-x-2">
+                          <span className="text-2xl font-bold text-blue-600">
+                            {formatCOPWithStyling(crmData.revenue.operator).number}
+                          </span>
+                          <span className="text-sm font-medium text-gray-500">
+                            {formatCOPWithStyling(crmData.revenue.operator).currency}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -215,7 +215,7 @@ router.post('/', authenticate, [
       
       const bookingResult = bookingStmt.run(
         bookingId, customer.id, flightId, passengers.length,
-        totalAmount, paymentMethod || 'CREDIT_CARD', specialRequests, 'pending', contact_email
+        totalAmount, paymentMethod || 'CREDIT_CARD', specialRequests, 'confirmed', contact_email
       );
 
       // Get the created booking
