@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const CurrencyInput = ({ 
   label, 
@@ -10,6 +11,7 @@ const CurrencyInput = ({
   className = '',
   ...props 
 }) => {
+  const { t } = useTranslation();
   const [displayValue, setDisplayValue] = useState('');
 
   // Format number with commas for display
@@ -129,10 +131,12 @@ const CurrencyInput = ({
         <div className="mt-1 text-xs text-gray-500">
           {currency === 'COP' && value >= 1000 && (
             <span>
-              Approximately ${(value / 4300).toLocaleString('en-US', { 
-                minimumFractionDigits: 0, 
-                maximumFractionDigits: 0 
-              })} USD
+              {t('currency.approximatelyUSD', {
+                amount: (value / 4300).toLocaleString('en-US', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                })
+              })}
             </span>
           )}
         </div>

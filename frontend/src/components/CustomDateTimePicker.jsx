@@ -13,9 +13,13 @@ const CustomDateTimePicker = ({
   required = false
 }) => {
   const { t } = useTranslation();
-  const defaultPlaceholder = placeholder || t('customCalendar.selectDate');
+  const defaultPlaceholder = placeholder || t('customCalendar.selectDateTime');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState('09:00');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [hasSelectedDate, setHasSelectedDate] = useState(false);
+  const [hasSelectedTime, setHasSelectedTime] = useState(false);
+  const timeContainerRef = useRef(null);
   const [displayDate, setDisplayDate] = useState(() => {
     const date = value ? new Date(value) : new Date();
     return new Date(date.getFullYear(), date.getMonth(), 1);
@@ -31,6 +35,14 @@ const CustomDateTimePicker = ({
       const hours = dateTime.getHours().toString().padStart(2, '0');
       const minutes = dateTime.getMinutes().toString().padStart(2, '0');
       setSelectedTime(`${hours}:${minutes}`);
+      setSelectedDate(dateTime);
+      setHasSelectedDate(true);
+      setHasSelectedTime(true);
+    } else {
+      // Reset selection states when value is cleared
+      setHasSelectedDate(false);
+      setHasSelectedTime(false);
+      setSelectedDate(null);
     }
   }, [value]);
 
@@ -45,12 +57,41 @@ const CustomDateTimePicker = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Scroll to 9 AM when dropdown opens and no time is selected
+  useEffect(() => {
+    if (isOpen && timeContainerRef.current && !selectedTime) {
+      setTimeout(() => {
+        const nineAMIndex = timeOptions.findIndex(time => time === '09:00');
+        if (nineAMIndex !== -1) {
+          const buttonHeight = 40; // Approximate height of each time button
+          const scrollPosition = nineAMIndex * buttonHeight;
+          timeContainerRef.current.scrollTop = scrollPosition;
+        }
+      }, 100); // Small delay to ensure DOM is rendered
+    }
+  }, [isOpen]);
+
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return '';
     const dateTime = new Date(dateTimeString);
     const date = dateTime.toLocaleDateString('es-ES');
     const time = dateTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     return `${date} - ${time}`;
+  };
+
+  const getDisplayText = () => {
+    if (value) {
+      return formatDateTime(value);
+    }
+    if (hasSelectedDate && selectedDate) {
+      const date = selectedDate.toLocaleDateString('es-ES');
+      if (hasSelectedTime) {
+        return `${date} - ${selectedTime}`;
+      } else {
+        return `${date} - Seleccionar hora`;
+      }
+    }
+    return defaultPlaceholder;
   };
 
   const getDaysInMonth = (date) => {
@@ -94,28 +135,34 @@ const CustomDateTimePicker = ({
     
     const year = displayDate.getFullYear();
     const month = displayDate.getMonth();
-    const selectedDate = new Date(year, month, day);
+    const selectedDateObj = new Date(year, month, day);
     
-    // Combine with selected time
-    const [hours, minutes] = selectedTime.split(':');
-    selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    setSelectedDate(selectedDateObj);
+    setHasSelectedDate(true);
     
-    // Convert to ISO string for form submission
-    const isoString = selectedDate.toISOString();
-    onChange(isoString);
-    setIsOpen(false);
+    // Only submit if both date and time have been selected
+    if (hasSelectedTime) {
+      const [hours, minutes] = selectedTime.split(':');
+      selectedDateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      onChange(selectedDateObj.toISOString());
+      setIsOpen(false);
+    }
+    // Keep picker open if time hasn't been selected yet
   };
 
   const handleTimeChange = (newTime) => {
     setSelectedTime(newTime);
+    setHasSelectedTime(true);
     
-    // If we have a date selected, update the datetime
-    if (value) {
-      const currentDate = new Date(value);
+    // Only submit if both date and time have been selected
+    if (selectedDate && hasSelectedDate) {
       const [hours, minutes] = newTime.split(':');
-      currentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      onChange(currentDate.toISOString());
+      const finalDate = new Date(selectedDate);
+      finalDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      onChange(finalDate.toISOString());
+      setIsOpen(false);
     }
+    // Keep picker open if date hasn't been selected yet
   };
 
   const navigateMonth = (direction) => {
@@ -169,8 +216,8 @@ const CustomDateTimePicker = ({
       >
         <div className="flex items-center space-x-2">
           <CalendarIcon className="h-5 w-5 text-gray-400" />
-          <span className={value ? "text-gray-900" : "text-gray-500"}>
-            {value ? formatDateTime(value) : defaultPlaceholder}
+          <span className={value ? "text-gray-900" : (hasSelectedDate ? "text-blue-600" : "text-gray-500")}>
+            {getDisplayText()}
           </span>
         </div>
       </div>
@@ -178,6 +225,21 @@ const CustomDateTimePicker = ({
       {/* Calendar and Time Picker Dropdown */}
       {isOpen && (
         <div className={`absolute z-50 mt-2 bg-white rounded-xl shadow-lg border ${themeClasses.calendar} p-4 w-80`}>
+          {/* Selection Status */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="text-sm font-medium text-gray-700 mb-2">Selecciona fecha y hora:</div>
+            <div className="flex items-center space-x-4 text-xs">
+              <div className={`flex items-center space-x-1 ${hasSelectedDate ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`w-2 h-2 rounded-full ${hasSelectedDate ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <span>Fecha {hasSelectedDate ? '✓' : ''}</span>
+              </div>
+              <div className={`flex items-center space-x-1 ${hasSelectedTime ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`w-2 h-2 rounded-full ${hasSelectedTime ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <span>Hora {hasSelectedTime ? '✓' : ''}</span>
+              </div>
+            </div>
+          </div>
+          
           {/* Calendar Section */}
           <div className="mb-4">
             {/* Month Navigation */}
@@ -213,10 +275,14 @@ const CustomDateTimePicker = ({
             {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-1">
               {getDaysInMonth(displayDate).map((day, index) => {
-                const isSelected = value && day && 
+                const isSelected = (value && day && 
                   new Date(value).getDate() === day &&
                   new Date(value).getMonth() === displayDate.getMonth() &&
-                  new Date(value).getFullYear() === displayDate.getFullYear();
+                  new Date(value).getFullYear() === displayDate.getFullYear()) ||
+                  (selectedDate && day &&
+                  selectedDate.getDate() === day &&
+                  selectedDate.getMonth() === displayDate.getMonth() &&
+                  selectedDate.getFullYear() === displayDate.getFullYear());
                 
                 const isDisabled = isDateDisabled(day);
                 
@@ -247,7 +313,7 @@ const CustomDateTimePicker = ({
               <span className="text-sm font-medium text-gray-700">Seleccionar Hora</span>
             </div>
             
-            <div className="max-h-32 overflow-y-auto border rounded-lg">
+            <div ref={timeContainerRef} className="max-h-32 overflow-y-auto border rounded-lg">
               {timeOptions.map((time) => (
                 <button
                   key={time}

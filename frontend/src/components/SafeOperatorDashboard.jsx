@@ -230,27 +230,6 @@ function ActualOperatorDashboard({ user }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto pt-16 pb-6 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="bg-white shadow-sm rounded-lg mb-6">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.operator.title')}</h1>
-                <p className="mt-1 text-sm text-gray-600">
-                  {t('dashboard.operator.welcome')}
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/create-flight')}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                {t('dashboard.operator.createFlight')}
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Tab Navigation - Matching AdminDashboard Style */}
         <div className="mb-8">
           <nav className="flex space-x-8">
@@ -276,7 +255,19 @@ function ActualOperatorDashboard({ user }) {
 
         {/* Tab Content */}
         {activeTab === 'flights' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="relative">
+            {/* Create Flight Button - Outside container, positioned top right */}
+            <div className="absolute -top-12 right-0 z-10">
+              <button
+                onClick={() => navigate('/create-flight')}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                {t('dashboard.operator.createFlight')}
+              </button>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -307,9 +298,6 @@ function ActualOperatorDashboard({ user }) {
                       <h3 className="text-lg font-medium text-gray-900">
                         {t('dashboard.operator.sections.upcoming.title')} ({currentFlights.length})
                       </h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
-                        {t('dashboard.operator.sections.upcoming.status')}
-                      </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
@@ -345,9 +333,6 @@ function ActualOperatorDashboard({ user }) {
                       <h3 className="text-lg font-medium text-gray-900">
                         {t('dashboard.operator.sections.past.title')} ({pastFlights.length})
                       </h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        {t('dashboard.operator.sections.past.status')}
-                      </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
@@ -382,6 +367,7 @@ function ActualOperatorDashboard({ user }) {
               )}
             </div>
           )}
+            </div>
           </div>
         )}
 
@@ -557,34 +543,6 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
                 {flight.destination?.city || t('dashboard.operator.flightCard.destination')}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Quick Info Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
-              {flight.available_seats ?? flight.capacity?.availableSeats ?? flight.seats_available ?? 'N/A'}
-            </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.availableSeats')}</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
-              {flight.max_passengers || flight.capacity?.maxPassengers || 'N/A'}
-            </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.totalSeats')}</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
-              {formatCOP(getTotalCharterPrice(flight))}
-            </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.totalPrice')}</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
-              {flight.flight_time || 'N/A'}
-            </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.operator.flightCard.flightTime')}</div>
           </div>
         </div>
 

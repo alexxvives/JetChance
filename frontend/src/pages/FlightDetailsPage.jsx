@@ -58,7 +58,7 @@ export default function FlightDetailsPage() {
     const initialSeats = flight.available_seats ?? flight.seats_available ?? flight.capacity?.availableSeats ?? fallbackMaxPassengers;
 
     if (initialSeats !== undefined && initialSeats !== null) {
-      setSelectedPassengers(initialSeats);
+      setSelectedPassengers(initialSeats > 0 ? 1 : 0);
     }
   }, [flight]);
 
@@ -201,7 +201,7 @@ export default function FlightDetailsPage() {
                   {flight.originCode || flight.origin_code || 'N/A'}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">
-                  ORIGIN
+                  {t('flightDetails.origin')}
                 </div>
               </div>
               
@@ -225,7 +225,7 @@ export default function FlightDetailsPage() {
                   {flight.destinationCode || flight.destination_code || 'N/A'}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">
-                  DESTINATION
+                  {t('flightDetails.destination')}
                 </div>
               </div>
             </div>
@@ -307,11 +307,6 @@ export default function FlightDetailsPage() {
                   <div className="text-xs text-blue-600 font-medium mb-1">{t('flightDetails.charterPrice')}</div>
                   <div className="text-2xl font-bold text-blue-700">{formatCOP(charterPrice)}</div>
                   <div className="text-xs text-blue-600 mt-1">{formatCOP(pricePerSeat)} {t('flightDetails.perSeat')}</div>
-                  {marketPrice > charterPrice && savingsPercentage > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full rotate-12">
-                      -{savingsPercentage}%
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -326,7 +321,7 @@ export default function FlightDetailsPage() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
-                      onClick={() => setSelectedPassengers(Math.max(1, selectedPassengers - 1))}
+                      onClick={() => setSelectedPassengers(Math.max(availableSeats > 0 ? 1 : 0, selectedPassengers - 1))}
                       className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
                     >
                       <span className="text-lg">−</span>

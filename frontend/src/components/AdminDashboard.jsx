@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
 import ErrorBoundary from './ErrorBoundary';
 import ConfirmationModal from './ConfirmationModal';
 import { useTranslation } from '../contexts/TranslationContext';
+import { extractAirportCode } from '../utils/airportUtils';
 
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {
@@ -415,6 +416,34 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  // Function to handle flight view by tracing from booking
+  const handleViewFlight = async (bookingId) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/bookings/${bookingId}/flight`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.flightId) {
+          navigate(`/flight/${data.flightId}`);
+        } else {
+          console.error('Flight ID not found for booking:', bookingId);
+          alert('Flight details not available for this booking.');
+        }
+      } else {
+        console.error('Failed to fetch flight for booking:', bookingId);
+        alert('Unable to load flight details.');
+      }
+    } catch (error) {
+      console.error('Error fetching flight for booking:', bookingId, error);
+      alert('Error loading flight details.');
+    }
+  };
+
   const toggleBookingExpansion = (bookingId) => {
     const newExpanded = new Set(expandedBookings);
     if (newExpanded.has(bookingId)) {
@@ -608,7 +637,7 @@ export default function AdminDashboard({ user }) {
                             <div>
                               <p className="text-sm font-medium text-gray-600">Route</p>
                               <p className="text-sm text-gray-900">
-                                {flight.origin?.code} → {flight.destination?.code}
+                                {extractAirportCode(flight.origin?.code)} → {extractAirportCode(flight.destination?.code)}
                               </p>
                             </div>
                             <div>
@@ -916,171 +945,230 @@ export default function AdminDashboard({ user }) {
           )}
 
           {activeTab === 'crm' && (
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.crm.title')}</h2>
-              <p className="text-gray-600 mb-6">{t('admin.dashboard.crm.subtitle')}</p>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              {/* Header */}
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('admin.dashboard.crm.title')}</h2>
+                <p className="text-gray-600 mb-6">{t('admin.dashboard.crm.subtitle')}</p>
+              </div>
               
               {crmLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading CRM data...</p>
+                  <p className="text-gray-600">{t('admin.dashboard.crm.loadingMessage')}</p>
                 </div>
               ) : crmData ? (
                 <div className="space-y-6">
-                  {/* Revenue Summary */}
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="bg-green-100 p-2 rounded-lg">
-                        <ChartBarIcon className="h-6 w-6 text-green-600" />
+                  {/* Summary Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.crm.stats.totalRevenue')}</p>
+                          <p className="text-xl font-bold text-gray-900">
+                            {formatCOPWithStyling(crmData.revenue.total).number} {formatCOPWithStyling(crmData.revenue.total).currency}
+                          </p>
+                        </div>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Revenue Summary</h3>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                        <div className="flex items-baseline space-x-2">
-                          <span className="text-2xl font-bold text-gray-900">
-                            {formatCOPWithStyling(crmData.revenue.total).number}
-                          </span>
-                          <span className="text-sm font-medium text-gray-500">
-                            {formatCOPWithStyling(crmData.revenue.total).currency}
-                          </span>
+
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <ChartBarIcon className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.crm.stats.platformCommission')}</p>
+                          <p className="text-xl font-bold text-gray-900">
+                            {formatCOPWithStyling(crmData.revenue.commission).number} {formatCOPWithStyling(crmData.revenue.commission).currency}
+                          </p>
                         </div>
                       </div>
-                      <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <p className="text-sm font-medium text-gray-600">Platform Commission (10%)</p>
-                        <div className="flex items-baseline space-x-2">
-                          <span className="text-2xl font-bold text-green-600">
-                            {formatCOPWithStyling(crmData.revenue.commission).number}
-                          </span>
-                          <span className="text-sm font-medium text-gray-500">
-                            {formatCOPWithStyling(crmData.revenue.commission).currency}
-                          </span>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <DocumentTextIcon className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.crm.stats.totalBookings')}</p>
+                          <p className="text-xl font-bold text-gray-900">{crmData.bookings.length}</p>
                         </div>
                       </div>
-                      <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <p className="text-sm font-medium text-gray-600">Operator Revenue</p>
-                        <div className="flex items-baseline space-x-2">
-                          <span className="text-2xl font-bold text-blue-600">
-                            {formatCOPWithStyling(crmData.revenue.operator).number}
-                          </span>
-                          <span className="text-sm font-medium text-gray-500">
-                            {formatCOPWithStyling(crmData.revenue.operator).currency}
-                          </span>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <DocumentTextIcon className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.crm.stats.totalPassengers')}</p>
+                          <p className="text-xl font-bold text-gray-900">
+                            {crmData.bookings.reduce((sum, booking) => sum + (booking.passengers?.length || 0), 0)}
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Bookings List */}
-                  <div className="bg-white border border-gray-200 rounded-xl">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        All Bookings ({crmData.bookings.length})
-                      </h3>
-                    </div>
-                    
-                    <div className="divide-y divide-gray-200">
-                      {crmData.bookings.map((booking) => (
-                        <div key={booking.id} className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <button
-                                  onClick={() => toggleBookingExpansion(booking.id)}
-                                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                                >
-                                  {expandedBookings.has(booking.id) ? (
-                                    <ChevronDownIcon className="h-5 w-5" />
-                                  ) : (
-                                    <ChevronRightIcon className="h-5 w-5" />
-                                  )}
-                                  <span className="font-medium">Booking #{booking.id}</span>
-                                </button>
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                  booking.status === 'confirmed' 
-                                    ? 'bg-green-100 text-green-700'
-                                    : booking.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-700'
-                                    : 'bg-red-100 text-red-700'
-                                }`}>
-                                  {booking.status}
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600">Customer</p>
-                                  <p className="text-sm text-gray-900">
+                  {/* Bookings Table */}
+                  <div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="px-6 py-4 border-b border-gray-200">
+                        <h3 className="text-lg font-medium text-gray-900">All Reservations ({crmData.bookings.length})</h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.booking')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.customer')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.operator')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.route')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.flight')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.reservedSeats')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.amount')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.status')}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              {t('dashboard.operator.crm.table.columns.details')}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {crmData.bookings.map((booking) => (
+                            <React.Fragment key={booking.id}>
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">#{booking.id}</div>
+                                  <div className="text-sm text-gray-500">{new Date(booking.createdAt).toLocaleDateString()}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
                                     {booking.customer?.firstName} {booking.customer?.lastName}
-                                  </p>
-                                  <p className="text-xs text-gray-600">{booking.customer?.email}</p>
-                                  {booking.contact_email && booking.contact_email !== booking.customer?.email && (
-                                    <p className="text-xs text-green-600 font-medium">Contact: {booking.contact_email}</p>
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600">Flight</p>
-                                  <p className="text-sm text-gray-900">
-                                    {booking.flight?.origin?.code} → {booking.flight?.destination?.code}
-                                  </p>
-                                  <p className="text-xs text-gray-600">
-                                    {booking.flight?.schedule?.departure ? 
-                                      new Date(booking.flight.schedule.departure).toLocaleDateString() : 'TBD'
-                                    }
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600">Total Price</p>
-                                  <p className="text-sm font-bold text-gray-900">
-                                    ${booking.totalPrice?.toLocaleString()}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600">Booked On</p>
-                                  <p className="text-sm text-gray-900">
-                                    {new Date(booking.createdAt).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Expandable Passenger Details */}
-                              {expandedBookings.has(booking.id) && booking.passengers && (
-                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                                    Passengers ({booking.passengers.length})
-                                  </h4>
-                                  <div className="space-y-2">
-                                    {booking.passengers.map((passenger, index) => (
-                                      <div key={index} className="flex items-center space-x-4 text-sm">
-                                        <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
-                                          {index + 1}
-                                        </span>
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                          <span className="font-medium text-gray-900">
-                                            {passenger.firstName} {passenger.lastName}
-                                          </span>
-                                          <span className="text-gray-600">{passenger.email}</span>
-                                          <span className="text-gray-600">{passenger.phone}</span>
-                                        </div>
-                                      </div>
-                                    ))}
                                   </div>
-                                </div>
+                                  <div className="text-sm text-gray-500">{booking.customer?.email}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {booking.operator}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {extractAirportCode(booking.flight?.origin?.code)} → {extractAirportCode(booking.flight?.destination?.code)}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <button
+                                    onClick={() => handleViewFlight(booking.id)}
+                                    className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                  >
+                                    <EyeIcon className="w-4 h-4 mr-1.5" />
+                                    {t('dashboard.operator.crm.table.actions.viewFlight')}
+                                  </button>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {((booking.flight?.totalSeats || 0) - (booking.flight?.availableSeats || 0))}/{booking.flight?.totalSeats || 0}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-bold text-green-600">
+                                    {formatCOPWithStyling(booking.totalPrice).number}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {formatCOPWithStyling(booking.totalPrice).currency}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                    booking.status === 'confirmed' 
+                                      ? 'bg-green-100 text-green-700'
+                                      : booking.status === 'pending'
+                                      ? 'bg-yellow-100 text-yellow-700'
+                                      : 'bg-red-100 text-red-700'
+                                  }`}>
+                                    {booking.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <button
+                                    onClick={() => toggleBookingExpansion(booking.id)}
+                                    className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center space-x-1"
+                                  >
+                                    {expandedBookings.has(booking.id) ? (
+                                      <>
+                                        <ChevronDownIcon className="h-4 w-4" />
+                                        <span>{t('dashboard.operator.crm.table.actions.hide')}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ChevronRightIcon className="h-4 w-4" />
+                                        <span>{t('dashboard.operator.crm.table.actions.show')}</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </td>
+                              </tr>
+
+                              {/* Expandable Passenger Details Row */}
+                              {expandedBookings.has(booking.id) && booking.passengers && (
+                                <tr>
+                                  <td colSpan="9" className="px-6 py-4 bg-gray-50">
+                                    <div className="space-y-2">
+                                      <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                                        {t('dashboard.operator.crm.table.passengers')} ({booking.passengers.length})
+                                      </h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {booking.passengers.map((passenger, index) => (
+                                          <div key={index} className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white rounded-md border border-gray-200">
+                                            <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                                              {index + 1}
+                                            </span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                              {passenger.firstName} {passenger.lastName}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
                               )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No CRM Data</h3>
-                  <p className="text-gray-600">Unable to load CRM data at this time.</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.operator.crm.noData.title')}</h3>
+                  <p className="text-gray-600">{t('dashboard.operator.crm.noData.message')}</p>
                 </div>
               )}
             </div>

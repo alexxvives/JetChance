@@ -139,6 +139,40 @@
       "messages": {
         "allPastFlights": "All your flights have departed. Consider creating new flights for upcoming trips."
       },
+      "crm": {
+        "title": "My Bookings",
+        "subtitle": "View and manage your flight reservations",
+        "stats": {
+          "yourRevenue": "Your Revenue",
+          "totalFlights": "Total Flights",
+          "totalBookings": "Total Bookings",
+          "totalPassengers": "Total Passengers"
+        },
+        "table": {
+          "header": "Booking History",
+          "columns": {
+            "booking": "Booking",
+            "customer": "Customer",
+            "operator": "Operator",
+            "route": "Route",
+            "flight": "Flight",
+            "reservedSeats": "Reserved Seats",
+            "amount": "Amount",
+            "status": "Status",
+            "details": "Details"
+          },
+          "actions": {
+            "viewFlight": "View Flight",
+            "show": "Show",
+            "hide": "Hide"
+          },
+          "passengers": "Passengers"
+        },
+        "noData": {
+          "title": "No CRM Data",
+          "message": "Unable to load CRM data at this time."
+        }
+      },
       "delete": {
         "title": "Delete Flight",
         "message": "Are you sure you want to delete this flight?",
@@ -178,7 +212,9 @@
           "originAirport": "BOG - El Dorado International Airport",
           "destinationCity": "Mexico City",
           "destinationAirport": "MEX - Mexico City International Airport",
-          "airportsIn": "Airports in {{city}}"
+          "airportsIn": "Airports in {{city}}",
+          "originPlaceholder": "Type city or airport...",
+          "destinationPlaceholder": "Type city or airport..."
         }
       },
       "flightSchedule": {
@@ -193,7 +229,7 @@
           "selectDate": "Select departure date",
           "selectArrivalDate": "Select arrival date"
         },
-        "warning": "Unusually long flight duration. Please verify your dates."
+        "warning": "Unusually long flight duration ({hours} hours). Please verify your dates."
       },
       "aircraftDetails": {
         "title": "Aircraft Details",
@@ -220,6 +256,11 @@
           "savings": "Savings",
           "perSeat": "per seat",
           "off": "off"
+        },
+        "commission": {
+          "customerPrice": "Customer Price:",
+          "perSeat": "per seat",
+          "commissionNote": "We add a 30% commission. Customers will see the price above in COP."
         }
       }
     },
@@ -552,7 +593,9 @@
     "seatsAlreadyBooked": "{bookedSeats} already booked",
     "finalPriceConfirmed": "Final price confirmed before payment",
     "operatorViewOnly": "View Only - Operator Account",
-    "operatorCannotBook": "Operators cannot book flights through this interface"
+    "operatorCannotBook": "Operators cannot book flights through this interface",
+    "origin": "ORIGIN",
+    "destination": "DESTINATION"
   },
   "payment": {
     "title": "Complete Payment",
@@ -675,10 +718,127 @@
     "from": "From",
     "to": "To",
     "date": "Date",
-    "passengers": "passengers",
-    "passenger": "passenger",
+    "passengers": "Passengers",
+    "passenger": "Passenger",
     "clearFilters": "Clear Filters",
     "sortByPrice": "Sort by Price",
     "sortByDate": "Sort by Date"
+  },
+  "admin": {
+    "dashboard": {
+      "welcomeBack": "Welcome back",
+      "superAdmin": "Super Admin",
+      "allOperators": "All Operators",
+      "tabs": {
+        "catalog": "Flight Catalog",
+        "approvals": "Flight Approvals",
+        "operators": "Operator Management",
+        "create": "Create Flight",
+        "crm": "CRM"
+      },
+      "catalog": {
+        "title": "Flight Catalog",
+        "subtitle": "Browse and manage all flights in the system"
+      },
+      "approvals": {
+        "title": "Flight Approvals",
+        "subtitle": "Review and approve pending flight submissions",
+        "loading": "Loading pending flights...",
+        "allCaughtUp": "All caught up!",
+        "noPendingFlights": "No pending flight approvals at the moment."
+      },
+      "operators": {
+        "title": "Operator Management",
+        "subtitle": "Manage flight operators and their permissions",
+        "companyNameFallback": "Unknown Company",
+        "noFlightsFound": "No flights found for this operator",
+        "flightsTitle": "Flights",
+        "actions": {
+          "approve": "Approve",
+          "deny": "Deny",
+          "processing": "Processing..."
+        },
+        "stats": {
+          "flights": "Flights",
+          "bookings": "Bookings",
+          "revenue": "Revenue"
+        },
+        "flightCount": {
+          "single": "flight",
+          "plural": "flights"
+        },
+        "flightDetails": {
+          "loading": "Loading flight details...",
+          "headers": {
+            "route": "Route",
+            "date": "Date",
+            "bookings": "Bookings",
+            "seats": "Seats",
+            "revenue": "Revenue",
+            "status": "Status"
+          }
+        }
+      },
+      "create": {
+        "title": "Create New Flight",
+        "subtitle": "Add a new flight to the system"
+      },
+      "flights": {
+        "status": {
+          "pending": "Pending",
+          "available": "Available",
+          "declined": "Declined",
+          "partiallyBooked": "Partially Booked",
+          "fullyBooked": "Fully Booked",
+          "cancelled": "Cancelled"
+        }
+      },
+      "errors": {
+        "networkError": "Network error occurred",
+        "deleteFailed": "Failed to delete flight",
+        "deleteFailedUnknown": "Failed to delete flight: Unknown error",
+        "approveFailed": "Failed to approve flight",
+        "approveError": "Error approving flight",
+        "denyFailed": "Failed to deny flight",
+        "denyError": "Error denying flight"
+      },
+      "crm": {
+        "title": "Platform CRM",
+        "subtitle": "Manage all platform bookings",
+        "stats": {
+          "totalRevenue": "Total Revenue",
+          "platformCommission": "Platform Commission",
+          "totalBookings": "Total Bookings",
+          "totalPassengers": "Total Passengers"
+        },
+        "loadingMessage": "Loading CRM data..."
+      }
+    }
+  },
+  "customCalendar": {
+    "selectDate": "Select date",
+    "selectDateTime": "Select date and time",
+    "selectTime": "Select time"
+  },
+  "airportAutocomplete": {
+    "placeholder": "Search airport...",
+    "notListed": "Not listed?",
+    "addCustom": "Add custom airport",
+    "addCustomAirport": "Add Custom Airport",
+    "smallerAirportsNote": "For smaller or private airports not appearing in our database",
+    "airportCode": "Airport Code",
+    "airportName": "Airport Name",
+    "city": "City",
+    "country": "Country",
+    "addAirport": "Add Airport",
+    "cancel": "Cancel",
+    "placeholders": {
+      "code": "BOG",
+      "name": "El Dorado International Airport",
+      "city": "Bogotá"
+    }
+  },
+  "currency": {
+    "approximatelyUSD": "Approximately ${amount} USD"
   }
 }

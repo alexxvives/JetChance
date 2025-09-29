@@ -59,52 +59,54 @@ export default function Dashboard({ user, onNavigate, onLogout }) {
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab('flights')}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                 activeTab === 'flights'
-                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <Plane className="w-4 h-4 mr-2" />
+              <Plane className="h-5 w-5 mr-2" />
               Available Flights
             </button>
             <button
               onClick={() => setActiveTab('bookings')}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                 activeTab === 'bookings'
-                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <BookOpen className="w-4 h-4 mr-2" />
+              <BookOpen className="h-5 w-5 mr-2" />
               My Bookings
             </button>
           </nav>
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'flights' && (
-          <div>
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Flights</h2>
-              <p className="text-gray-600 mb-6">Discover and book your next luxury flight</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          {activeTab === 'flights' && (
+            <div className="px-6 py-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Flights</h2>
+                <p className="text-gray-600 mb-6">Discover and book your next luxury flight</p>
+              </div>
+              
+              <FlightFilters filters={filters} setFilters={setFilters} />
+              <FlightList filters={filters} />
             </div>
-            
-            <FlightFilters filters={filters} setFilters={setFilters} />
-            <FlightList filters={filters} />
-          </div>
-        )}
+          )}
 
-        {activeTab === 'bookings' && (
-          <div>
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
-              <p className="text-gray-600 mb-6">View and manage your flight reservations</p>
+          {activeTab === 'bookings' && (
+            <div className="px-6 py-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
+                <p className="text-gray-600 mb-6">View and manage your flight reservations</p>
+              </div>
+              
+              <CustomerBookings />
             </div>
-            
-            <CustomerBookings />
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );

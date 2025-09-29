@@ -1,81 +1,81 @@
 {
   "nav": {
-    "home": "Inicio",
-    "operators": "Para Operadores",
-    "about": "Nosotros",
-    "contact": "Contacto",
-    "dashboard": "Panel",
-    "profile": "Perfil",
-    "signIn": "Iniciar Sesión",
-    "logout": "Cerrar Sesión",
-    "welcome": "Bienvenido",
-    "language": "Idioma"
+    "home": "Home",
+    "operators": "For Operators",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "signIn": "Sign In",
+    "logout": "Logout",
+    "welcome": "Welcome",
+    "language": "Language"
   },
   "auth": {
     "login": {
-      "title": "Bienvenido de nuevo",
-      "subtitle": "Inicia sesión en tu cuenta de ChanceFly",
-      "emailLabel": "Dirección de correo",
-      "emailPlaceholder": "Ingresa tu correo",
-      "passwordLabel": "Contraseña",
-      "passwordPlaceholder": "Ingresa tu contraseña",
-      "signInButton": "Iniciar Sesión",
-      "signingIn": "Iniciando sesión...",
-      "noAccount": "¿No tienes una cuenta?",
-      "signUp": "Regístrate"
+      "title": "Welcome back",
+      "subtitle": "Sign in to your ChanceFly account",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "signInButton": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
     },
     "signup": {
-      "title": "Únete a ChanceFly",
-      "subtitle": "Crea tu cuenta para empezar a reservar vuelos",
-      "accountTypeLabel": "Tipo de Cuenta",
-      "customerLabel": "Cliente",
-      "customerDescription": "Reservar vuelos privados",
-      "operatorLabel": "Operador",
-      "operatorDescription": "Listar tu aeronave",
-      "firstNameLabel": "Nombre",
-      "firstNamePlaceholder": "Nombre",
-      "lastNameLabel": "Apellido",
-      "lastNamePlaceholder": "Apellido",
-      "emailLabel": "Dirección de correo",
-      "emailPlaceholder": "Ingresa tu correo",
-      "passwordLabel": "Contraseña",
-      "passwordPlaceholder": "Crear una contraseña",
-      "signupCodeLabel": "Código de Registro de Operador",
-      "signupCodePlaceholder": "Ingresa el código de registro de operador",
-      "signupCodeHelp": "Contacta a ChanceFly para obtener tu código de registro de operador",
-      "operatorCompanyLabel": "Nombre de la Empresa",
-      "operatorCompanyPlaceholder": "Ingresa el nombre de tu empresa",
-      "operatorCompanyHelp": "Escribe tu nombre si no estás con una empresa",
-      "createAccountButton": "Crear Cuenta",
-      "createCustomerAccount": "Crear Cuenta de Cliente",
-      "createOperatorAccount": "Crear Cuenta de Operador",
-      "creatingAccount": "Creando cuenta...",
-      "haveAccount": "¿Ya tienes una cuenta?",
-      "signIn": "Inicia sesión"
+      "title": "Join ChanceFly",
+      "subtitle": "Create your account to start booking flights",
+      "accountTypeLabel": "Account Type",
+      "customerLabel": "Customer",
+      "customerDescription": "Book private flights",
+      "operatorLabel": "Operator",
+      "operatorDescription": "List your aircraft",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "First name",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "Last name",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "signupCodeLabel": "Operator Signup Code",
+      "signupCodePlaceholder": "Enter operator signup code",
+      "signupCodeHelp": "Contact ChanceFly to obtain your operator signup code",
+      "operatorCompanyLabel": "Company Name",
+      "operatorCompanyPlaceholder": "Enter your company name",
+      "operatorCompanyHelp": "Type your name if you are not with a company",
+      "createAccountButton": "Create Account",
+      "createCustomerAccount": "Create Customer Account",
+      "createOperatorAccount": "Create Operator Account",
+      "creatingAccount": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
     }
   },
   "dashboard": {
     "operator": {
-      "title": "Panel de Operador",
-      "welcome": "¡Bienvenido de nuevo! Gestiona tus vuelos y rastrea su estado.",
+      "title": "Panel del Operador",
+      "welcome": "¡Bienvenido de vuelta! Gestiona tus vuelos y rastrea su estado.",
       "createFlight": "Crear Vuelo",
-      "createFirstFlight": "Crea Tu Primer Vuelo",
+      "createFirstFlight": "Crear Tu Primer Vuelo",
       "loading": {
-        "title": "Cargando Panel",
-        "message": "Configurando tu panel de operador...",
+        "title": "Cargando Panel...",
+        "message": "Por favor espera mientras preparamos tu panel.",
         "flights": "Cargando vuelos..."
       },
       "error": {
-        "title": "Error en el Panel",
-        "message": "Ocurrió un problema al cargar tu panel.",
+        "title": "Error del Panel",
+        "message": "Ocurrió un error inesperado al cargar tu panel.",
         "auth": {
-          "title": "Error de Autenticación",
-          "message": "No pudimos verificar tu información de usuario."
+          "title": "Problema de Autenticación",
+          "message": "Tu sesión parece ser inválida."
         }
       },
       "noFlights": {
-        "title": "Aún no tienes vuelos",
-        "message": "Empieza creando tu primer vuelo para que los clientes puedan encontrarlo y reservarlo."
+        "title": "No se Encontraron Vuelos",
+        "message": "Aún no has creado ningún vuelo."
       },
       "tabs": {
         "flights": "Mis Vuelos",
@@ -84,186 +84,104 @@
       "sections": {
         "upcoming": {
           "title": "Próximos Vuelos",
-          "status": "Vuelos activos y pendientes"
+          "status": "Activo"
         },
         "past": {
           "title": "Vuelos Pasados",
-          "status": "Historial de vuelos completados"
+          "status": "Completado"
         }
       },
       "actions": {
         "show": "Mostrar",
         "hide": "Ocultar",
-        "viewDetails": "Ver Detalles"
-      },
-      "delete": {
-        "title": "Confirmar Eliminación",
-        "message": "¿Estás seguro que deseas eliminar este vuelo?",
-        "confirm": "Eliminar Vuelo"
+        "viewDetails": "Ver Detalles",
+        "edit": "Editar",
+        "delete": "Eliminar"
       },
       "flightCard": {
         "availableSeats": "Asientos Disponibles",
+        "totalSeats": "Asientos Totales",
+        "totalPrice": "Precio Total",
+        "flightTime": "Tiempo de Vuelo",
         "origin": "Origen",
         "destination": "Destino",
         "seats": "Asientos",
-        "totalSeats": "Asientos Totales",
-        "price": "Precio",
-        "totalPrice": "Precio Total",
-        "flightTime": "Tiempo de Vuelo",
-        "status": "Estado",
         "departure": "Salida",
         "operator": "Operador",
         "aircraft": "Aeronave",
         "viewDetailsBook": "Ver Detalles y Reservar",
         "deleteFlight": "Eliminar Vuelo",
         "statuses": {
-          "fullyBooked": "Totalmente Reservado",
-          "partiallyBooked": "Parcialmente Reservado",
           "available": "Disponible",
-          "pending": "Pendiente de aprobación",
-          "approved": "Aprobado",
-          "cancelled": "Cancelado",
-          "denied": "Declinado",
-          "booked": "Reservado",
-          "completed": "Completado",
-          "fewBookings": "Pocas Reservas",
-          "noBookings": "Sin Reservas",
+          "partiallyBooked": "Parcialmente Reservado",
+          "fullyBooked": "Completamente Reservado",
+          "pending": "Aprobación Pendiente",
+          "denied": "Denegado",
           "noData": "Sin Datos"
-        },
-        "actions": {
-          "edit": "Editar",
-          "delete": "Eliminar",
-          "view": "Ver Detalles",
-          "viewDetails": "Ver Detalles"
         }
       },
       "flightCatalog": {
         "loading": "Cargando vuelos disponibles...",
         "title": "Vuelos Disponibles Ahora Mismo",
-        "subtitle": "Descubre vuelos de lujo a precios increíbles",
+        "subtitle": "Descubre vuelos de lujo a precios inmejorables",
         "noFlights": "Aún No Hay Vuelos Disponibles",
-        "noFlightsDesc": "Los operadores pueden agregar nuevos vuelos a través del panel de control para comenzar.",
+        "noFlightsDesc": "Los operadores pueden agregar nuevos vuelos a través del panel para comenzar.",
         "bookNow": "Reservar Ahora",
         "seatsAvailable": "asientos disponibles"
       },
       "flightList": {
         "loading": "Cargando vuelos...",
         "noFlights": "No hay vuelos disponibles",
-        "noFlightsDesc": "Vuelve más tarde para ver nuevas opciones de vuelo",
+        "noFlightsDesc": "Vuelve más tarde para nuevas opciones de vuelo",
         "noResults": "No se encontraron vuelos",
         "noResultsDesc": "Intenta ajustar tus criterios de búsqueda"
+      },
+      "messages": {
+        "allPastFlights": "Todos tus vuelos han partido. Considera crear nuevos vuelos para próximos viajes."
+      },
+      "crm": {
+        "title": "Mis Reservas",
+        "subtitle": "Ver y gestionar las reservas de vuelos",
+        "stats": {
+          "yourRevenue": "Sus Ingresos",
+          "totalFlights": "Vuelos Totales",
+          "totalBookings": "Reservas Totales",
+          "totalPassengers": "Pasajeros Totales"
+        },
+        "table": {
+          "header": "Historial de Reservas",
+          "columns": {
+            "booking": "Reserva",
+            "customer": "Cliente",
+            "operator": "Operador",
+            "route": "Ruta",
+            "flight": "Vuelo",
+            "reservedSeats": "Asientos Reservados",
+            "amount": "Monto",
+            "status": "Estado",
+            "details": "Detalles"
+          },
+          "actions": {
+            "viewFlight": "Ver Vuelo",
+            "show": "Mostrar",
+            "hide": "Ocultar"
+          },
+          "passengers": "Pasajeros"
+        },
+        "noData": {
+          "title": "Sin Datos de CRM",
+          "message": "No se pueden cargar los datos de CRM en este momento."
+        }
+      },
+      "delete": {
+        "title": "Eliminar Vuelo",
+        "message": "¿Estás seguro de que quieres eliminar este vuelo?",
+        "confirm": "Eliminar Vuelo"
       }
     },
     "customer": {
-      "title": "Vuelos Empty-Leg Disponibles",
-      "subtitle": "Descubre vuelos de lujo a precios increíbles"
-    }
-  },
-  "flightDetails": {
-    "loading": "Cargando detalles del vuelo...",
-    "notFound": "Vuelo no encontrado",
-    "backToDashboard": "Volver al Panel",
-    "backToFlights": "Volver a Vuelos",
-  "availableSeats": "Asientos Disponibles",
-  "totalSeats": "Asientos Totales",
-    "operator": "Operador",
-    "flightTime": "Tiempo de Vuelo",
-    "flightRoute": "Ruta de Vuelo",
-    "routeTo": "a",
-    "pricing": "Precios",
-    "marketRate": "TARIFA DE MERCADO",
-    "marketPrice": "PRECIO DE MERCADO",
-    "standardPricing": "Precios Estándar",
-    "greatValue": "GRAN VALOR",
-    "competitiveRate": "Tarifa Competitiva",
-    "charterPrice": "PRECIO CHARTER",
-    "emptyLegDeal": "Oferta Empty Leg",
-    "passengers": "Pasajeros",
-    "seatsAvailable": "asientos disponibles",
-    "totalPerPerson": "Total por persona",
-    "bookCharter": "Reservar Charter",
-    "aircraftImages": "Imágenes de la Aeronave",
-    "viewAllImages": "Ver Todas las Imágenes",
-    "perPerson": "por persona",
-    "totalCharter": "charter total",
-    "perSeat": "por asiento",
-    "total": "total",
-    "passengerSingle": "pasajero",
-    "passengersPlural": "pasajeros",
-    "sharedFlight": "Vuelo Compartido",
-    "privateFlightWarning": "El vuelo puede ser compartido si otros reservan asientos restantes. Para garantizar privacidad, reserva los {remainingSeats} asientos restantes",
-    "sharedFlightWarning": "Este vuelo es compartido, {bookedSeats} ya han sido reservados. Para garantizar privacidad, reserva todos los asientos de otro vuelo.",
-    "seatsAlreadyBooked": "{bookedSeats} ya reservados",
-    "finalPriceConfirmed": "Precio final confirmado antes del pago",
-    "operatorViewOnly": "Solo Vista - Cuenta de Operador", 
-    "operatorCannotBook": "Los operadores no pueden reservar vuelos a través de esta interfaz"
-  },
-  "payment": {
-    "title": "Completar Pago",
-    "backToFlightDetails": "Volver a Detalles del Vuelo",
-    "loadingFlightDetails": "Cargando detalles del vuelo...",
-    "flightNotFound": "Vuelo no encontrado",
-    "failedToLoad": "Error al cargar detalles del vuelo",
-    "errorLoadingFlight": "Error al Cargar Vuelo",
-    "goBack": "Volver",
-    "bookingReference": "Referencia de Reserva: Procesando...",
-    "flightSummary": "Resumen del Vuelo",
-    "departure": "Salida",
-    "aircraft": "Aeronave",
-    "operator": "Operador",
-    "notSpecified": "No especificado",
-    "flightDetails": "Detalles del Vuelo",
-    "passengers": "Pasajeros",
-    "pricing": "Precios",
-    "emptyLegPricePerSeat": "Precio Empty Leg (por asiento)",
-    "passengersMultiplied": "Pasajeros × {count}",
-    "marketPrice": "Precio de Mercado",
-    "total": "Total",
-    "youAreSaving": "¡Estás ahorrando {amount}!",
-    "percentOffRegularPrice": "{percent}% de descuento del precio de mercado",
-    "completePayment": "Completar Pago",
-    "securePayment": "Pago Seguro",
-    "securePaymentDescription": "Tu pago está protegido por encriptación SSL de 256 bits y procesado de forma segura por PayU Latam.",
-    "instantConfirmation": "Confirmación Instantánea",
-    "instantConfirmationDescription": "Confirmación inmediata de reserva",
-    "pciCompliantDescription": "Procesamiento compatible con PCI DSS",
-    "support247": "Soporte 24/7",
-    "support247Description": "Asistencia las 24 horas del día"
-  },
-  "notifications": {
-    "title": "Notificaciones",
-    "loading": "Cargando notificaciones...",
-    "noNotifications": "No hay notificaciones aún",
-    "noNotificationsDescription": "Te notificaremos cuando algo suceda",
-    "timeJustNow": "Ahora",
-    "timeMinutesAgo": "hace {minutes}m",
-    "timeHoursAgo": "hace {hours}h",
-    "timeDaysAgo": "hace {days}d",
-    "types": {
-      "flight_approved": {
-        "title": "Vuelo Aprobado",
-        "message": "Tu vuelo ha sido aprobado y está listo para reservas"
-      },
-      "flight_denied": {
-        "title": "Vuelo Denegado",
-        "message": "Tu vuelo no ha sido aprobado. Por favor revisa los detalles"
-      },
-      "flight_deleted": {
-        "title": "Vuelo Eliminado",
-        "message": "Tu vuelo ha sido eliminado del sistema"
-      },
-      "flight_submitted": {
-        "title": "Vuelo Enviado para Revisión",
-        "message": "Tu vuelo ha sido enviado exitosamente para revisión del administrador"
-      },
-      "booking_confirmed": {
-        "title": "Reserva Confirmada",
-        "message": "Tu reserva ha sido confirmada exitosamente"
-      },
-      "payment_received": {
-        "title": "Pago Recibido",
-        "message": "Hemos recibido tu pago exitosamente"
-      }
+      "title": "Available Empty-Leg Flights",
+      "subtitle": "Discover luxury flights at unbeatable prices"
     }
   },
   "createFlight": {
@@ -295,8 +213,8 @@
           "destinationCity": "Ciudad de México",
           "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
           "airportsIn": "Aeropuertos en {{city}}",
-          "originPlaceholder": "Escribe ciudad o aeropuerto... (ej., 'Miami' o 'BOG')",
-          "destinationPlaceholder": "Escribe ciudad o aeropuerto... (ej., 'Ciudad de México' o 'MEX')"
+          "originPlaceholder": "Escribe ciudad o aeropuerto...",
+          "destinationPlaceholder": "Escribe ciudad o aeropuerto..."
         },
         "help": {
           "notInDatabase": "¿Aeropuerto no está en nuestra base de datos?",
@@ -317,7 +235,7 @@
           "selectDate": "Seleccionar fecha de salida",
           "selectArrivalDate": "Seleccionar fecha de llegada"
         },
-        "warning": "Duración de vuelo inusualmente larga. Por favor verifica tus fechas."
+        "warning": "Duración de vuelo inusualmente larga ({hours} horas). Por favor verifica tus fechas."
       },
       "aircraftDetails": {
         "title": "Detalles de la Aeronave",
@@ -344,6 +262,11 @@
           "savings": "Ahorro",
           "perSeat": "por asiento",
           "off": "de descuento"
+        },
+        "commission": {
+          "customerPrice": "Precio del Cliente:",
+          "perSeat": "por asiento",
+          "commissionNote": "Agregamos una comisión del 30%. Los clientes verán el precio de arriba en COP."
         }
       }
     },
@@ -353,119 +276,518 @@
       "creatingFlight": "Creando Vuelo..."
     },
     "validation": {
-      "invalidFlightTimes": "Horarios de Vuelo Inválidos",
-      "arrivalBeforeDeparture": "La hora de llegada no puede ser anterior a la hora de salida. Por favor verifica el horario de tu vuelo."
+      "required": "Este campo es obligatorio",
+      "minSeats": "Debe tener al menos 1 asiento disponible",
+      "maxSeats": "No puede exceder 50 asientos",
+      "minPrice": "El precio debe ser mayor que 0",
+      "invalidDate": "Por favor selecciona una fecha válida",
+      "pastDate": "La fecha de salida no puede ser en el pasado",
+      "arrivalBeforeDeparture": "La fecha de llegada debe ser después de la salida"
     },
-    "submitFlight": "Crear Vuelo",
-    "submittingFlight": "Creando vuelo..."
+    "success": {
+      "title": "¡Vuelo Creado Exitosamente!",
+      "message": "Tu vuelo ha sido enviado exitosamente para revisión del administrador"
+    }
+  },
+  "editFlight": {
+    "title": "Edit Flight",
+    "subtitle": "Update your flight listing information",
+    "backToDashboard": "Back to Dashboard",
+    "buttons": {
+      "cancel": "Cancel",
+      "updateFlight": "Update Flight",
+      "updatingFlight": "Updating Flight..."
+    }
   },
   "hero": {
-    "title": "¿Y si volar privado fuera tan accesible como un boleto comercial?",
-    "subtitle": "Reserva vuelos empty-leg de jets privados entre Colombia, México y las Américas hasta 95% de descuento en precios regulares de charter. Viajes de lujo accesibles en toda Latinoamérica.",
-    "browseFlights": "Explorar Vuelos",
-    "learnMore": "Saber Más"
+    "title": "What if flying private was as accessible as a commercial ticket?",
+    "subtitle": "Book empty-leg private jet flights between Colombia, Mexico, and the Americas at up to 95% off regular charter prices. Luxury travel made accessible across Latin America.",
+    "browseFlights": "Browse Flights",
+    "learnMore": "Learn More"
+  },
+  "stats": {
+    "flightsBooked": "Flights Booked",
+    "verifiedOperators": "Verified Operators",
+    "customerSatisfaction": "Customer Satisfaction",
+    "savingsGenerated": "Savings Generated"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Booking your dream flight is easier than ever. Follow these simple steps to access luxury travel at unbeatable prices.",
+    "step1": {
+      "title": "Search & Compare",
+      "description": "Browse available empty-leg flights, compare prices, aircraft types, and departure times to find your perfect match."
+    },
+    "step2": {
+      "title": "Book Instantly",
+      "description": "Secure your seat with our streamlined booking process. Add passengers, select services, and complete payment in minutes."
+    },
+    "step3": {
+      "title": "Fly in Luxury",
+      "description": "Arrive at the private terminal, skip the crowds, and enjoy your premium travel experience with personalized service."
+    }
+  },
+  "whyChoose": {
+    "title": "Why Choose ChanceFly",
+    "subtitle": "Experience the difference with our premium platform designed for discerning travelers.",
+    "savings": {
+      "title": "Massive Savings",
+      "description": "Save up to 75% on luxury private flights by booking empty-leg routes from verified operators."
+    },
+    "quality": {
+      "title": "Verified Quality",
+      "description": "All aircraft and operators are thoroughly vetted for safety, luxury standards, and service excellence."
+    },
+    "instant": {
+      "title": "Instant Booking",
+      "description": "Book confirmed flights instantly with our streamlined platform. No waiting, no uncertainty."
+    }
+  },
+  "advantages": {
+    "noQueues": "No Airport Queues",
+    "noQueuesSub": "Skip the crowds and long security lines",
+    "flexibility": "Ultimate Flexibility",
+    "flexibilitySub": "Change your plans with minimal restrictions",
+    "privacy": "Complete Privacy",
+    "privacySub": "Enjoy your flight without any disturbances",
+    "luxury": "Luxury Amenities",
+    "luxurySub": "Premium services and comfort throughout"
+  },
+  "testimonials": {
+    "title": "Don't just take our word for it",
+    "subtitle": "Hundreds of travelers already fly private with our empty leg deals.",
+    "customer1": {
+      "text": "Found ChanceFly through a family member and it's been great for business trips. Good pricing and reliable service. I've used it several times now without any issues.",
+      "name": "Carolina Vargas"
+    },
+    "customer2": {
+      "text": "Nice alternative to commercial flights when I need something more comfortable. The empty-leg options work well for my schedule most of the time.",
+      "name": "Andrés Morales"
+    },
+    "customer3": {
+      "text": "Easy to use website and helpful customer service when I had questions. Definitely saves money compared to regular charter prices.",
+      "name": "Isabella Ramírez"
+    }
+  },
+  "cta": {
+    "title": "Ready to Experience Luxury Travel?",
+    "subtitle": "Join thousands of smart travelers who've discovered the ChanceFly advantage. Your next luxury flight is just a click away.",
+    "startBooking": "Start Booking Now",
+    "browseFlights": "Browse Flights"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Stay Updated with Exclusive Deals",
+      "subtitle": "Subscribe to our newsletter and be the first to know about new empty-leg flights and special offers.",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe"
+    },
+    "company": {
+      "description": "Your gateway to luxury travel at accessible prices. Discover empty-leg flights and experience premium aviation."
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "browseFlights": "Browse Flights",
+      "howItWorks": "How It Works",
+      "pricing": "Pricing",
+      "about": "About Us",
+      "contact": "Contact"
+    },
+    "operators": {
+      "title": "For Operators",
+      "listAircraft": "List Your Aircraft",
+      "partnerProgram": "Partner Program",
+      "operatorPortal": "Operator Portal",
+      "resources": "Resources"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "safety": "Safety & Security"
+    },
+    "copyright": "© 2025 ChanceFly. All rights reserved."
+  },
+  "about": {
+    "hero": {
+      "title": "Redefining Luxury Travel",
+      "subtitle": "ChanceFly is revolutionizing private aviation by making luxury travel accessible, transparent, and effortless. Discover our story and the passion that drives us forward."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "subtitle": "To democratize luxury travel and create a world where exceptional experiences are within everyone's reach.",
+      "breaking": {
+        "title": "Breaking Down Barriers",
+        "description1": "Private aviation has long been reserved for the ultra-wealthy. We believe this shouldn't be the case. By connecting travelers with empty leg flights and exclusive deals, we're making luxury travel accessible to more people than ever before.",
+        "description2": "Our technology-driven approach eliminates inefficiencies, reduces costs, and creates win-win scenarios for both travelers and operators."
+      },
+      "stats": {
+        "savings": "95%",
+        "savingsLabel": "Average Savings",
+        "savingsDesc": "compared to traditional charter pricing"
+      }
+    },
+    "values": {
+      "title": "Our Values",
+      "subtitle": "These principles guide everything we do and shape the future of luxury travel.",
+      "customerFirst": {
+        "title": "Customer First",
+        "description": "Every decision we make prioritizes our customers' needs, comfort, and satisfaction above all else."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We leverage cutting-edge technology to solve complex problems and create seamless experiences."
+      },
+      "trustSafety": {
+        "title": "Trust & Safety",
+        "description": "We maintain the highest standards of safety, security, and transparency in everything we do."
+      }
+    },
+    "team": {
+      "title": "Built by Aviation Enthusiasts",
+      "subtitle": "Our team combines decades of aviation industry experience with cutting-edge technology expertise. We're passionate about making luxury travel accessible to everyone while maintaining the highest standards of service and safety."
+    },
+    "cta": {
+      "title": "Join Our Journey",
+      "subtitle": "Whether you're a traveler seeking your next adventure, an operator looking to grow your business, or simply someone who shares our passion for aviation, we invite you to be part of the ChanceFly story.",
+      "getStarted": "Get Started Today"
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Get in Touch",
+      "subtitle": "Have questions about ChanceFly? Need support with your booking? Want to partner with us? We're here to help and would love to hear from you."
+    },
+    "options": {
+      "title": "How Can We Help?",
+      "subtitle": "Choose the best way to reach our team based on your needs.",
+      "call": {
+        "title": "Call Us",
+        "description": "Speak directly with our booking specialists",
+        "number": "+1 (555) 123-4567"
+      },
+      "email": {
+        "title": "Email Support",
+        "description": "Get detailed assistance via email",
+        "address": "support@chancefly.com"
+      },
+      "chat": {
+        "title": "Live Chat",
+        "description": "Chat with us in real-time",
+        "button": "Start Chat"
+      }
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "subtitle": "Fill out the form below and we'll get back to you within 24 hours.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "placeholders": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "subject": "Select a topic",
+        "message": "How can we help you?"
+      },
+      "subjects": {
+        "booking": "Booking Assistance",
+        "support": "Customer Support",
+        "partnership": "Partnership Inquiry",
+        "other": "Other"
+      },
+      "button": "Send Message"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers to common questions about ChanceFly and our services.",
+      "questions": {
+        "booking": {
+          "question": "How far in advance should I book?",
+          "answer": "For the best availability and rates, we recommend booking at least 48 hours in advance. However, we can often accommodate last-minute requests depending on aircraft availability."
+        },
+        "pricing": {
+          "question": "What's included in the flight price?",
+          "answer": "Our prices include the aircraft, crew, fuel, and standard catering. Additional services like ground transportation, special catering requests, or overnight fees may apply."
+        },
+        "cancellation": {
+          "question": "What happens if my flight is cancelled?",
+          "answer": "In the rare event of a cancellation, we'll work immediately to find you an alternative flight or provide a full refund. Our customer support team is available 24/7 to assist you."
+        },
+        "pets": {
+          "question": "Can I bring pets on my flight?",
+          "answer": "Yes! One of the benefits of private aviation is that pets are welcome. Just let us know when booking so we can ensure the aircraft is properly prepared."
+        }
+      }
+    }
+  },
+  "operators": {
+    "hero": {
+      "title": "Partner with ChanceFly",
+      "subtitle": "Join the premier platform for luxury aviation. Connect with high-value travelers, maximize your fleet utilization, and grow your business with ChanceFly's innovative marketplace.",
+      "button": "Become a Partner"
+    },
+    "benefits": {
+      "title": "Why Partner with Us?",
+      "subtitle": "Join a growing network of premium operators and unlock new revenue opportunities.",
+      "revenue": {
+        "title": "Increased Revenue",
+        "description": "Monetize empty leg flights and fill vacant seats with our extensive customer network."
+      },
+      "clientele": {
+        "title": "Premium Clientele",
+        "description": "Access to vetted, high-net-worth individuals who value luxury and reliability."
+      },
+      "operations": {
+        "title": "Simplified Operations",
+        "description": "Streamlined booking process with automated payments and customer management."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Join our network in four simple steps and start maximizing your aircraft's potential.",
+      "apply": {
+        "title": "Apply",
+        "description": "Submit your aircraft details and operator credentials for review."
+      },
+      "verify": {
+        "title": "Verify",
+        "description": "Complete our comprehensive vetting process for safety and quality."
+      },
+      "list": {
+        "title": "List",
+        "description": "Your aircraft goes live on our premium marketplace platform."
+      },
+      "earn": {
+        "title": "Earn",
+        "description": "Start receiving high-value bookings from verified clients."
+      }
+    },
+    "cta": {
+      "title": "Ready to Maximize Your Fleet?",
+      "subtitle": "Join our exclusive network of premium operators and start generating higher returns from your aircraft investments.",
+      "cardTitle": "Start Your Partnership Today",
+      "cardSubtitle": "Complete our simple application process and join ChanceFly's network of elite aviation partners.",
+      "applyButton": "Apply Now",
+      "scheduleButton": "Schedule a Call"
+    }
+  },
+  "flightDetails": {
+    "loading": "Cargando detalles del vuelo...",
+    "notFound": "Vuelo no encontrado",
+    "backToDashboard": "Volver al Panel",
+    "backToFlights": "Volver a Vuelos",
+    "availableSeats": "Asientos Disponibles",
+    "totalSeats": "Asientos Totales",
+    "operator": "Operador",
+    "flightTime": "Tiempo de Vuelo",
+    "flightRoute": "Ruta del Vuelo",
+    "routeTo": "a",
+    "pricing": "Precios",
+    "marketRate": "TARIFA DE MERCADO",
+    "marketPrice": "PRECIO DE MERCADO",
+    "standardPricing": "Precios Estándar",
+    "greatValue": "GRAN VALOR",
+    "competitiveRate": "Tarifa Competitiva",
+    "charterPrice": "PRECIO CHARTER",
+    "emptyLegDeal": "Oferta Vuelo Vacío",
+    "passengers": "Pasajeros",
+    "seatsAvailable": "asientos disponibles",
+    "totalPerPerson": "Total por persona",
+    "bookCharter": "Reservar Charter",
+    "aircraftImages": "Imágenes de la Aeronave",
+    "viewAllImages": "Ver Todas las Imágenes",
+    "perPerson": "por persona",
+    "totalCharter": "charter total",
+    "perSeat": "por asiento",
+    "total": "total",
+    "passengerSingle": "pasajero",
+    "passengersPlural": "pasajeros",
+    "sharedFlight": "Vuelo Compartido",
+    "privateFlightWarning": "El vuelo puede ser compartido si otros reservan los asientos restantes. Para garantizar privacidad, reserve todos los {remainingSeats} asientos restantes",
+    "sharedFlightWarning": "Este vuelo es compartido, {bookedSeats} asientos ya han sido reservados. Para garantizar privacidad, reserve todos los asientos en otro vuelo.",
+    "seatsAlreadyBooked": "{bookedSeats} ya reservados",
+    "finalPriceConfirmed": "Precio final confirmado antes del pago",
+    "operatorViewOnly": "Solo Vista - Cuenta de Operador",
+    "operatorCannotBook": "Los operadores no pueden reservar vuelos a través de esta interfaz",
+    "origin": "ORIGEN",
+    "destination": "DESTINO"
+  },
+  "payment": {
+    "title": "Complete Payment",
+    "backToFlightDetails": "Back to Flight Details",
+    "loadingFlightDetails": "Loading flight details...",
+    "flightNotFound": "Flight not found",
+    "failedToLoad": "Failed to load flight details",
+    "errorLoadingFlight": "Error Loading Flight",
+    "goBack": "Go Back",
+    "bookingReference": "Booking Reference: Processing...",
+    "flightSummary": "Flight Summary",
+    "departure": "Departure",
+    "aircraft": "Aircraft",
+    "operator": "Operator",
+    "notSpecified": "Not specified",
+    "flightDetails": "Flight Details",
+    "passengers": "Passengers",
+    "pricing": "Pricing",
+    "emptyLegPricePerSeat": "Empty Leg Price (per seat)",
+    "passengersMultiplied": "Passengers × {count}",
+    "marketPrice": "Market Price",
+    "total": "Total",
+    "youAreSaving": "You're saving {amount}!",
+    "percentOffRegularPrice": "{percent}% off regular price",
+    "completePayment": "Complete Payment",
+    "securePayment": "Secure Payment",
+    "securePaymentDescription": "Your payment is protected by 256-bit SSL encryption and processed securely by PayU Latam.",
+    "instantConfirmation": "Instant Confirmation",
+    "instantConfirmationDescription": "Immediate booking confirmation",
+    "pciCompliantDescription": "PCI DSS compliant processing",
+    "support247": "24/7 Support",
+    "support247Description": "Round-the-clock assistance"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "loading": "Loading notifications...",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDescription": "We'll notify you when something happens",
+    "timeJustNow": "Just now",
+    "timeMinutesAgo": "{minutes}m ago",
+    "timeHoursAgo": "{hours}h ago",
+    "timeDaysAgo": "{days}d ago",
+    "types": {
+      "flight_approved": {
+        "title": "Flight Approved",
+        "message": "Your flight has been approved and is ready for bookings"
+      },
+      "flight_denied": {
+        "title": "Flight Denied", 
+        "message": "Your flight has not been approved. Please review the details"
+      },
+      "flight_deleted": {
+        "title": "Flight Deleted",
+        "message": "Your flight has been removed from the system"
+      },
+      "flight_submitted": {
+        "title": "Flight Submitted for Review",
+        "message": "Your flight has been successfully submitted for admin review"
+      },
+      "booking_confirmed": {
+        "title": "Booking Confirmed",
+        "message": "Your booking has been confirmed successfully"
+      },
+      "payment_received": {
+        "title": "Payment Received",
+        "message": "We have received your payment successfully"
+      }
+    }
   },
   "bookingSuccess": {
-    "title": "¡Reserva Confirmada!",
-    "subtitle": "Tu vuelo en jet privado ha sido reservado exitosamente",
-    "bookingReference": "Referencia de Reserva",
-    "keepReference": "Guarda esta referencia para tus registros",
-    "flightDetails": "Detalles del Vuelo",
-    "passengerInfo": "Información de Pasajeros",
-    "paymentSummary": "Resumen de Pago",
-    "specialRequests": "Solicitudes Especiales",
-    "whatNext": "¿Qué Sigue?",
-    "confirmationEmail": "Correo de Confirmación",
-    "confirmationEmailDesc": "Revisa tu correo para la confirmación detallada de reserva e información del vuelo.",
-    "flightPreparation": "Preparación del Vuelo",
-    "flightPreparationDesc": "Llega al aeropuerto 30 minutos antes de la salida. Trae identificación válida.",
-    "customerSupport": "Atención al Cliente",
-    "customerSupportDesc": "Nuestro equipo está disponible 24/7 para cualquier pregunta o cambio.",
-    "viewBookings": "Ver Mis Reservas",
-    "bookAnother": "Reservar Otro Vuelo",
-    "needHelp": "¿Necesitas Ayuda?",
-    "supportDesc": "Nuestro equipo de atención al cliente está aquí para ayudarte",
-    "departure": "Salida",
-    "time": "Hora",
-    "flightTime": "Tiempo de Vuelo",
-    "aircraft": "Aeronave",
-    "operator": "Operador",
-    "passengers": "Pasajeros",
-    "amountPaid": "Monto Pagado",
-    "transactionId": "ID de Transacción",
-    "paymentStatus": "Estado del Pago",
-    "completed": "✓ Completado",
-    "origin": "Origen",
-    "destination": "Destino",
-    "seats": "Asientos",
-    "paymentMethod": "Método de Pago",
-    "creditCard": "Tarjeta de Crédito",
-    "pse": "Transferencia Bancaria PSE",
-    "cash": "Efectivo",
-    "notSpecified": "No especificado"
+    "title": "Booking Confirmed!",
+    "subtitle": "Your private jet flight has been successfully booked",
+    "bookingReference": "Booking Reference",
+    "keepReference": "Keep this reference for your records",
+    "flightDetails": "Flight Details",
+    "passengerInfo": "Passenger Information",
+    "paymentSummary": "Payment Summary",
+    "specialRequests": "Special Requests",
+    "whatNext": "What's Next?",
+    "confirmationEmail": "Confirmation Email",
+    "confirmationEmailDesc": "Check your email for detailed booking confirmation and flight information.",
+    "flightPreparation": "Flight Preparation",
+    "flightPreparationDesc": "Arrive at the airport 30 minutes before departure. Bring valid ID.",
+    "customerSupport": "Customer Support",
+    "customerSupportDesc": "Our team is available 24/7 for any questions or changes.",
+    "viewBookings": "View My Bookings",
+    "bookAnother": "Book Another Flight",
+    "needHelp": "Need Help?",
+    "supportDesc": "Our customer support team is here to assist you",
+    "departure": "Departure",
+    "time": "Time",
+    "flightTime": "Flight Time",
+    "aircraft": "Aircraft",
+    "operator": "Operator",
+    "passengers": "Passengers",
+    "amountPaid": "Amount Paid",
+    "transactionId": "Transaction ID",
+    "paymentStatus": "Payment Status",
+    "completed": "✓ Completed",
+    "origin": "Origin",
+    "destination": "Destination",
+    "seats": "Seats",
+    "paymentMethod": "Payment Method",
+    "creditCard": "Credit Card",
+    "pse": "PSE Bank Transfer",
+    "cash": "Cash",
+    "notSpecified": "Not specified",
+    "Solo pasaporte para vuelos internacionales": "Passport only for international flights",
+    "Seleccione": "Select"
+  },
+  "flightCard": {
+    "departure": "Departure",
+    "operator": "Operator",
+    "aircraft": "Aircraft",
+    "availableSeats": "Available Seats",
+    "viewDetailsBook": "View Details & Book",
+    "deleteFlight": "Delete Flight"
+  },
+  "flightFilters": {
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "passengers": "Passengers",
+    "passenger": "Passenger",
+    "clearFilters": "Clear Filters",
+    "sortByPrice": "Sort by Price",
+    "sortByDate": "Sort by Date"
   },
   "admin": {
     "dashboard": {
-      "title": "Panel de Administración",
-      "welcome": "Panel de Control de ChanceFly",
-      "welcomeBack": "Bienvenido de nuevo,",
-      "superAdmin": "Super Admin",
+      "welcomeBack": "Bienvenido de vuelta",
+      "superAdmin": "Super Administrador",
       "allOperators": "Todos los Operadores",
       "tabs": {
         "catalog": "Catálogo de Vuelos",
-        "approvals": "Aprobaciones de Vuelos", 
+        "approvals": "Aprobaciones de Vuelos",
         "operators": "Gestión de Operadores",
         "create": "Crear Vuelo",
-        "crm": "CRM y Analíticas"
-      },
-      "create": {
-        "title": "Crear Vuelo",
-        "subtitle": "Crear un nuevo vuelo como super administrador",
-        "navigateButton": "Crear Nuevo Vuelo"
-      },
-      "crm": {
-        "title": "Panel CRM",
-        "subtitle": "Ver todas las reservas, análisis de ingresos y detalles de clientes"
+        "crm": "CRM"
       },
       "catalog": {
         "title": "Catálogo de Vuelos",
-        "subtitle": "Ver todos los vuelos disponibles como los ven los clientes"
+        "subtitle": "Explorar y gestionar todos los vuelos en el sistema"
       },
       "approvals": {
         "title": "Aprobaciones de Vuelos",
-        "subtitle": "Revisar y aprobar vuelos pendientes de operadores",
+        "subtitle": "Revisar y aprobar envíos de vuelos pendientes",
         "loading": "Cargando vuelos pendientes...",
         "allCaughtUp": "¡Todo al día!",
-        "noPendingFlights": "No hay vuelos pendientes que requieran aprobación en este momento.",
-        "actions": {
-          "approve": "Aprobar",
-          "deny": "Denegar",
-          "view": "Ver",
-          "delete": "Eliminar",
-          "processing": "Procesando..."
-        }
+        "noPendingFlights": "No hay aprobaciones de vuelos pendientes en este momento."
       },
       "operators": {
         "title": "Gestión de Operadores",
-        "subtitle": "Ver y gestionar todos los operadores de aerolíneas",
-        "noOperators": "No se encontraron operadores",
-        "noOperatorsMessage": "No hay operadores registrados en el sistema.",
-        "companyNameFallback": "Nombre de Empresa No Establecido",
-        "flightsTitle": "Vuelos",
-        "flightCount": {
-          "single": "vuelo",
-          "plural": "vuelos"
-        },
+        "subtitle": "Gestionar operadores de vuelos y sus permisos",
+        "companyNameFallback": "Empresa Desconocida",
         "noFlightsFound": "No se encontraron vuelos para este operador",
+        "flightsTitle": "Vuelos",
+        "actions": {
+          "approve": "Aprobar",
+          "deny": "Denegar",
+          "processing": "Procesando..."
+        },
         "stats": {
           "flights": "Vuelos",
           "bookings": "Reservas",
           "revenue": "Ingresos"
         },
+        "flightCount": {
+          "single": "vuelo",
+          "plural": "vuelos"
+        },
         "flightDetails": {
-          "title": "Detalles de Vuelos",
-          "showFlights": "Mostrar Vuelos",
-          "hideFlights": "Ocultar Vuelos",
+          "loading": "Cargando detalles del vuelo...",
           "headers": {
             "route": "Ruta",
             "date": "Fecha",
@@ -473,111 +795,43 @@
             "seats": "Asientos",
             "revenue": "Ingresos",
             "status": "Estado"
-          },
-          "loading": "Cargando vuelos del operador...",
-          "error": "Error cargando vuelos",
-          "noFlights": "No hay vuelos disponibles para este operador."
-        },
-        "actions": {
-          "approve": "Aprobar",
-          "deny": "Denegar",
-          "processing": "Procesando..."
+          }
         }
       },
+      "create": {
+        "title": "Crear Nuevo Vuelo",
+        "subtitle": "Agregar un nuevo vuelo al sistema"
+      },
       "flights": {
-        "title": "Gestión de Vuelos",
-        "subtitle": "Revisar y gestionar todos los vuelos del sistema",
-        "approved": "Aprobados",
-        "pending": "Pendientes",
-        "actions": {
-          "approve": "Aprobar",
-          "deny": "Denegar",
-          "view": "Ver",
-          "delete": "Eliminar",
-          "processing": "Procesando..."
-        },
-        "confirmDelete": {
-          "title": "Confirmar Eliminación",
-          "message": "¿Estás seguro que deseas eliminar este vuelo? Esta acción no se puede deshacer.",
-          "confirm": "Eliminar",
-          "cancel": "Cancelar"
-        },
-        "filters": {
-          "all": "Todos los Vuelos",
-          "pending": "Pendientes de Aprobación",
-          "approved": "Aprobados"
-        },
         "status": {
-          "pending": "Pendiente Aprobación",
-          "approved": "Disponible",
-          "declined": "Denegado",
+          "pending": "Pendiente",
           "available": "Disponible",
+          "declined": "Rechazado",
           "partiallyBooked": "Parcialmente Reservado",
-          "fullyBooked": "Totalmente Reservado",
+          "fullyBooked": "Completamente Reservado",
           "cancelled": "Cancelado"
         }
       },
-      "bookings": {
-        "title": "Gestión de Reservas",
-        "subtitle": "Ver y gestionar todas las reservas del sistema",
-        "showBookings": "Mostrar Reservas",
-        "hideBookings": "Ocultar Reservas",
-        "loading": "Cargando reservas...",
-        "error": "Error cargando reservas",
-        "noBookings": "No hay reservas para este vuelo.",
-        "customer": "Cliente",
-        "email": "Correo",
-        "phone": "Teléfono",
-        "passengers": "Pasajeros",
-        "amount": "Monto",
-        "bookingDate": "Fecha de Reserva",
-        "status": "Estado"
-      },
       "errors": {
-        "networkError": "Error de red: No se puede conectar al servidor. Por favor verifica si el backend está funcionando.",
-        "deleteFailed": "Error al eliminar vuelo",
-        "deleteFailedUnknown": "Error al eliminar vuelo: Error desconocido",
-        "approveFailed": "Error al aprobar operador",
-        "approveError": "Error aprobando operador",
-        "denyFailed": "Error al denegar operador",
-        "denyError": "Error denegando operador"
+        "networkError": "Ocurrió un error de red",
+        "deleteFailed": "Error al eliminar el vuelo",
+        "deleteFailedUnknown": "Error al eliminar el vuelo: Error desconocido",
+        "approveFailed": "Error al aprobar el vuelo",
+        "approveError": "Error aprobando el vuelo",
+        "denyFailed": "Error al denegar el vuelo",
+        "denyError": "Error denegando el vuelo"
+      },
+      "crm": {
+        "title": "CRM de la Plataforma",
+        "subtitle": "Gestionar todas las reservas de la plataforma",
+        "stats": {
+          "totalRevenue": "Ingresos Totales",
+          "platformCommission": "Comisión de la Plataforma",
+          "totalBookings": "Reservas Totales",
+          "totalPassengers": "Pasajeros Totales"
+        },
+        "loadingMessage": "Cargando datos de CRM..."
       }
-    }
-  },
-  "flightCard": {
-    "departure": "Salida",
-    "operator": "Operador",
-    "aircraft": "Aeronave",
-    "availableSeats": "Asientos Disponibles",
-    "viewDetailsBook": "Ver Detalles y Reservar",
-    "deleteFlight": "Eliminar Vuelo"
-  },
-  "flightFilters": {
-    "from": "Desde",
-    "to": "Hacia",
-    "date": "Fecha",
-    "passengers": "Pasajeros",
-    "passenger": "pasajero",
-    "clearFilters": "Limpiar Filtros",
-    "sortByPrice": "Ordenar por Precio",
-    "sortByDate": "Ordenar por Fecha"
-  },
-  "airportAutocomplete": {
-    "placeholder": "Escribe ciudad o nombre del aeropuerto...",
-    "notListed": "¿Aeropuerto no está listado?",
-    "addCustom": "Agregar detalles de aeropuerto personalizado",
-    "addCustomAirport": "Agregar Aeropuerto Personalizado",
-    "smallerAirportsNote": "Para aeropuertos más pequeños o pistas privadas que no están en nuestra base de datos",
-    "airportCode": "Código del Aeropuerto",
-    "airportName": "Nombre del Aeropuerto", 
-    "city": "Ciudad",
-    "country": "País",
-    "addAirport": "Agregar Aeropuerto",
-    "cancel": "Cancelar",
-    "placeholders": {
-      "code": "ej., ABC",
-      "name": "ej., Aeropuerto Regional Privado",
-      "city": "ej., Medellín"
     }
   },
   "customCalendar": {
@@ -585,6 +839,25 @@
     "selectDateTime": "Seleccionar fecha y hora",
     "selectTime": "Seleccionar hora"
   },
-  "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
-  "Seleccione": "Seleccione"
+  "airportAutocomplete": {
+    "placeholder": "Buscar aeropuerto...",
+    "notListed": "¿No está en la lista?",
+    "addCustom": "Agregar aeropuerto personalizado",
+    "addCustomAirport": "Agregar Aeropuerto Personalizado",
+    "smallerAirportsNote": "Para aeropuertos más pequeños o privados que no aparecen en nuestra base de datos",
+    "airportCode": "Código del Aeropuerto",
+    "airportName": "Nombre del Aeropuerto",
+    "city": "Ciudad",
+    "country": "País",
+    "addAirport": "Agregar Aeropuerto",
+    "cancel": "Cancelar",
+    "placeholders": {
+      "code": "BOG",
+      "name": "Aeropuerto Internacional El Dorado",
+      "city": "Bogotá"
+    }
+  },
+  "currency": {
+    "approximatelyUSD": "Aproximadamente ${amount} USD"
+  }
 }

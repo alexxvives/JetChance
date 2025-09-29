@@ -95,6 +95,8 @@ router.get('/operator', authenticate, async (req, res) => {
         f.departure_datetime,
         f.arrival_datetime,
         f.aircraft_model as aircraft_name,
+        f.available_seats,
+        f.total_seats,
         'COP' as currency,
         c.first_name || ' ' || c.last_name as customer_name,
         c.phone as customer_phone
@@ -105,7 +107,13 @@ router.get('/operator', authenticate, async (req, res) => {
       ORDER BY b.created_at DESC
     `, [operator.id]);
 
-    const bookings = result.rows.map(booking => {
+    // Get passengers for each booking
+    const bookingsWithPassengers = await Promise.all(result.rows.map(async (booking) => {
+      const passengersResult = await db.query(
+        'SELECT first_name, last_name, date_of_birth, document_type, document_number FROM passengers WHERE booking_id = ? ORDER BY created_at',
+        [booking.id]
+      );
+
       // Extract airport codes from names (format: "Airport Name (CODE)")
       const originCodeMatch = booking.origin_name?.match(/\(([^)]+)\)$/);
       const destinationCodeMatch = booking.destination_name?.match(/\(([^)]+)\)$/);
@@ -129,13 +137,24 @@ router.get('/operator', authenticate, async (req, res) => {
           departure: booking.departure_datetime,
           arrival: booking.arrival_datetime,
           aircraftName: booking.aircraft_name,
-          operator: operator.company_name
+          operator: operator.company_name,
+          availableSeats: booking.available_seats,
+          totalSeats: booking.total_seats
         },
         specialRequests: booking.special_requests,
         bookingDate: booking.created_at,
-        paymentMethod: booking.payment_method
+        paymentMethod: booking.payment_method,
+        passengers: passengersResult.rows.map(p => ({
+          firstName: p.first_name,
+          lastName: p.last_name,
+          dateOfBirth: p.date_of_birth,
+          documentType: p.document_type,
+          documentNumber: p.document_number
+        }))
       };
-    });
+    }));
+
+    const bookings = bookingsWithPassengers;
 
     // Get flight count for this operator
     const flightCountResult = await db.query(`
@@ -307,6 +326,8 @@ router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) =>
         f.departure_datetime,
         f.arrival_datetime,
         f.aircraft_model as aircraft_name,
+        f.available_seats,
+        f.total_seats,
         o.company_name as operator_name,
         c.first_name as customer_first_name,
         c.last_name as customer_last_name,
@@ -361,6 +382,8 @@ router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) =>
           lastName: booking.customer_last_name,
           email: booking.customer_email
         },
+        contact_email: booking.contact_email,
+        operator: booking.operator_name,
         flight: {
           origin: {
             code: originCode
@@ -370,7 +393,9 @@ router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) =>
           },
           schedule: {
             departure: booking.departure_datetime
-          }
+          },
+          availableSeats: booking.available_seats,
+          totalSeats: booking.total_seats
         },
         passengers: passengersResult.map(p => ({
           firstName: p.first_name,
@@ -409,6 +434,71 @@ router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) =>
     res.status(500).json({
       error: 'Failed to fetch CRM data',
       details: error.message
+    });
+  }
+});
+
+// @route   GET /api/bookings/:id/flight
+// @desc    Get flight details for a specific booking
+// @access  Private (Operators only)
+router.get('/:id/flight', authenticate, async (req, res) => {
+  try {
+    const { id: bookingId } = req.params;
+
+    // Get the booking and flight details
+    const result = await db.query(`
+      SELECT 
+        b.id as booking_id,
+        f.id as flight_id,
+        f.origin_city,
+        f.destination_city,
+        f.origin_name,
+        f.destination_name,
+        f.departure_datetime,
+        f.arrival_datetime,
+        f.aircraft_model,
+        f.operator_id,
+        o.company_name as operator_name,
+        o.user_id as operator_user_id
+      FROM bookings b
+      JOIN flights f ON b.flight_id = f.id
+      JOIN operators o ON f.operator_id = o.id
+      WHERE b.id = ?
+    `, [bookingId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Booking not found or flight not available'
+      });
+    }
+
+    const booking = result.rows[0];
+
+    // Check if the current user is the operator for this flight
+    if (booking.operator_user_id !== req.user.id) {
+      return res.status(403).json({
+        error: 'Access denied. You can only view flights for your own bookings.'
+      });
+    }
+
+    res.json({
+      bookingId: booking.booking_id,
+      flightId: booking.flight_id,
+      flight: {
+        id: booking.flight_id,
+        origin: booking.origin_name,
+        destination: booking.destination_name,
+        departure: booking.departure_datetime,
+        arrival: booking.arrival_datetime,
+        aircraft: booking.aircraft_model,
+        operator: booking.operator_name
+      }
+    });
+
+  } catch (error) {
+    console.error('Booking flight details error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch flight details for booking'
     });
   }
 });

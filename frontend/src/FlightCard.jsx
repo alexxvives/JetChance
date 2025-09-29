@@ -5,6 +5,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from './contexts/AuthContext';
 import { useTranslation } from './contexts/TranslationContext';
 import AircraftImageFallback from './components/AircraftImageFallback';
+import { extractAirportCode } from './utils/airportUtils';
 
 // Helper function to format Colombian Peso currency
 const formatCOP = (amount) => {
@@ -108,9 +109,9 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const savings = flight.pricing?.savings || (originalPrice - price) || 0;
   const savingsPercent = flight.pricing?.savingsPercent || (originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0);
   
-  // Handle field name mapping for both new nested and old flat structures
-  const origin = flight.origin?.code || flight.origin_code || flight.origin || '';
-  const destination = flight.destination?.code || flight.destination_code || flight.destination || '';
+  // Handle field name mapping for both new nested and old flat structures - extract only airport codes
+  const origin = extractAirportCode(flight.origin?.code || flight.origin_code || flight.origin || '');
+  const destination = extractAirportCode(flight.destination?.code || flight.destination_code || flight.destination || '');
   const departureTime = flight.schedule?.departure || flight.departure_time || flight.departure_datetime || '';
   
   // Prioritize aircraft_model from backend, fallback to other aircraft fields or default
@@ -217,11 +218,6 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
                   </span>
                   {formatCOPWithStyling(price || 0).number}
                 </div>
-                {savings > 0 && (
-                  <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                    -{savingsPercent}%
-                  </div>
-                )}
               </div>
               {originalPrice && originalPrice > 0 && (
                 <div className="text-sm text-gray-400 line-through flex items-baseline justify-end">

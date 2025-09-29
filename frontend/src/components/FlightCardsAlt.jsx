@@ -214,17 +214,7 @@ export default function FlightCardsAlt({ onNavigate }) {
                           </span>
                           {flight.price.number}
                         </span>
-                        {flight.savings > 0 && (
-                          <span className="discount-badge">
-                            -{flight.savingsPercent}%
-                          </span>
-                        )}
                       </div>
-                      {flight.savings > 0 && (
-                        <div className="original-price">
-                          ${flight.originalPrice.toLocaleString()}
-                        </div>
-                      )}
                     </div>
 
                     {/* Flight Details */}

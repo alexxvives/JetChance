@@ -56,7 +56,7 @@ export default function EditFlightPage() {
       return (
         <p className="text-xs text-gray-500 mt-4 flex items-center justify-center">
           <span className="mr-1">⚠</span>
-          {t('createFlight.sections.flightSchedule.warning')}
+          {t('createFlight.sections.flightSchedule.warning').replace('{hours}', hours)}
         </p>
       );
     }
@@ -786,15 +786,6 @@ export default function EditFlightPage() {
                 </div>
               </div>
             </div>
-
-            {formData.price && formData.originalPrice && (
-              <div className="mt-4 p-4 bg-green-50 rounded-xl">
-                <div className="text-sm text-green-700">
-                  <strong>Savings:</strong> ${(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toLocaleString()} 
-                  ({Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% off)
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Submit Buttons */}

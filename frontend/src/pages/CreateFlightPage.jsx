@@ -11,14 +11,13 @@ import CustomDateTimePicker from '../components/CustomDateTimePicker';
 import { searchAirports } from '../data/airportsAndCities';
 import { getCountryByAirportCode } from '../utils/airportCountries';
 
-// Helper function to format Colombian Peso currency
+// Helper function to format Colombian Peso currency with COP label
 const formatCOP = (amount) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
+  const formatted = new Intl.NumberFormat('es-CO', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(amount);
+  return `COP ${formatted}`;
 };
 
 // Function to get high-quality private jet images based on aircraft type
@@ -125,7 +124,7 @@ export default function CreateFlightPage() {
       return (
         <p className="text-xs text-gray-500 mt-4 flex items-center justify-center">
           <span className="mr-1">⚠</span>
-          {t('createFlight.sections.flightSchedule.warning')}
+          {t('createFlight.sections.flightSchedule.warning').replace('{hours}', hours)}
         </p>
       );
     }
@@ -509,7 +508,7 @@ export default function CreateFlightPage() {
                 <CustomDateTimePicker
                   value={formData.arrivalTime}
                   onChange={(datetime) => setFormData({...formData, arrivalTime: datetime})}
-                  minDate={formData.departureTime ? new Date(formData.departureTime) : new Date()}
+                  minDate={formData.departureTime ? new Date(new Date(formData.departureTime).toDateString()) : new Date()}
                   placeholder={t('createFlight.sections.flightSchedule.placeholders.selectArrivalDate')}
                   label={t('createFlight.sections.flightSchedule.arrivalDateTimeTitle')}
                   required
@@ -620,10 +619,10 @@ export default function CreateFlightPage() {
                 {formData.price && (
                   <div className="mt-2 p-3 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>Customer Price:</strong> {formatCOP(parseFloat(formData.price) * 1.3)} per seat
+                      <strong>{t('createFlight.sections.pricing.commission.customerPrice')}</strong> {formatCOP(parseFloat(formData.price) * 1.3)} {t('createFlight.sections.pricing.commission.perSeat')}
                     </p>
                     <p className="text-xs text-blue-600 mt-1">
-                      We add a 30% commission. Customers will see the price above.
+                      {t('createFlight.sections.pricing.commission.commissionNote')}
                     </p>
                   </div>
                 )}
@@ -640,15 +639,6 @@ export default function CreateFlightPage() {
                 <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.marketPricePerSeatHelp')}</p>
               </div>
             </div>
-
-            {formData.price && formData.originalPrice && (
-              <div className="mt-4 p-4 bg-green-50 rounded-xl">
-                <div className="text-sm text-green-700">
-                  <strong>{t('createFlight.sections.pricing.savingsCalculation.savings')}:</strong> {formatCOP(parseFloat(formData.originalPrice) - parseFloat(formData.price))} {t('createFlight.sections.pricing.savingsCalculation.perSeat')} 
-                  ({Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% {t('createFlight.sections.pricing.savingsCalculation.off')})
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Submit Buttons */}

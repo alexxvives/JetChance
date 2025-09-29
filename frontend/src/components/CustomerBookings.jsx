@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import { extractAirportCode } from '../utils/airportUtils';
 import { 
   Calendar,
   MapPin,
@@ -61,15 +62,16 @@ export default function CustomerBookings() {
     const pendingBookings = bookings.filter(b => b.status === 'pending').length;
     const cancelledBookings = bookings.filter(b => b.status === 'cancelled').length;
     const totalPassengers = bookings.reduce((sum, booking) => sum + (booking.passengerCount || 0), 0);
+    const uniqueFlights = new Set(bookings.map(b => b.flightId)).size;
 
     return {
       totalAmount,
+      totalFlights: uniqueFlights,
       totalBookings,
       confirmedBookings,
       pendingBookings,
       cancelledBookings,
-      totalPassengers,
-      averageBookingValue: totalAmount / totalBookings
+      totalPassengers
     };
   }, [bookings]);
 
@@ -123,11 +125,11 @@ export default function CustomerBookings() {
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return '$0';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+    if (!amount) return '0 COP';
+    return new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount) + ' COP';
   };
 
   if (loading) {
@@ -174,84 +176,65 @@ export default function CustomerBookings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white rounded-lg p-4 border border-gray-100">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Spent</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(summaryStats.totalAmount)}</p>
+              <p className="text-xl font-bold text-gray-900">{formatCurrency(summaryStats.totalAmount)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-4 border border-gray-100">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <Activity className="w-6 h-6 text-blue-600" />
+              <Plane className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Flights</p>
+              <p className="text-xl font-bold text-gray-900">{summaryStats.totalFlights}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <BarChart3 className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-              <p className="text-2xl font-bold text-gray-900">{summaryStats.totalBookings}</p>
+              <p className="text-xl font-bold text-gray-900">{summaryStats.totalBookings}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-4 border border-gray-100">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Users className="w-6 h-6 text-orange-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Passengers</p>
-              <p className="text-2xl font-bold text-gray-900">{summaryStats.totalPassengers}</p>
+              <p className="text-xl font-bold text-gray-900">{summaryStats.totalPassengers}</p>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Booking Value</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(summaryStats.averageBookingValue)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Booking Status Overview */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Booking Status Overview</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-2xl font-bold text-green-600">{summaryStats.confirmedBookings}</p>
-            <p className="text-sm text-green-600">Confirmed</p>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <p className="text-2xl font-bold text-yellow-600">{summaryStats.pendingBookings}</p>
-            <p className="text-sm text-yellow-600">Pending</p>
-          </div>
-          <div className="text-center p-4 bg-red-50 rounded-lg">
-            <p className="text-2xl font-bold text-red-600">{summaryStats.cancelledBookings}</p>
-            <p className="text-sm text-red-600">Cancelled</p>
           </div>
         </div>
       </div>
 
       {/* Bookings Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Booking History</h3>
-        </div>
-        
-        <div className="overflow-x-auto">
+      <div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">Booking History</h3>
+          </div>
+          <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -290,7 +273,7 @@ export default function CustomerBookings() {
                       <MapPin className="w-4 h-4 text-gray-400 mr-2" />
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {booking.flight?.origin} → {booking.flight?.destination}
+                          {extractAirportCode(booking.flight?.origin)} → {extractAirportCode(booking.flight?.destination)}
                         </div>
                         <div className="text-sm text-gray-500">{booking.flight?.operator}</div>
                       </div>
@@ -327,6 +310,7 @@ export default function CustomerBookings() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
