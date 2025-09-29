@@ -850,12 +850,18 @@
     "airportName": "Nombre del Aeropuerto",
     "city": "Ciudad",
     "country": "País",
+    "coordinates": "Coordenadas",
+    "coordinatesNote": "Encuentra las coordenadas usando Google Maps o GPS. Ejemplo: Bogotá El Dorado es 4.7016, -74.1469",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
     "addAirport": "Agregar Aeropuerto",
     "cancel": "Cancelar",
     "placeholders": {
       "code": "BOG",
       "name": "Aeropuerto Internacional El Dorado",
-      "city": "Bogotá"
+      "city": "Bogotá",
+      "latitude": "4.7016",
+      "longitude": "-74.1469"
     }
   },
   "currency": {

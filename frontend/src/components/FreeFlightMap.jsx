@@ -62,16 +62,28 @@ export default function FreeFlightMap({ flight }) {
     'BAQ': { lat: 10.8896, lng: -74.7808, name: 'Ernesto Cortissoz International Airport' }
   };
 
-  // Get coordinates from airport codes
-  const getCoordinates = (code) => {
+  // Get coordinates from airport codes or airport objects
+  const getCoordinates = (code, airportObj) => {
     if (!code) return null;
+    
+    // First check if we have airport object with coordinates (for custom airports)
+    if (airportObj && airportObj.latitude && airportObj.longitude) {
+      console.log(`🛫 Using coordinates from airport object for ${code}:`, { lat: airportObj.latitude, lng: airportObj.longitude });
+      return {
+        lat: airportObj.latitude,
+        lng: airportObj.longitude,
+        name: airportObj.name || `${code} Airport`
+      };
+    }
+    
+    // Fallback to hardcoded coordinates
     const coords = airportCoordinates[code.toUpperCase()];
     console.log(`🛫 Looking up coordinates for ${code}:`, coords);
     return coords;
   };
 
-  const originCoords = getCoordinates(flight.origin_code);
-  const destinationCoords = getCoordinates(flight.destination_code);
+  const originCoords = getCoordinates(flight.origin_code, flight.origin);
+  const destinationCoords = getCoordinates(flight.destination_code, flight.destination);
 
   console.log('🎯 Origin coords:', originCoords);
   console.log('🎯 Destination coords:', destinationCoords);

@@ -20,7 +20,9 @@ const AirportAutocomplete = ({
     code: '',
     name: '',
     city: '',
-    country: 'CO' // Default to Colombia
+    country: 'CO', // Default to Colombia
+    latitude: '',
+    longitude: ''
   });
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -133,15 +135,18 @@ const AirportAutocomplete = ({
   };
 
   const handleCustomAirportSubmit = () => {
-    if (customAirport.code && customAirport.name && customAirport.city) {
+    if (customAirport.code && customAirport.name && customAirport.city && 
+        customAirport.latitude && customAirport.longitude) {
       const customAirportData = {
         ...customAirport,
         code: customAirport.code.toUpperCase(),
+        latitude: parseFloat(customAirport.latitude),
+        longitude: parseFloat(customAirport.longitude),
         isCustom: true
       };
       
       setInputValue(`${customAirportData.code} - ${customAirportData.name}`);
-      setShowCustomForm(false);
+      resetCustomForm();
       
       if (onChange) {
         onChange(customAirportData);
@@ -154,6 +159,18 @@ const AirportAutocomplete = ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const resetCustomForm = () => {
+    setCustomAirport({
+      code: '',
+      name: '',
+      city: '',
+      country: 'CO',
+      latitude: '',
+      longitude: ''
+    });
+    setShowCustomForm(false);
   };
 
   // Close dropdown when clicking outside
@@ -276,7 +293,7 @@ const AirportAutocomplete = ({
               <h4 className="text-sm font-medium text-gray-900">{t('airportAutocomplete.addCustomAirport')}</h4>
               <button
                 type="button"
-                onClick={() => setShowCustomForm(false)}
+                onClick={resetCustomForm}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XMarkIcon className="h-4 w-4" />
@@ -355,19 +372,51 @@ const AirportAutocomplete = ({
               </div>
             </div>
 
+            {/* Coordinates */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t('airportAutocomplete.coordinates')} <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-2">{t('airportAutocomplete.coordinatesNote')}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={t('airportAutocomplete.placeholders.latitude')}
+                    value={customAirport.latitude}
+                    onChange={(e) => handleCustomInputChange('latitude', e.target.value)}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">{t('airportAutocomplete.latitude')}</p>
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={t('airportAutocomplete.placeholders.longitude')}
+                    value={customAirport.longitude}
+                    onChange={(e) => handleCustomInputChange('longitude', e.target.value)}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">{t('airportAutocomplete.longitude')}</p>
+                </div>
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex space-x-2 pt-2">
               <button
                 type="button"
                 onClick={handleCustomAirportSubmit}
-                disabled={!customAirport.code || !customAirport.name || !customAirport.city}
+                disabled={!customAirport.code || !customAirport.name || !customAirport.city || !customAirport.latitude || !customAirport.longitude}
                 className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {t('airportAutocomplete.addAirport')}
               </button>
               <button
                 type="button"
-                onClick={() => setShowCustomForm(false)}
+                onClick={resetCustomForm}
                 className="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
                 {t('airportAutocomplete.cancel')}
