@@ -58,7 +58,7 @@ export default function FlightDetailsPage() {
     const initialSeats = flight.available_seats ?? flight.seats_available ?? flight.capacity?.availableSeats ?? fallbackMaxPassengers;
 
     if (initialSeats !== undefined && initialSeats !== null) {
-      setSelectedPassengers(initialSeats > 0 ? 1 : 0);
+      setSelectedPassengers(initialSeats > 0 ? initialSeats : 0);
     }
   }, [flight]);
 
@@ -131,9 +131,9 @@ export default function FlightDetailsPage() {
   });
 
   const startBookingProcess = () => {
-    // Operators cannot book their own flights
-    if (user?.role === 'operator') {
-      return; // Do nothing - just decorative for operators
+    // Operators and admins cannot book flights
+    if (user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin') {
+      return; // Do nothing - just decorative for operators and admins
     }
     
     // Navigate to dedicated payment page with flight data
@@ -146,8 +146,8 @@ export default function FlightDetailsPage() {
     });
   };
 
-  // Check if user is an operator
-  const isOperator = user?.role === 'operator';
+  // Check if user is an operator or admin (cannot book flights)
+  const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -373,7 +373,9 @@ export default function FlightDetailsPage() {
                 
                 <p className="text-xs text-gray-500 text-center mt-3">
                   {isOperator 
-                    ? t('flightDetails.operatorCannotBook')
+                    ? (user?.role === 'operator' 
+                        ? t('flightDetails.operatorCannotBook')
+                        : t('flightDetails.adminCannotBook'))
                     : t('flightDetails.finalPriceConfirmed')
                   }
                 </p>

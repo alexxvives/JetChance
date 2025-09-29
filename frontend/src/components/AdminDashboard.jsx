@@ -608,76 +608,40 @@ export default function AdminDashboard({ user }) {
                   <p className="text-gray-600">{t('admin.dashboard.approvals.noPendingFlights')}</p>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {pendingFlights.map((flight) => (
-                    <div key={flight.id} className="bg-gradient-to-r from-yellow-50 to-white border border-yellow-200 rounded-xl p-6">
-                      <div className="flex items-start justify-between">
+                    <div key={flight.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="bg-yellow-100 p-2 rounded-lg">
-                              <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-blue-100 p-2 rounded-lg">
+                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                               </svg>
                             </div>
-                            <div>
+                            <div className="flex-1">
                               <h4 className="font-semibold text-lg text-gray-900">Flight {flight.id}</h4>
                               <p className="text-sm text-blue-600 font-medium">
-                                {flight.operator?.firstName && flight.operator?.lastName && flight.operator?.operatorId
-                                  ? `${flight.operator.firstName} ${flight.operator.lastName} (${flight.operator.operatorId})`
-                                  : 'Unknown Operator'
-                                }
+                                {flight.operator?.company_name || 
+                                 flight.operator?.name ||
+                                 flight.operator_name ||
+                                 flight.operator ||
+                                 (flight.operator?.firstName && flight.operator?.lastName 
+                                   ? `${flight.operator.firstName} ${flight.operator.lastName}` 
+                                   : 'Private Operator')}
                               </p>
                             </div>
-                            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
-                              ⏳ Pending Approval
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Route</p>
-                              <p className="text-sm text-gray-900">
-                                {extractAirportCode(flight.origin?.code)} → {extractAirportCode(flight.destination?.code)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Departure</p>
-                              <p className="text-sm text-gray-900">
-                                {flight.schedule?.departure ? new Date(flight.schedule.departure).toLocaleDateString() : 'TBD'}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Price</p>
-                              <p className="text-sm text-gray-900 flex items-baseline">
-                                <span className="text-xs font-normal text-gray-500 mr-1">
-                                  {formatCOPWithStyling(flight.pricing?.emptyLegPrice).currency}
-                                </span>
-                                {formatCOPWithStyling(flight.pricing?.emptyLegPrice).number}
-                                <span className="text-gray-500 line-through ml-2 flex items-baseline">
-                                  <span className="text-xs text-gray-500 mr-1">
-                                    {formatCOPWithStyling(flight.pricing?.originalPrice).currency}
-                                  </span>
-                                  {formatCOPWithStyling(flight.pricing?.originalPrice).number}
-                                </span>
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Seats</p>
-                              <p className="text-sm text-gray-900">{flight.capacity?.availableSeats}</p>
-                            </div>
-                          </div>
-
-                          <div className="mb-4">
-                            <p className="text-sm font-medium text-gray-600">Description</p>
-                            {flight.description && flight.description.trim() && flight.description !== 'Private Jet flight' ? (
-                              <p className="text-sm text-gray-900">{flight.description}</p>
-                            ) : (
-                              <p className="text-sm text-gray-500 italic">No description</p>
-                            )}
                           </div>
                         </div>
 
                         <div className="flex space-x-3 ml-6">
+                          <button
+                            onClick={() => navigate(`/flight/${flight.id}`)}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <EyeIcon className="h-4 w-4 mr-2" />
+                            View Details
+                          </button>
                           <button
                             onClick={() => approveFlight(flight.id)}
                             className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"

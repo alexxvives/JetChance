@@ -594,6 +594,7 @@
     "finalPriceConfirmed": "Final price confirmed before payment",
     "operatorViewOnly": "View Only - Operator Account",
     "operatorCannotBook": "Operators cannot book flights through this interface",
+    "adminCannotBook": "Admins cannot book flights through this interface",
     "origin": "ORIGIN",
     "destination": "DESTINATION"
   },

@@ -613,6 +613,7 @@
     "finalPriceConfirmed": "Precio final confirmado antes del pago",
     "operatorViewOnly": "Solo Vista - Cuenta de Operador",
     "operatorCannotBook": "Los operadores no pueden reservar vuelos a través de esta interfaz",
+    "adminCannotBook": "Los administradores no pueden reservar vuelos a través de esta interfaz",
     "origin": "ORIGEN",
     "destination": "DESTINO"
   },
