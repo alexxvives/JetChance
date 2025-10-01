@@ -3,10 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from './contexts/AuthContext';
 import { TranslationProvider } from './contexts/TranslationContext';
 import Navbar from './components/Navbar';
-import PlasmaBackground from './components/PlasmaBackground';
 import SimpleGradientBackground from './components/SimpleGradientBackground';
 import PerformanceIndicator from './components/PerformanceIndicator';
-import LandingPage from './pages/LandingPage';
 import LuxuryLandingPage from './pages/LuxuryLandingPageNew';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
@@ -25,11 +23,6 @@ function AppContent() {
   const [useSimpleBackground, setUseSimpleBackground] = useState(false);
   const [currentFPS, setCurrentFPS] = useState(null);
   const location = useLocation();
-
-  // Only show PlasmaBackground on auth pages (not on luxury landing page)
-  const isHomePage = location.pathname === '/';
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-  const showPlasmaBackground = false; // Removed plasma background from auth pages
 
   // Performance detection
   useEffect(() => {
@@ -63,21 +56,7 @@ function AppContent() {
 
   return (
     <>
-      {/* Adaptive Background - Only on auth pages */}
-      {showPlasmaBackground && (
-        <div className="fixed inset-0 z-0">
-          <PlasmaBackground 
-            color="#B19EEF"
-            speed={1}
-            direction="Forward"
-            scale={0.9}
-            opacity={1}
-            mouseInteractive={false}
-          />
-        </div>
-      )}
-
-      <div className={`min-h-screen ${showPlasmaBackground ? 'bg-black' : ''}`}>
+      <div className="min-h-screen">
           {/* Content */}
           <div className="relative z-10">
             <Navbar 
