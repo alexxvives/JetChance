@@ -93,9 +93,9 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
       return vec4(colorIn.rgb / (a + 1e-5), a);
     }
 
-    const vec3 baseColor1 = vec3(0.611765, 0.262745, 0.996078);
-    const vec3 baseColor2 = vec3(0.298039, 0.760784, 0.913725);
-    const vec3 baseColor3 = vec3(0.062745, 0.078431, 0.600000);
+    const vec3 baseColor1 = vec3(1.000000, 0.843137, 0.000000); // Golden yellow
+    const vec3 baseColor2 = vec3(1.000000, 0.647059, 0.000000); // Orange  
+    const vec3 baseColor3 = vec3(1.000000, 1.000000, 0.200000); // Light yellow
     const float innerRadius = 0.6;
     const float noiseScale = 0.65;
 
@@ -142,15 +142,19 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
     vec4 mainImage(vec2 fragCoord) {
       vec2 center = iResolution.xy * 0.5;
       float size = min(iResolution.x, iResolution.y);
-      vec2 uv = (fragCoord - center) / size * 2.0;
+      vec2 uv = (fragCoord - center) / size * 1.728;
       
       float angle = rot;
       float s = sin(angle);
       float c = cos(angle);
       uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
       
-      uv.x += hover * hoverIntensity * 0.1 * sin(uv.y * 10.0 + iTime);
-      uv.y += hover * hoverIntensity * 0.1 * sin(uv.x * 10.0 + iTime);
+      uv.x += hover * hoverIntensity * 0.08 * sin(uv.y * 8.0 + iTime * 1.5);
+      uv.y += hover * hoverIntensity * 0.08 * sin(uv.x * 8.0 + iTime * 1.5);
+      
+      // Add subtle pulsing effect on hover
+      float pulse = 1.0 + hover * 0.05 * sin(iTime * 3.0);
+      uv *= pulse;
       
       return draw(uv);
     }
@@ -227,12 +231,17 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
       }
     };
 
+    const handleMouseEnter = () => {
+      // Mouse entered orb area
+    };
+
     const handleMouseLeave = () => {
       targetHover = 0;
     };
 
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('mousemove', handleMouseMove, { passive: true });
+    container.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+    container.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
     let rafId;
     const update = t => {
@@ -244,7 +253,7 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
       program.uniforms.hoverIntensity.value = hoverIntensity;
 
       const effectiveHover = forceHoverState ? 1 : targetHover;
-      program.uniforms.hover.value += (effectiveHover - program.uniforms.hover.value) * 0.1;
+      program.uniforms.hover.value += (effectiveHover - program.uniforms.hover.value) * 0.15;
 
       if (rotateOnHover && effectiveHover > 0.5) {
         currentRot += dt * rotationSpeed;
@@ -259,6 +268,7 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
       container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
       container.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
@@ -266,5 +276,16 @@ export default function Orb({ hue = 0, hoverIntensity = 0.2, rotateOnHover = tru
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hue, hoverIntensity, rotateOnHover, forceHoverState]);
 
-  return <div ref={ctnDom} className="w-full h-full pointer-events-auto" />;
+  return (
+    <div 
+      ref={ctnDom} 
+      className="w-full h-full" 
+      style={{ 
+        pointerEvents: 'auto',
+        position: 'relative',
+        zIndex: 1,
+        background: 'transparent'
+      }}
+    />
+  );
 }

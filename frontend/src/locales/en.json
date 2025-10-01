@@ -1,6 +1,6 @@
 {
   "nav": {
-    "home": "Home",
+    "home": "For Customers",
     "operators": "For Operators",
     "about": "About Us",
     "contact": "Contact Us",
@@ -181,7 +181,29 @@
     },
     "customer": {
       "title": "Available Empty-Leg Flights",
-      "subtitle": "Discover luxury flights at unbeatable prices"
+      "subtitle": "Discover luxury flights at unbeatable prices",
+      "flightTypeQuestion": "What type of flight do you need?",
+      "requestRegularJet": "Request Regular Jet Charter",
+      "tabs": {
+        "emptyLegFlights": "Empty Leg Flights",
+        "myBookings": "My Bookings"
+      },
+      "emptyLegFlights": {
+        "title": "Empty Leg Flights",
+        "badge": "Fixed Routes",
+        "description": "Pre-scheduled flights with fixed routes and departure times",
+        "disclaimer": "Routes and times cannot be modified • Instant booking • Discounted prices",
+        "savingsLabel": "Up to 75% savings"
+      },
+      "customFlight": {
+        "title": "Need Flexible Dates or Custom Route?",
+        "subtitle": "Request a personalized jet charter with complete flexibility on dates, times, and destinations",
+        "requestNow": "Get Custom Quote"
+      },
+      "myBookings": {
+        "title": "My Bookings",
+        "subtitle": "View and manage your flight reservations"
+      }
     }
   },
   "createFlight": {
@@ -549,11 +571,46 @@
     },
     "cta": {
       "title": "Ready to Maximize Your Fleet?",
-      "subtitle": "Join our exclusive network of premium operators and start generating higher returns from your aircraft investments.",
-      "cardTitle": "Start Your Partnership Today",
-      "cardSubtitle": "Complete our simple application process and join ChanceFly's network of elite aviation partners.",
-      "applyButton": "Apply Now",
-      "scheduleButton": "Schedule a Call"
+      "subtitle": "Join our exclusive network of premium operators and start generating higher returns from your aircraft investments."
+    },
+    "applicationForm": {
+      "title": "Operator Application",
+      "subtitle": "Complete this form to begin your partnership with ChanceFly",
+      "companyName": {
+        "label": "Company Name",
+        "placeholder": "Enter your company name"
+      },
+      "contactName": {
+        "label": "Primary Contact Name",
+        "placeholder": "Enter full name"
+      },
+      "email": {
+        "label": "Business Email",
+        "placeholder": "Enter business email address"
+      },
+      "phone": {
+        "label": "Phone Number",
+        "placeholder": "Enter phone number"
+      },
+      "fleetSize": {
+        "label": "Fleet Size",
+        "placeholder": "Number of aircraft"
+      },
+      "operatingRegions": {
+        "label": "Operating Regions",
+        "placeholder": "e.g. North America, Europe, Asia"
+      },
+      "experience": {
+        "label": "Years of Experience",
+        "placeholder": "Years in private aviation"
+      },
+      "message": {
+        "label": "Additional Information",
+        "placeholder": "Tell us about your operations, special services, or any questions"
+      },
+      "submitButton": "Submit Application",
+      "submitting": "Submitting...",
+      "required": "Required fields"
     }
   },
   "flightDetails": {
@@ -847,5 +904,106 @@
   },
   "currency": {
     "approximatelyUSD": "Approximately ${amount} USD"
+  },
+  "customFlightRequest": {
+    "title": "Request Custom Flight",
+    "subtitle": "Tell us your travel needs and we'll create a personalized quote",
+    "contactInfo": "Contact Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastNamePlaceholder": "Enter your last name",
+    "emailPlaceholder": "your.email@example.com",
+    "phonePlaceholder": "+57 300 123 4567",
+    "flightDetails": "Flight Details",
+    "origin": "Departure From",
+    "destination": "Flying To",
+    "departureDateTime": "Departure Date & Time",
+    "passengers": "Passengers",
+    "passenger": "passenger",
+    "notes": "Additional Notes",
+    "originPlaceholder": "Select departure airport",
+    "destinationPlaceholder": "Select destination airport",
+    "departurePlaceholder": "When would you like to depart?",
+    "notesPlaceholder": "Any special requirements, preferred aircraft type, or additional information...",
+    "submit": "Submit Request",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "thankYou": "Request Submitted!",
+    "thankYouMessage": "Thank you for your interest! Our sales team will contact you within 24 hours to discuss your custom flight requirements and provide a personalized quote.",
+    "close": "Close",
+    "requestCustomFlight": "Request Custom Flight"
+  },
+  "regularJetRequest": {
+    "title": "Request Regular Jet Charter",
+    "subtitle": "Tell us about your flight requirements and we'll contact you with a personalized quote.",
+    "contactInfo": {
+      "title": "Contact Information",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter your phone number"
+    },
+    "flightDetails": {
+      "title": "Flight Details",
+      "origin": "Departure City",
+      "originPlaceholder": "Where are you departing from?",
+      "destination": "Destination City",
+      "destinationPlaceholder": "Where are you going?",
+      "departureDateTime": "Departure Date & Time",
+      "departurePlaceholder": "Select departure date and time",
+      "roundTrip": "Round trip flight",
+      "returnDateTime": "Return Date & Time",
+      "returnPlaceholder": "Select return date and time",
+      "passengers": "Number of Passengers",
+      "passenger": "passenger",
+      "passengersPlural": "passengers",
+      "notes": "Additional Notes",
+      "notesPlaceholder": "Any special requirements or preferences?"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit Request",
+      "submitting": "Submitting..."
+    },
+    "success": {
+      "title": "Request Submitted!",
+      "message": "Thank you for your interest. Our sales team will contact you within 24 hours to discuss your requirements and provide a personalized quote.",
+      "close": "Close"
+    },
+    "errors": {
+      "submitError": "Failed to submit request. Please try again."
+    }
+  },
+  "flightTypeSelection": {
+    "title": "What type of flight are you looking for?",
+    "subtitle": "Choose the option that best fits your travel needs:",
+    "emptyLeg": {
+      "title": "Empty Leg Flights",
+      "description": "Book available empty leg flights at discounted prices with immediate booking and transparent pricing.",
+      "benefits": {
+        "savings": "Up to 75% savings",
+        "immediate": "Instant booking",
+        "transparent": "Transparent pricing"
+      },
+      "action": "Book Now"
+    },
+    "regularJet": {
+      "title": "Regular Jet Charter",
+      "description": "Request a personalized jet charter with flexible scheduling and customized service. Our team will provide a quote.",
+      "benefits": {
+        "flexible": "Flexible dates",
+        "customized": "Customized service",
+        "personal": "Personal consultation"
+      },
+      "action": "Get Quote"
+    },
+    "browseBoth": "I'll browse both options"
   }
 }

@@ -6,7 +6,7 @@ import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
 import { User, ChevronDown, LogOut } from 'lucide-react';
 
-export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) {
+export default function Navbar({ useSimpleBackground, setUseSimpleBackground, isHomePage }) {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,18 +39,22 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
   const isActivePage = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-black/20 backdrop-blur-md border-b border-violet-400/20 shadow-2xl relative z-50">
+    <nav className={`${
+      isHomePage 
+        ? 'bg-slate-900/90 backdrop-blur-lg border-b border-amber-500/20' 
+        : 'bg-slate-800/90 backdrop-blur-lg border-b border-amber-400/20'
+    } shadow-2xl relative z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Left */}
           <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center flex-shrink-0">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-violet-500 to-purple-600 text-white p-2 rounded-lg mr-3 shadow-xl">
+              <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-black p-2 rounded-lg mr-3 shadow-xl">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent drop-shadow-lg">
+              <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">
                 ChanceFly
               </span>
             </div>
@@ -65,7 +69,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   <Link
                     to="/"
                     className={`${
-                      isActivePage('/') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                      isActivePage('/') ? 'text-amber-300 font-semibold' : 'text-white/90 hover:text-amber-300'
                     } transition-colors text-sm font-medium`}
                   >
                     {t('nav.home')}
@@ -73,7 +77,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   <Link
                     to="/operators"
                     className={`${
-                      isActivePage('/operators') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                      isActivePage('/operators') ? 'text-amber-300 font-semibold' : 'text-white/90 hover:text-amber-300'
                     } transition-colors text-sm font-medium`}
                   >
                     {t('nav.operators')}
@@ -81,7 +85,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   <Link
                     to="/about"
                     className={`${
-                      isActivePage('/about') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                      isActivePage('/about') ? 'text-amber-300 font-semibold' : 'text-white/90 hover:text-amber-300'
                     } transition-colors text-sm font-medium`}
                   >
                     {t('nav.about')}
@@ -89,7 +93,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                   <Link
                     to="/contact"
                     className={`${
-                      isActivePage('/contact') ? 'text-violet-300 font-semibold' : 'text-white/90 hover:text-violet-300'
+                      isActivePage('/contact') ? 'text-amber-300 font-semibold' : 'text-white/90 hover:text-amber-300'
                     } transition-colors text-sm font-medium`}
                   >
                     {t('nav.contact')}
@@ -114,7 +118,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                    className="flex items-center justify-center bg-violet-500/20 backdrop-blur-sm text-white border border-violet-400/30 px-3 py-2 rounded-lg hover:bg-violet-500/30 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[50px]"
+                    className="flex items-center justify-center bg-amber-500/20 backdrop-blur-sm text-white border border-amber-400/30 px-3 py-2 rounded-lg hover:bg-amber-500/30 transition-all duration-200 shadow-lg hover:shadow-xl min-w-[50px]"
                   >
                     <User className="h-4 w-4 mr-1" />
                     <span className="text-sm font-medium">{user?.firstName}</span>
@@ -157,13 +161,13 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-white/90 hover:text-violet-300 px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="text-white/90 hover:text-amber-300 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold hover:from-amber-600 hover:to-amber-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
                   {t('auth.login.signUp')}
                 </Link>
@@ -176,7 +180,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white/90 hover:text-violet-300 p-2 rounded-lg hover:bg-violet-500/20 transition-colors"
+              className="text-white/90 hover:text-amber-300 p-2 rounded-lg hover:bg-amber-500/20 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMenuOpen ? (
@@ -191,7 +195,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-violet-300/20 backdrop-blur-md">
+          <div className="md:hidden border-t border-amber-300/20 backdrop-blur-md">
             <div className="px-4 py-4 space-y-1">
               {/* Navigation Links */}
               <div className="space-y-1">
@@ -202,7 +206,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       to="/"
                       onClick={() => setIsMenuOpen(false)}
                       className={`${
-                        isActivePage('/') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
+                        isActivePage('/') ? 'text-amber-300 bg-amber-500/10 font-semibold' : 'text-white/80 hover:text-amber-300 hover:bg-white/5'
                       } block px-4 py-3 rounded-lg transition-all duration-200`}
                     >
                       {t('nav.home')}
@@ -211,7 +215,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       to="/operators"
                       onClick={() => setIsMenuOpen(false)}
                       className={`${
-                        isActivePage('/operators') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
+                        isActivePage('/operators') ? 'text-amber-300 bg-amber-500/10 font-semibold' : 'text-white/80 hover:text-amber-300 hover:bg-white/5'
                       } block px-4 py-3 rounded-lg transition-all duration-200`}
                     >
                       {t('nav.operators')}
@@ -220,7 +224,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       to="/about"
                       onClick={() => setIsMenuOpen(false)}
                       className={`${
-                        isActivePage('/about') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
+                        isActivePage('/about') ? 'text-amber-300 bg-amber-500/10 font-semibold' : 'text-white/80 hover:text-amber-300 hover:bg-white/5'
                       } block px-4 py-3 rounded-lg transition-all duration-200`}
                     >
                       {t('nav.about')}
@@ -229,7 +233,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                       to="/contact"
                       onClick={() => setIsMenuOpen(false)}
                       className={`${
-                        isActivePage('/contact') ? 'text-violet-300 bg-violet-500/10 font-semibold' : 'text-white/80 hover:text-violet-300 hover:bg-white/5'
+                        isActivePage('/contact') ? 'text-amber-300 bg-amber-500/10 font-semibold' : 'text-white/80 hover:text-amber-300 hover:bg-white/5'
                       } block px-4 py-3 rounded-lg transition-all duration-200`}
                     >
                       {t('nav.contact')}
@@ -242,15 +246,15 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
               </div>
               
               {/* User Section */}
-              <div className="border-t border-violet-300/20 pt-4 mt-4">
+              <div className="border-t border-amber-300/20 pt-4 mt-4">
                 {isAuthenticated ? (
                   <div className="space-y-3">
                     <div className="px-4 py-2">
-                      <div className="text-sm font-medium text-violet-300">{user?.firstName} {user?.lastName}</div>
+                      <div className="text-sm font-medium text-amber-300">{user?.firstName} {user?.lastName}</div>
                       <div className="text-xs text-white/60">{user?.role} • {user?.id}</div>
                     </div>
                     {/* Language Settings for Authenticated Users */}
-                    <div className="border-b border-violet-300/20 pb-3 mb-3">
+                    <div className="border-b border-amber-300/20 pb-3 mb-3">
                       <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
                       <div className="px-4 py-2">
                         <LanguageSelector />
@@ -262,7 +266,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                         navigate('/profile');
                         setIsMenuOpen(false);
                       }}
-                      className="w-full flex items-center px-4 py-3 text-white/80 hover:text-violet-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
+                      className="w-full flex items-center px-4 py-3 text-white/80 hover:text-amber-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
                     >
                       <User size={18} className="mr-3" />
                       {t('nav.profile')}
@@ -278,7 +282,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                 ) : (
                   <div className="space-y-3">
                     {/* Language Settings for Non-authenticated Users */}
-                    <div className="border-b border-violet-300/20 pb-3 mb-3">
+                    <div className="border-b border-amber-300/20 pb-3 mb-3">
                       <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
                       <div className="px-4 py-2">
                         <LanguageSelector />
@@ -287,14 +291,14 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground }) 
                     <Link
                       to="/login"
                       onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 text-white/80 hover:text-violet-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
+                      className="block px-4 py-3 text-white/80 hover:text-amber-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
                     >
                       {t('nav.signIn')}
                     </Link>
                     <Link
                       to="/signup"
                       onClick={() => setIsMenuOpen(false)}
-                      className="block mx-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold text-center hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                      className="block mx-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 py-3 rounded-xl font-semibold text-center hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg"
                     >
                       {t('auth.login.signUp')}
                     </Link>

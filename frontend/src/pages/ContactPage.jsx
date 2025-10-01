@@ -1,35 +1,35 @@
 import React from "react";
-import Orb from "../components/Orb";
 import { useTranslation } from "../contexts/TranslationContext";
 
 export default function ContactPage() {
   const { t } = useTranslation();
+
   return (
-    <div className="relative bg-gradient-to-br from-black via-black to-violet-900/30">
-      {/* Background Orb - Scrolls with content */}
-      <div className="absolute inset-0 z-0 pointer-events-auto" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh' }}>
-        <Orb
-          hoverIntensity={1}
-          rotateOnHover={true}
-          hue={280}
-          forceHoverState={false}
-        />
-      </div>
-      
+    <div className="relative bg-slate-900">
       {/* Content */}
-      <div className="relative z-10 pointer-events-none">
-        <div className="pointer-events-auto">
+      <div className="relative z-10">
+        <div className="relative">
           {/* Hero Section */}
-          <section className="min-h-screen flex items-center justify-center px-6 py-20">
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent leading-tight">
-                  {t('contact.hero.title')}
-                </h1>
-                <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed">
-                  {t('contact.hero.subtitle')}
-                </p>
-              </div>
-            </section>
+          <section className="relative min-h-screen flex items-center justify-center px-6 py-20">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
+              <img 
+                src="/images/home/contact.jpeg" 
+                alt="Contact ChanceFly"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-800/85 to-slate-950/95"></div>
+            </div>
+            
+            <div className="relative z-10 max-w-4xl mx-auto text-center">
+              <h1 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent leading-tight">
+                {t('contact.hero.title')}
+              </h1>
+              <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed">
+                {t('contact.hero.subtitle')}
+              </p>
+            </div>
+          </section>
 
             {/* Contact Options Section */}
             <section className="py-20 px-6 border-y border-white/10">
@@ -52,29 +52,29 @@ export default function ContactPage() {
                     </div>
                     <h3 className="text-2xl font-semibold mb-4 text-white">{t('contact.options.call.title')}</h3>
                     <p className="text-white/70 text-lg mb-4">{t('contact.options.call.description')}</p>
-                    <p className="text-violet-300 text-lg font-semibold">{t('contact.options.call.number')}</p>
+                    <p className="text-amber-300 text-lg font-semibold">{t('contact.options.call.number')}</p>
                   </div>
                   
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-white/20 hover:bg-white/20 text-center">
-                    <div className="w-20 h-20 bg-violet-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border border-violet-400/30">
-                      <svg className="w-10 h-10 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-20 h-20 bg-amber-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-400/30">
+                      <svg className="w-10 h-10 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <h3 className="text-2xl font-semibold mb-4 text-white">{t('contact.options.email.title')}</h3>
                     <p className="text-white/70 text-lg mb-4">{t('contact.options.email.description')}</p>
-                    <p className="text-violet-300 text-lg font-semibold">{t('contact.options.email.address')}</p>
+                    <p className="text-amber-300 text-lg font-semibold">{t('contact.options.email.address')}</p>
                   </div>
                   
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-white/20 hover:bg-white/20 text-center">
-                    <div className="w-20 h-20 bg-violet-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border border-violet-400/30">
-                      <svg className="w-10 h-10 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-20 h-20 bg-amber-500/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-400/30">
+                      <svg className="w-10 h-10 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
                     </div>
                     <h3 className="text-2xl font-semibold mb-4 text-white">{t('contact.options.chat.title')}</h3>
                     <p className="text-white/70 text-lg mb-4">{t('contact.options.chat.description')}</p>
-                    <button className="bg-violet-600 text-white px-6 py-2 rounded-lg hover:bg-violet-500 transition-colors">
+                    <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-500 transition-colors">
                       {t('contact.options.chat.button')}
                     </button>
                   </div>
@@ -101,7 +101,7 @@ export default function ContactPage() {
                         <label className="block text-white text-sm font-medium mb-2">{t('contact.form.firstName')}</label>
                         <input 
                           type="text" 
-                          className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-violet-400"
+                          className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-amber-400"
                           placeholder={t('contact.form.placeholders.firstName')}
                         />
                       </div>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                         <label className="block text-white text-sm font-medium mb-2">{t('contact.form.lastName')}</label>
                         <input 
                           type="text" 
-                          className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-violet-400"
+                          className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-amber-400"
                           placeholder={t('contact.form.placeholders.lastName')}
                         />
                       </div>
@@ -119,14 +119,14 @@ export default function ContactPage() {
                       <label className="block text-white text-sm font-medium mb-2">{t('contact.form.email')}</label>
                       <input 
                         type="email" 
-                        className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-violet-400"
+                        className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-amber-400"
                         placeholder={t('contact.form.placeholders.email')}
                       />
                     </div>
                     
                     <div>
                       <label className="block text-white text-sm font-medium mb-2">{t('contact.form.subject')}</label>
-                      <select className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-violet-400">
+                      <select className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400">
                         <option value="">{t('contact.form.placeholders.subject')}</option>
                         <option value="booking">{t('contact.form.subjects.booking')}</option>
                         <option value="support">{t('contact.form.subjects.support')}</option>
@@ -139,14 +139,14 @@ export default function ContactPage() {
                       <label className="block text-white text-sm font-medium mb-2">{t('contact.form.message')}</label>
                       <textarea 
                         rows={4}
-                        className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-violet-400"
+                        className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-amber-400"
                         placeholder={t('contact.form.placeholders.message')}
                       ></textarea>
                     </div>
                     
                     <button 
                       type="submit"
-                      className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-violet-500 hover:to-purple-500 transition-all duration-300 shadow-xl"
+                      className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-amber-500 hover:to-orange-500 transition-all duration-300 shadow-xl"
                     >
                       {t('contact.form.button')}
                     </button>

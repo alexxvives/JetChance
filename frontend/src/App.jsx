@@ -7,6 +7,7 @@ import PlasmaBackground from './components/PlasmaBackground';
 import SimpleGradientBackground from './components/SimpleGradientBackground';
 import PerformanceIndicator from './components/PerformanceIndicator';
 import LandingPage from './pages/LandingPage';
+import LuxuryLandingPage from './pages/LuxuryLandingPageNew';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -27,10 +28,10 @@ function AppContent() {
   const [currentFPS, setCurrentFPS] = useState(null);
   const location = useLocation();
 
-  // Only show PlasmaBackground on home page and auth pages
+  // Only show PlasmaBackground on auth pages (not on luxury landing page)
   const isHomePage = location.pathname === '/';
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-  const showPlasmaBackground = isHomePage || isAuthPage;
+  const showPlasmaBackground = false; // Removed plasma background from auth pages
 
   // Performance detection
   useEffect(() => {
@@ -64,7 +65,7 @@ function AppContent() {
 
   return (
     <>
-      {/* Adaptive Background - On home page and auth pages */}
+      {/* Adaptive Background - Only on auth pages */}
       {showPlasmaBackground && (
         <div className="fixed inset-0 z-0">
           <PlasmaBackground 
@@ -78,17 +79,19 @@ function AppContent() {
         </div>
       )}
 
-      <div className="min-h-screen bg-black">
+      <div className={`min-h-screen ${showPlasmaBackground ? 'bg-black' : ''}`}>
           {/* Content */}
           <div className="relative z-10">
             <Navbar 
               useSimpleBackground={useSimpleBackground}
               setUseSimpleBackground={setUseSimpleBackground}
+              isHomePage={isHomePage}
             />
             <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              <Route path="/" element={<LuxuryLandingPage />} />
+              <Route path="/luxury" element={<LuxuryLandingPage />} />
+              <Route path="/login" element={<LuxuryLandingPage />} />
+              <Route path="/signup" element={<LuxuryLandingPage />} />
               <Route path="/flight/:id" element={<FlightDetailsPage />} />
               <Route path="/payment/:flightId" element={<PaymentPage />} />
               <Route path="/booking-success" element={<BookingSuccessPage />} />

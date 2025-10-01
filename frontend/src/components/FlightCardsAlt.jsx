@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import { getTotalCharterPrice, getTotalMarketPrice, formatPrice } from '../utils/flightDataUtils';
 import { useTranslation } from '../contexts/TranslationContext';
+import CustomFlightRequestModal from './CustomFlightRequestModal';
+import RegularJetRequestModal from './RegularJetRequestModal';
 
 const formatCOP = (amount) => {
   const formatted = new Intl.NumberFormat('es-CO', {
@@ -25,6 +27,8 @@ export default function FlightCardsAlt({ onNavigate }) {
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [showCustomFlightModal, setShowCustomFlightModal] = useState(false);
+  const [showRegularJetModal, setShowRegularJetModal] = useState(false);
 
   // Listen for localStorage changes (when flights are added/updated)
   useEffect(() => {
@@ -172,9 +176,32 @@ export default function FlightCardsAlt({ onNavigate }) {
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
           {t('flightCatalog.title')}
         </h2>
-        <p className="text-white/80 text-lg">
+        <p className="text-white/80 text-lg mb-6">
           {t('flightCatalog.subtitle')}
         </p>
+        
+        {/* Request Flight Buttons */}
+        <div className="flex flex-wrap gap-4 justify-center">
+          <button
+            onClick={() => setShowCustomFlightModal(true)}
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            {t('customFlightRequest.requestCustomFlight')}
+          </button>
+          
+          <button
+            onClick={() => setShowRegularJetModal(true)}
+            className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V8a1 1 0 011-1h3z" />
+            </svg>
+            {t('regularJetRequest.title')}
+          </button>
+        </div>
       </div>
       
       <div className="relative">
@@ -251,6 +278,18 @@ export default function FlightCardsAlt({ onNavigate }) {
           </div>
         </div>
       </div>
+      
+      {/* Custom Flight Request Modal */}
+      <CustomFlightRequestModal 
+        isOpen={showCustomFlightModal}
+        onClose={() => setShowCustomFlightModal(false)}
+      />
+      
+      {/* Regular Jet Request Modal */}
+      <RegularJetRequestModal 
+        isOpen={showRegularJetModal}
+        onClose={() => setShowRegularJetModal(false)}
+      />
     </section>
   );
 }
