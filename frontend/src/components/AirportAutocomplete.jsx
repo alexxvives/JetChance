@@ -19,13 +19,49 @@ const AirportAutocomplete = ({
   const [customAirport, setCustomAirport] = useState({
     code: '',
     name: '',
-    city: '',
-    country: 'CO', // Default to Colombia
-    latitude: '',
-    longitude: ''
+    country: '', // No default selection
+    city: ''
   });
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+
+  // Cities by country for dropdown (sorted alphabetically)
+  const citiesByCountry = {
+    'AR': [
+      'Buenos Aires', 'Corrientes', 'Córdoba', 'La Plata', 'Mar del Plata',
+      'Mendoza', 'Neuquén', 'Resistencia', 'Rosario', 'Salta', 'San Juan', 'Santa Fe'
+    ],
+    'BR': [
+      'Belém', 'Belo Horizonte', 'Brasília', 'Curitiba', 'Fortaleza', 'Goiânia',
+      'Manaus', 'Porto Alegre', 'Recife', 'Rio de Janeiro', 'Salvador', 'São Paulo'
+    ],
+    'CL': [
+      'Antofagasta', 'Arica', 'Calama', 'Chillán', 'Concepción', 'Copiapó',
+      'La Serena', 'Rancagua', 'Santiago', 'Talca', 'Temuco', 'Valparaíso'
+    ],
+    'CO': [
+      'Barranquilla', 'Bogotá', 'Bucaramanga', 'Cali', 'Cartagena', 'Cúcuta',
+      'Ibagué', 'Manizales', 'Medellín', 'Montería', 'Neiva', 'Pasto',
+      'Pereira', 'Santa Marta', 'Soacha', 'Soledad', 'Valledupar', 'Villavicencio'
+    ],
+    'EC': [
+      'Ambato', 'Cuenca', 'Esmeraldas', 'Guayaquil', 'Ibarra', 'Loja',
+      'Machala', 'Manta', 'Portoviejo', 'Quito', 'Riobamba', 'Santo Domingo'
+    ],
+    'MX': [
+      'Acapulco', 'Cancún', 'Guadalajara', 'Los Cabos', 'Mazatlán', 'Mérida',
+      'Mexico City', 'Monterrey', 'Playa del Carmen', 'Puebla', 'Puerto Vallarta', 'Tijuana'
+    ],
+    'PE': [
+      'Arequipa', 'Chiclayo', 'Chimbote', 'Cusco', 'Huancayo', 'Ica',
+      'Iquitos', 'Lima', 'Piura', 'Pucallpa', 'Tacna', 'Trujillo'
+    ],
+    'US': [
+      'Atlanta', 'Boston', 'Charlotte', 'Chicago', 'Dallas', 'Denver',
+      'Houston', 'Las Vegas', 'Los Angeles', 'Miami', 'New York', 'Philadelphia',
+      'Phoenix', 'Portland', 'San Antonio', 'San Diego', 'San Francisco', 'Seattle'
+    ]
+  };
 
   // Update input value when external value changes
   useEffect(() => {
@@ -134,22 +170,57 @@ const AirportAutocomplete = ({
     setShowCustomForm(true);
   };
 
-  const handleCustomAirportSubmit = () => {
-    if (customAirport.code && customAirport.name && customAirport.city && 
-        customAirport.latitude && customAirport.longitude) {
-      const customAirportData = {
-        ...customAirport,
-        code: customAirport.code.toUpperCase(),
-        latitude: parseFloat(customAirport.latitude),
-        longitude: parseFloat(customAirport.longitude),
-        isCustom: true
-      };
+  const handleCustomAirportSubmit = async () => {
+    // Validate required fields
+    if (!customAirport.code || !customAirport.name || !customAirport.city || !customAirport.country) {
+      alert(t('airportAutocomplete.validation.required'));
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/airports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: customAirport.code.toUpperCase(),
+          name: customAirport.name,
+          city: customAirport.city,
+          country: customAirport.country
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        if (response.status === 409) {
+          // Airport code already exists
+          alert(t('airportAutocomplete.validation.duplicateCode').replace('{code}', customAirport.code.toUpperCase()));
+          return;
+        }
+        
+        throw new Error(errorData.error || 'Failed to save airport');
+      }
+
+      const newAirport = await response.json();
       
-      setInputValue(`${customAirportData.code} - ${customAirportData.name}`);
-      resetCustomForm();
-      
+      // Select this new airport using the onChange prop
       if (onChange) {
-        onChange(customAirportData);
+        onChange(newAirport);
+      }
+      setInputValue(`${newAirport.code} - ${newAirport.name} (Custom)`);
+      
+      // Reset form and close modal
+      resetCustomForm();
+      setIsOpen(false);
+      
+    } catch (error) {
+      console.error('Error saving custom airport:', error);
+      if (error.message.includes('code') && error.message.includes('exists')) {
+        // Already handled above
+      } else {
+        alert(t('airportAutocomplete.validation.error'));
       }
     }
   };
@@ -161,14 +232,30 @@ const AirportAutocomplete = ({
     }));
   };
 
+  const handleCityChange = (value) => {
+    if (value === '_custom') {
+      // Switch to manual input mode
+      setCustomAirport(prev => ({
+        ...prev,
+        city: '',
+        _manualCity: true
+      }));
+    } else {
+      setCustomAirport(prev => ({
+        ...prev,
+        city: value,
+        _manualCity: false
+      }));
+    }
+  };
+
   const resetCustomForm = () => {
     setCustomAirport({
       code: '',
       name: '',
+      country: '', // No default selection
       city: '',
-      country: 'CO',
-      latitude: '',
-      longitude: ''
+      _manualCity: false
     });
     setShowCustomForm(false);
   };
@@ -316,6 +403,9 @@ const AirportAutocomplete = ({
                 onChange={(e) => handleCustomInputChange('code', e.target.value.toUpperCase())}
                 maxLength={4}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('airportAutocomplete.airportCodeHelp')}
+              </p>
             </div>
 
             {/* Airport Name */}
@@ -333,20 +423,8 @@ const AirportAutocomplete = ({
             </div>
 
             {/* City and Country */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  {t('airportAutocomplete.city')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={t('airportAutocomplete.placeholders.city')}
-                  value={customAirport.city}
-                  onChange={(e) => handleCustomInputChange('city', e.target.value)}
-                />
-              </div>
-
+            <div className="space-y-3">
+              {/* Country */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   {t('airportAutocomplete.country')} <span className="text-red-500">*</span>
@@ -354,53 +432,69 @@ const AirportAutocomplete = ({
                 <select
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={customAirport.country}
-                  onChange={(e) => handleCustomInputChange('country', e.target.value)}
+                  onChange={(e) => {
+                    const newCountry = e.target.value;
+                    setCustomAirport(prev => ({
+                      ...prev,
+                      country: newCountry,
+                      city: '', // Reset city when country changes
+                      _manualCity: false // Reset manual city flag to show dropdown
+                    }));
+                  }}
                 >
+                  <option value="">Select country...</option>
+                  <option value="AR">Argentina</option>
+                  <option value="BR">Brazil</option>
+                  <option value="CL">Chile</option>
                   <option value="CO">Colombia</option>
-                  <option value="US">United States</option>
-                  <option value="MX">Mexico</option>
-                  <option value="PA">Panama</option>
                   <option value="CR">Costa Rica</option>
                   <option value="EC">Ecuador</option>
+                  <option value="MX">Mexico</option>
+                  <option value="PA">Panama</option>
                   <option value="PE">Peru</option>
-                  <option value="BR">Brazil</option>
-                  <option value="AR">Argentina</option>
-                  <option value="CL">Chile</option>
+                  <option value="US">United States</option>
                   <option value="UY">Uruguay</option>
                   <option value="VE">Venezuela</option>
                 </select>
               </div>
-            </div>
 
-            {/* Coordinates */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                {t('airportAutocomplete.coordinates')} <span className="text-red-500">*</span>
-              </label>
-              <p className="text-xs text-gray-500 mb-2">{t('airportAutocomplete.coordinatesNote')}</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <input
-                    type="number"
-                    step="any"
+              {/* City */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {t('airportAutocomplete.city')} <span className="text-red-500">*</span>
+                </label>
+                {customAirport.country && citiesByCountry[customAirport.country] && !customAirport._manualCity ? (
+                  <select
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t('airportAutocomplete.placeholders.latitude')}
-                    value={customAirport.latitude}
-                    onChange={(e) => handleCustomInputChange('latitude', e.target.value)}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">{t('airportAutocomplete.latitude')}</p>
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    step="any"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t('airportAutocomplete.placeholders.longitude')}
-                    value={customAirport.longitude}
-                    onChange={(e) => handleCustomInputChange('longitude', e.target.value)}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">{t('airportAutocomplete.longitude')}</p>
-                </div>
+                    value={customAirport.city}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                  >
+                    <option value="">Select city...</option>
+                    {citiesByCountry[customAirport.country].map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                    <option value="_custom">Other (type manually)</option>
+                  </select>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder={t('airportAutocomplete.placeholders.city')}
+                      value={customAirport.city}
+                      onChange={(e) => handleCustomInputChange('city', e.target.value)}
+                    />
+                    {customAirport.country && citiesByCountry[customAirport.country] && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomAirport(prev => ({ ...prev, _manualCity: false, city: '' }))}
+                        className="mt-1 text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        ← Back to city dropdown
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -409,7 +503,7 @@ const AirportAutocomplete = ({
               <button
                 type="button"
                 onClick={handleCustomAirportSubmit}
-                disabled={!customAirport.code || !customAirport.name || !customAirport.city || !customAirport.latitude || !customAirport.longitude}
+                disabled={!customAirport.code || !customAirport.name || !customAirport.city}
                 className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {t('airportAutocomplete.addAirport')}

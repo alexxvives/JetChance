@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
@@ -45,7 +45,22 @@ export default function AdminDashboard({ user }) {
     passengers: 1
   });
 
-  // CRM state for super-admin
+  // Quotes management state
+  const [quotes, setQuotes] = useState([]);
+  const [unseenQuotesCount, setUnseenQuotesCount] = useState(0);
+  const [quotesLoading, setQuotesLoading] = useState(false);
+
+  // Airports management state
+  const [pendingAirports, setPendingAirports] = useState([]);
+  const [processingAirports, setProcessingAirports] = useState(new Set());
+  const [approvalModal, setApprovalModal] = useState({
+    isOpen: false,
+    airport: null,
+    latitude: '',
+    longitude: ''
+  });
+
+  // CRM state
   const [crmData, setCrmData] = useState(null);
   const [crmLoading, setCrmLoading] = useState(false);
   const [expandedBookings, setExpandedBookings] = useState(new Set());
@@ -416,6 +431,214 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  // Quotes management functions
+  const fetchQuotes = async () => {
+    try {
+      setQuotesLoading(true);
+      console.log('🔄 Admin fetching quotes...');
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('❌ No auth token found');
+        return;
+      }
+
+      const response = await fetch('/api/quotes', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📡 Admin quotes:', data);
+        setQuotes(data || []);
+      } else {
+        console.error('❌ Failed to fetch quotes:', response.status);
+        setQuotes([]);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching quotes:', error);
+      setQuotes([]);
+    } finally {
+      setQuotesLoading(false);
+    }
+  };
+
+  const fetchUnseenQuotesCount = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/quotes/unseen-count', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUnseenQuotesCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching unseen quotes count:', error);
+    }
+  };
+
+  const markQuotesAsSeen = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/quotes/mark-seen', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setUnseenQuotesCount(0);
+        // Refresh quotes to show updated seen_at timestamps
+        await fetchQuotes();
+      }
+    } catch (error) {
+      console.error('❌ Error marking quotes as seen:', error);
+    }
+  };
+
+  // Update quote contact status
+  const updateQuoteContactStatus = async (quoteId, newStatus) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch(`/api/quotes/${quoteId}/contact-status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ contact_status: newStatus })
+      });
+
+      if (response.ok) {
+        // Refresh quotes to show updated status
+        await fetchQuotes();
+        console.log(`✅ Quote ${quoteId} contact status updated to ${newStatus}`);
+      } else {
+        console.error('❌ Failed to update quote contact status');
+      }
+    } catch (error) {
+      console.error('❌ Error updating quote contact status:', error);
+    }
+  };
+
+  // Airport management functions
+  const fetchPendingAirports = async () => {
+    try {
+      console.log('🔄 Admin fetching pending airports...');
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('❌ No auth token found');
+        return;
+      }
+
+      const response = await fetch('/api/airports/admin/pending', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📡 Pending airports:', data);
+        setPendingAirports(data || []);
+      } else {
+        console.error('❌ Failed to fetch pending airports:', response.status);
+        setPendingAirports([]);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching pending airports:', error);
+      setPendingAirports([]);
+    }
+  };
+
+  const approveAirport = async (airportId, latitude, longitude) => {
+    if (processingAirports.has(airportId)) return;
+    
+    try {
+      setProcessingAirports(prev => new Set([...prev, airportId]));
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/airports/admin/approve/${airportId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ latitude, longitude })
+      });
+
+      if (response.ok) {
+        console.log(`✅ Airport ${airportId} approved`);
+        await fetchPendingAirports(); // Refresh the list
+        setApprovalModal({ isOpen: false, airport: null, latitude: '', longitude: '' });
+      } else {
+        console.error('❌ Failed to approve airport');
+        alert('Failed to approve airport. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error approving airport:', error);
+      alert('Error approving airport. Please try again.');
+    } finally {
+      setProcessingAirports(prev => {
+        const next = new Set(prev);
+        next.delete(airportId);
+        return next;
+      });
+    }
+  };
+
+  const rejectAirport = async (airportId) => {
+    if (processingAirports.has(airportId)) return;
+    
+    try {
+      setProcessingAirports(prev => new Set([...prev, airportId]));
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/airports/admin/reject/${airportId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        console.log(`✅ Airport ${airportId} rejected`);
+        await fetchPendingAirports(); // Refresh the list
+      } else {
+        console.error('❌ Failed to reject airport');
+        alert('Failed to reject airport. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error rejecting airport:', error);
+      alert('Error rejecting airport. Please try again.');
+    } finally {
+      setProcessingAirports(prev => {
+        const next = new Set(prev);
+        next.delete(airportId);
+        return next;
+      });
+    }
+  };
+
   // Function to handle flight view by tracing from booking
   const handleViewFlight = async (bookingId) => {
     try {
@@ -507,11 +730,20 @@ export default function AdminDashboard({ user }) {
   };
 
   useEffect(() => {
+    // Always fetch unseen quotes count for badge
+    fetchUnseenQuotesCount();
+    
     if (activeTab === 'approvals') {
       fetchPendingFlights();
     } else if (activeTab === 'operators') {
       fetchAllOperators();
       fetchPendingOperators();
+    } else if (activeTab === 'quotes') {
+      fetchQuotes();
+      // Mark quotes as seen when tab is opened
+      markQuotesAsSeen();
+    } else if (activeTab === 'airports' && user?.role === 'super-admin') {
+      fetchPendingAirports();
     } else if (activeTab === 'crm' && user?.role === 'super-admin') {
       fetchCrmData();
     }
@@ -521,8 +753,12 @@ export default function AdminDashboard({ user }) {
     { id: 'catalog', name: t('admin.dashboard.tabs.catalog'), icon: EyeIcon },
     { id: 'approvals', name: t('admin.dashboard.tabs.approvals'), icon: CheckIcon, badge: pendingFlights.length },
     { id: 'operators', name: t('admin.dashboard.tabs.operators'), icon: UsersIcon, badge: pendingOperators.length },
+    { id: 'quotes', name: 'Submitted Quotes', icon: DocumentTextIcon, badge: unseenQuotesCount },
     { id: 'create', name: t('admin.dashboard.tabs.create'), icon: PlusIcon },
-    ...(user?.role === 'super-admin' ? [{ id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon }] : [])
+    ...(user?.role === 'super-admin' ? [
+      { id: 'airports', name: 'Airport Requests', icon: ClipboardDocumentListIcon, badge: pendingAirports.length },
+      { id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon }
+    ] : [])
   ];
 
   return (
@@ -893,6 +1129,117 @@ export default function AdminDashboard({ user }) {
             </div>
           )}
 
+          {activeTab === 'quotes' && (
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.quotes.title') || 'Submitted Quotes'}</h2>
+              <p className="text-gray-600 mb-6">{t('admin.dashboard.quotes.subtitle') || 'All customer quote requests submitted via the website.'}</p>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div className="bg-white rounded-lg p-4 border border-gray-100 flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.quotes.stats.total') || 'Total Quotes'}</p>
+                    <p className="text-xl font-bold text-gray-900">{quotes.length}</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-100 flex items-center">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.quotes.stats.notContacted') || 'Not Contacted'}</p>
+                    <p className="text-xl font-bold text-gray-900">{quotes.filter(q => (q.contact_status || 'not_contacted') === 'not_contacted').length}</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-100 flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.quotes.stats.contacted') || 'Contacted'}</p>
+                    <p className="text-xl font-bold text-gray-900">{quotes.filter(q => q.contact_status === 'contacted').length}</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-100 flex items-center">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{t('admin.dashboard.quotes.stats.last24h') || 'Last 24h'}</p>
+                    <p className="text-xl font-bold text-gray-900">{quotes.filter(q => Date.now() - new Date(q.created_at).getTime() < 86400000).length}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quotes Table */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">{t('admin.dashboard.quotes.table.title') || `All Quotes (${quotes.length})`}</h3>
+                </div>
+                {quotesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">{t('admin.dashboard.quotes.loading') || 'Loading quotes...'}</p>
+                  </div>
+                ) : quotes.length === 0 ? (
+                  <div className="text-center py-8">
+                    <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">{t('admin.dashboard.quotes.noData.title') || 'No Quotes Found'}</h3>
+                    <p className="text-gray-600">{t('admin.dashboard.quotes.noData.message') || 'No quotes have been submitted yet.'}</p>
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.date') || 'Date'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.name') || 'Name'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.email') || 'Email'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.phone') || 'Phone'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.route') || 'Route'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.dashboard.quotes.table.columns.contactStatus') || 'Contact Status'}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {quotes.map((q) => (
+                        <tr key={q.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(q.created_at).toLocaleString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{q.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">{q.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{q.phone}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{q.origin} → {q.destination}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex justify-center">
+                              <button
+                                onClick={() => {
+                                  const currentStatus = q.contact_status || 'not_contacted';
+                                  const newStatus = currentStatus === 'contacted' ? 'not_contacted' : 'contacted';
+                                  updateQuoteContactStatus(q.id, newStatus);
+                                }}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                  q.contact_status === 'contacted'
+                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                }`}
+                              >
+                                {q.contact_status === 'contacted'
+                                  ? (t('admin.dashboard.quotes.table.contactStatus.contacted') || 'Contacted')
+                                  : (t('admin.dashboard.quotes.table.contactStatus.notContacted') || 'Not Contacted')
+                                }
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'create' && (
             <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.create.title')}</h2>
@@ -905,6 +1252,98 @@ export default function AdminDashboard({ user }) {
                 <PlusIcon className="h-5 w-5 mr-2" />
                 {t('admin.dashboard.create.navigateButton')}
               </button>
+            </div>
+          )}
+
+          {activeTab === 'airports' && user?.role === 'super-admin' && (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              {/* Header */}
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Airport Requests</h2>
+                <p className="text-gray-600">Review and approve custom airports created by operators.</p>
+              </div>
+
+              {/* Pending Airports List */}
+              <div className="space-y-4">
+                {pendingAirports.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No pending airports</h3>
+                    <p className="mt-1 text-sm text-gray-500">All airport requests have been reviewed.</p>
+                  </div>
+                ) : (
+                  pendingAirports.map((airport) => (
+                    <div key={airport.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-lg font-medium text-gray-900">{airport.code}</h3>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Pending Review
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Airport Name</p>
+                              <p className="text-sm text-gray-600">{airport.name}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Location</p>
+                              <p className="text-sm text-gray-600">{airport.city}, {airport.country}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Requested By</p>
+                              <p className="text-sm text-gray-600">{airport.created_by_email || 'Unknown'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Requested Date</p>
+                              <p className="text-sm text-gray-600">{new Date(airport.created_at).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2 ml-4">
+                          <button
+                            onClick={() => setApprovalModal({
+                              isOpen: true,
+                              airport: airport,
+                              latitude: '',
+                              longitude: ''
+                            })}
+                            disabled={processingAirports.has(airport.id)}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {processingAirports.has(airport.id) ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <>
+                                <CheckIcon className="h-4 w-4 mr-1" />
+                                Approve
+                              </>
+                            )}
+                          </button>
+                          
+                          <button
+                            onClick={() => rejectAirport(airport.id)}
+                            disabled={processingAirports.has(airport.id)}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {processingAirports.has(airport.id) ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <>
+                                <XMarkIcon className="h-4 w-4 mr-1" />
+                                Reject
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
@@ -1139,6 +1578,78 @@ export default function AdminDashboard({ user }) {
           )}
         </div>
       </div>
+
+      {/* Airport Approval Modal */}
+      {approvalModal.isOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <CheckIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="mt-4 text-center">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Approve Airport: {approvalModal.airport?.code}
+                </h3>
+                <div className="mt-4 text-left">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Please provide the exact coordinates for this airport to complete the approval.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Latitude *
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="4.7016"
+                        value={approvalModal.latitude}
+                        onChange={(e) => setApprovalModal(prev => ({ ...prev, latitude: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Longitude *
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="-74.1469"
+                        value={approvalModal.longitude}
+                        onChange={(e) => setApprovalModal(prev => ({ ...prev, longitude: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-gray-400 mt-2">
+                    You can find coordinates using Google Maps or GPS tools
+                  </p>
+                </div>
+                
+                <div className="flex space-x-3 mt-6">
+                  <button
+                    onClick={() => setApprovalModal({ isOpen: false, airport: null, latitude: '', longitude: '' })}
+                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => approveAirport(approvalModal.airport?.id, approvalModal.latitude, approvalModal.longitude)}
+                    disabled={!approvalModal.latitude || !approvalModal.longitude}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Approve Airport
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal

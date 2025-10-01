@@ -96,10 +96,89 @@ const LuxuryLandingPage = () => {
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    setShowSuccessToast(true);
+    
+    try {
+      // Map form data to backend schema
+      const quoteData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service_type: formData.serviceType,
+        origin: formData.departure,
+        destination: formData.destination,
+        departure_date: formData.date,
+        departure_time: '', // We don't collect time separately in this form
+        passengers: formData.passengers,
+        notes: formData.details
+      };
+
+      // Save quote to database first
+      const quoteResponse = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData)
+      });
+
+      if (!quoteResponse.ok) {
+        throw new Error('Failed to save quote');
+      }
+
+      // Send email with form data
+      const emailData = {
+        to: 'alexxvives@gmail.com',
+        subject: `New JetChance Quote Request from ${formData.name}`,
+        html: `
+          <h2>New Quote Request</h2>
+          <p><strong>Service Type:</strong> ${formData.serviceType}</p>
+          <p><strong>Name:</strong> ${formData.name}</p>
+          <p><strong>Email:</strong> ${formData.email}</p>
+          <p><strong>Phone:</strong> ${formData.phone}</p>
+          <p><strong>Departure:</strong> ${formData.departure}</p>
+          <p><strong>Destination:</strong> ${formData.destination}</p>
+          <p><strong>Date:</strong> ${formData.date}</p>
+          <p><strong>Passengers:</strong> ${formData.passengers}</p>
+          <p><strong>Additional Details:</strong> ${formData.details}</p>
+          <br>
+          <p>This request was submitted through the JetChance website.</p>
+        `
+      };
+
+      // Send email (don't fail if email fails)
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailData)
+        });
+      } catch (emailError) {
+        console.warn('Email sending failed, but quote was saved:', emailError);
+      }
+
+      setShowSuccessToast(true);
+      // Reset form
+      setFormData({
+        serviceType: 'full-charter',
+        name: '',
+        email: '',
+        phone: '',
+        departure: '',
+        destination: '',
+        date: '',
+        passengers: '',
+        details: ''
+      });
+
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('There was an error submitting your request. Please try again.');
+    }
+    
     setTimeout(() => setShowSuccessToast(false), 3000);
   };
 
@@ -171,14 +250,16 @@ const LuxuryLandingPage = () => {
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-8">
           {/* Logo */}
           <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 backdrop-blur-sm rounded-full border border-amber-500/30">
-              <PaperAirplaneIcon className="w-8 h-8 text-amber-500" />
-            </div>
+            <img 
+              src="/images/logo/logo3.svg" 
+              alt="JetChance Logo" 
+              className="w-[403px] h-auto mx-auto block"
+            />
           </div>
 
           {/* Headline */}
           <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight m-0">
               <span className="text-white">What if flying </span>
               <span className="text-amber-500">private</span>
               <br />
@@ -596,7 +677,7 @@ const LuxuryLandingPage = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <PaperAirplaneIcon className="w-8 h-8 text-amber-500" />
-                <span className="text-xl font-bold">ChanceFly</span>
+                <span className="text-xl font-bold">JetChance</span>
               </div>
               <p className="text-gray-400 leading-relaxed">
                 Your gateway to luxury private aviation. Experience the world with unmatched 
@@ -621,7 +702,7 @@ const LuxuryLandingPage = () => {
               <ul className="space-y-2 text-gray-400">
                 <li>24/7 Available</li>
                 <li>+1 (555) 123-4567</li>
-                <li>info@chancefly.com</li>
+                <li>info@jetchance.com</li>
                 <li><a href="#inquiry" className="text-amber-500 hover:text-amber-400">Get Quote</a></li>
               </ul>
             </div>
@@ -641,7 +722,7 @@ const LuxuryLandingPage = () => {
           {/* Bottom Bar */}
           <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2025 ChanceFly. All rights reserved.
+              © 2025 JetChance. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
@@ -718,22 +799,24 @@ const LuxuryLandingPage = () => {
 
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-200 mb-2">Password</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={authFormData.password}
-                    onChange={handleAuthInputChange}
-                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                    placeholder="Create a password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                  </button>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={authFormData.password}
+                      onChange={handleAuthInputChange}
+                      className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
+                      placeholder="Create a password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -779,7 +862,7 @@ const LuxuryLandingPage = () => {
               
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">Sign In</h2>
-                <p className="text-gray-300">Welcome back to ChanceFly</p>
+                <p className="text-gray-300">Welcome back to JetChance</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-6">
@@ -804,22 +887,24 @@ const LuxuryLandingPage = () => {
 
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-200 mb-2">Password</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={authFormData.password}
-                    onChange={handleAuthInputChange}
-                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                    placeholder="Enter your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                  </button>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={authFormData.password}
+                      onChange={handleAuthInputChange}
+                      className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
 
                 <button

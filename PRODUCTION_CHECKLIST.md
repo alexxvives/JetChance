@@ -19,6 +19,11 @@
 - [ ] Send booking confirmation emails
 - [ ] Send payment failure notifications
 - [ ] Add flight reminder emails (24h before departure)
+- [ ] **Implement Twilio WhatsApp integration for quote notifications**
+  - [ ] Set up Twilio account and WhatsApp Business API
+  - [ ] Add Twilio credentials to environment variables
+  - [ ] Integrate WhatsApp messaging in quote form submission
+  - [ ] Add WhatsApp notification preferences for customers
 
 ### Database & Performance
 - [x] ✅ Remove redundant first_name/last_name from users table (use role-specific tables)

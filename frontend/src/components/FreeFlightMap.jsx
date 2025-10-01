@@ -62,7 +62,48 @@ export default function FreeFlightMap({ flight }) {
     'BAQ': { lat: 10.8896, lng: -74.7808, name: 'Ernesto Cortissoz International Airport' }
   };
 
-  // Get coordinates from airport codes or airport objects
+  // City coordinates for fallback when airport coordinates aren't available
+  const cityCoordinates = {
+    'BOGOTÁ': { lat: 4.7110, lng: -74.0721, country: 'CO' },
+    'BOGOTA': { lat: 4.7110, lng: -74.0721, country: 'CO' },
+    'MEDELLÍN': { lat: 6.2442, lng: -75.5812, country: 'CO' },
+    'MEDELLIN': { lat: 6.2442, lng: -75.5812, country: 'CO' },
+    'CALI': { lat: 3.4516, lng: -76.5320, country: 'CO' },
+    'BARRANQUILLA': { lat: 10.9639, lng: -74.7964, country: 'CO' },
+    'CARTAGENA': { lat: 10.3910, lng: -75.4794, country: 'CO' },
+    'BUCARAMANGA': { lat: 7.1253, lng: -73.1198, country: 'CO' },
+    'PEREIRA': { lat: 4.8133, lng: -75.6961, country: 'CO' },
+    'CUCUTA': { lat: 7.8939, lng: -72.5078, country: 'CO' },
+    'IBAGUE': { lat: 4.4389, lng: -75.2322, country: 'CO' },
+    'SANTA MARTA': { lat: 11.2408, lng: -74.1990, country: 'CO' },
+    'VILLAVICENCIO': { lat: 4.1420, lng: -73.6266, country: 'CO' },
+    'PASTO': { lat: 1.2136, lng: -77.2811, country: 'CO' },
+    'MONTERÍA': { lat: 8.7479, lng: -75.8814, country: 'CO' },
+    'VALLEDUPAR': { lat: 10.4731, lng: -73.2532, country: 'CO' },
+    'MANIZALES': { lat: 5.0703, lng: -75.5138, country: 'CO' },
+    'NEIVA': { lat: 2.9273, lng: -75.2819, country: 'CO' },
+    'SOLEDAD': { lat: 10.9185, lng: -74.7654, country: 'CO' },
+    'SOACHA': { lat: 4.5827, lng: -74.2169, country: 'CO' },
+    // Major international cities
+    'MIAMI': { lat: 25.7617, lng: -80.1918, country: 'US' },
+    'NEW YORK': { lat: 40.7128, lng: -74.0060, country: 'US' },
+    'LOS ANGELES': { lat: 34.0522, lng: -118.2437, country: 'US' },
+    'CHICAGO': { lat: 41.8781, lng: -87.6298, country: 'US' },
+    'HOUSTON': { lat: 29.7604, lng: -95.3698, country: 'US' },
+    'ATLANTA': { lat: 33.7490, lng: -84.3880, country: 'US' },
+    'BOSTON': { lat: 42.3601, lng: -71.0589, country: 'US' },
+    'SEATTLE': { lat: 47.6062, lng: -122.3321, country: 'US' },
+    'SAN FRANCISCO': { lat: 37.7749, lng: -122.4194, country: 'US' },
+    'LAS VEGAS': { lat: 36.1699, lng: -115.1398, country: 'US' },
+    'DALLAS': { lat: 32.7767, lng: -96.7970, country: 'US' },
+    'MEXICO CITY': { lat: 19.4326, lng: -99.1332, country: 'MX' },
+    'CANCUN': { lat: 21.1619, lng: -86.8515, country: 'MX' },
+    'GUADALAJARA': { lat: 20.6597, lng: -103.3496, country: 'MX' },
+    'MONTERREY': { lat: 25.6866, lng: -100.3161, country: 'MX' },
+    // Add more cities as needed
+  };
+
+  // Get coordinates from airport codes or airport objects with city fallback
   const getCoordinates = (code, airportObj) => {
     if (!code) return null;
     
@@ -72,14 +113,57 @@ export default function FreeFlightMap({ flight }) {
       return {
         lat: airportObj.latitude,
         lng: airportObj.longitude,
-        name: airportObj.name || `${code} Airport`
+        name: airportObj.name || `${code} Airport`,
+        isExact: true
       };
     }
     
-    // Fallback to hardcoded coordinates
-    const coords = airportCoordinates[code.toUpperCase()];
-    console.log(`🛫 Looking up coordinates for ${code}:`, coords);
-    return coords;
+    // Check hardcoded airport coordinates
+    const airportCoords = airportCoordinates[code.toUpperCase()];
+    if (airportCoords) {
+      console.log(`🛫 Using exact airport coordinates for ${code}:`, airportCoords);
+      return { ...airportCoords, isExact: true };
+    }
+    
+    // Fallback to city coordinates if airport object has a city
+    if (airportObj && airportObj.city) {
+      const cityKey = airportObj.city.toUpperCase().trim();
+      const cityCoords = cityCoordinates[cityKey];
+      if (cityCoords) {
+        console.log(`🏙️ Using city coordinates for ${airportObj.city}:`, cityCoords);
+        return {
+          lat: cityCoords.lat,
+          lng: cityCoords.lng,
+          name: `${airportObj.city} (City Center)`,
+          isExact: false,
+          cityName: airportObj.city
+        };
+      }
+    }
+    
+    // Last resort: try to match city name from the code or name
+    const searchTerms = [code.toUpperCase()];
+    if (airportObj?.name) {
+      searchTerms.push(airportObj.name.toUpperCase());
+    }
+    
+    for (const term of searchTerms) {
+      for (const [cityName, coords] of Object.entries(cityCoordinates)) {
+        if (term.includes(cityName) || cityName.includes(term)) {
+          console.log(`🏙️ Using city coordinates from search match ${cityName}:`, coords);
+          return {
+            lat: coords.lat,
+            lng: coords.lng,
+            name: `${cityName} (City Center)`,
+            isExact: false,
+            cityName: cityName
+          };
+        }
+      }
+    }
+    
+    console.log(`❌ No coordinates found for ${code}`);
+    return null;
   };
 
   const originCoords = getCoordinates(flight.origin_code, flight.origin);
@@ -87,6 +171,9 @@ export default function FreeFlightMap({ flight }) {
 
   console.log('🎯 Origin coords:', originCoords);
   console.log('🎯 Destination coords:', destinationCoords);
+
+  // Check if we're using city centers instead of exact airport coordinates
+  const usingCityFallback = (!originCoords?.isExact) || (!destinationCoords?.isExact);
 
   // Early return or loading state if coordinates are not available
   if (!originCoords || !destinationCoords) {
@@ -130,7 +217,28 @@ export default function FreeFlightMap({ flight }) {
   const flightPath = [origin, destination];
 
   return (
-    <div className="h-96 w-full rounded-lg overflow-hidden">
+    <div className="w-full">
+      {/* Warning message when using city centers */}
+      {usingCityFallback && (
+        <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center text-sm text-yellow-800">
+            <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>
+              Map markers show city centers, not exact airport locations. 
+              {!originCoords.isExact && !destinationCoords.isExact 
+                ? ' Both locations are approximate.'
+                : !originCoords.isExact 
+                  ? ' Departure location is approximate.'
+                  : ' Arrival location is approximate.'
+              }
+            </span>
+          </div>
+        </div>
+      )}
+      
+      <div className="h-96 w-full rounded-lg overflow-hidden">
       <MapContainer
         center={center}
         zoom={4}
@@ -187,6 +295,7 @@ export default function FreeFlightMap({ flight }) {
           <Popup>✈️ Flight Path</Popup>
         </Marker>
       </MapContainer>
+      </div>
     </div>
   );
 }

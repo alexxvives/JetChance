@@ -13,7 +13,8 @@ const createNotification = async (db, userId, title, message) => {
       VALUES (?, ?, ?, ?, ?)
     `;
     
-    await db.run(sql, [notificationId, userId, title, message, new Date().toISOString()]);
+    const stmt = db.prepare(sql);
+    stmt.run(notificationId, userId, title, message, new Date().toISOString());
     console.log('✅ Notification created:', notificationId);
     return notificationId;
   } catch (err) {
@@ -39,8 +40,9 @@ router.get('/', authenticate, async (req, res) => {
       LIMIT 50
     `;
 
-    const result = await db.query(sql, [userId]);
-    res.json(result.rows);
+    const stmt = db.prepare(sql);
+    const notifications = stmt.all(userId);
+    res.json(notifications);
   } catch (err) {
     console.error('❌ Error fetching notifications:', err);
     res.status(500).json({ error: 'Failed to fetch notifications' });
@@ -86,7 +88,8 @@ router.patch('/:id/read', authenticate, async (req, res) => {
       WHERE id = ? AND user_id = ? AND read_status = FALSE
     `;
 
-    const result = await db.run(sql, [id, userId]);
+    const stmt = db.prepare(sql);
+    const result = stmt.run(id, userId);
     
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Notification not found or already read' });
@@ -114,7 +117,8 @@ router.patch('/mark-all-read', authenticate, async (req, res) => {
       WHERE user_id = ? AND read_status = FALSE
     `;
 
-    const result = await db.run(sql, [userId]);
+    const stmt = db.prepare(sql);
+    const result = stmt.run(userId);
     res.json({ success: true, updated: result.changes });
   } catch (err) {
     console.error('❌ Error marking all notifications as read:', err);

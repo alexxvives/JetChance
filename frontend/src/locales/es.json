@@ -14,7 +14,7 @@
   "auth": {
     "login": {
       "title": "Bienvenido de vuelta",
-      "subtitle": "Inicia sesión en tu cuenta de ChanceFly",
+      "subtitle": "Inicia sesión en tu cuenta de JetChance",
       "emailLabel": "Dirección de correo electrónico",
       "emailPlaceholder": "Ingresa tu correo",
       "passwordLabel": "Contraseña",
@@ -25,7 +25,7 @@
       "signUp": "Regístrate"
     },
     "signup": {
-      "title": "Únete a ChanceFly",
+      "title": "Únete a JetChance",
       "subtitle": "Crea tu cuenta para comenzar a reservar vuelos",
       "accountTypeLabel": "Tipo de Cuenta",
       "customerLabel": "Cliente",
@@ -42,7 +42,7 @@
       "passwordPlaceholder": "Crea una contraseña",
       "signupCodeLabel": "Código de Registro de Operador",
       "signupCodePlaceholder": "Ingresa el código de registro de operador",
-      "signupCodeHelp": "Contacta a ChanceFly para obtener tu código de registro de operador",
+      "signupCodeHelp": "Contacta a JetChance para obtener tu código de registro de operador",
       "operatorCompanyLabel": "Nombre de la Empresa",
       "operatorCompanyPlaceholder": "Ingresa el nombre de tu empresa",
       "operatorCompanyHelp": "Escribe tu nombre si no estás con una empresa",
@@ -138,6 +138,108 @@
       }
     }
   },
+  "createFlight": {
+    "title": "Crear Nuevo Vuelo",
+    "subtitle": "Agrega un nuevo vuelo a tu inventario",
+    "backToDashboard": "Volver al Panel",
+    "sections": {
+      "aircraftImages": {
+        "title": "Imágenes de la Aeronave",
+        "uploadArea": {
+          "title": "Arrastra las imágenes de tu aeronave aquí",
+          "subtitle": "o",
+          "browse": "explorar archivos",
+          "formats": "PNG, JPG, WebP, GIF, SVG hasta 5MB cada uno • Múltiples archivos soportados",
+          "dragText": "Suelta los archivos aquí..."
+        }
+      },
+      "routeInformation": {
+        "title": "Información de Ruta",
+        "fields": {
+          "originCity": "Ciudad de Origen",
+          "originAirport": "Aeropuerto de Origen", 
+          "destinationCity": "Ciudad de Destino",
+          "destinationAirport": "Aeropuerto de Destino"
+        },
+        "placeholders": {
+          "originCity": "Bogotá",
+          "originAirport": "BOG - Aeropuerto Internacional El Dorado",
+          "destinationCity": "Ciudad de México",
+          "destinationAirport": "MEX - Aeropuerto Internacional de la Ciudad de México",
+          "airportsIn": "Aeropuertos en {{city}}",
+          "originPlaceholder": "Escribe ciudad o aeropuerto...",
+          "destinationPlaceholder": "Escribe ciudad o aeropuerto..."
+        },
+        "help": {
+          "notInDatabase": "¿No ves tu aeropuerto en nuestra base de datos?",
+          "noProblem": "¡No hay problema! Usa la opción 'Agregar aeropuerto personalizado' para añadir aeropuertos más pequeños o privados."
+        }
+      },
+      "flightSchedule": {
+        "title": "Horario de Vuelo",
+        "departure": "Salida",
+        "arrival": "Llegada",
+        "departureDateTimeTitle": "Fecha y Hora de Salida",
+        "arrivalDateTimeTitle": "Fecha y Hora de Llegada",
+        "fields": {
+          "date": "Fecha",
+          "time": "Hora"
+        },
+        "placeholders": {
+          "selectDate": "Seleccionar fecha de salida",
+          "selectArrivalDate": "Seleccionar fecha de llegada"
+        },
+        "warning": "Duración de vuelo inusualmente larga ({hours} horas). Por favor verifica tus fechas."
+      },
+      "aircraftDetails": {
+        "title": "Detalles de la Aeronave",
+        "fields": {
+          "aircraftType": "Modelo de Aeronave",
+          "availableSeats": "Asientos Disponibles",
+          "description": "Descripción (Opcional)"
+        },
+        "placeholders": {
+          "aircraftType": "Gulfstream G650",
+          "availableSeats": "12",
+          "description": "Vuelo internacional de lujo desde Colombia a México con amenidades premium, Wi-Fi y servicio de catering..."
+        }
+      },
+      "pricing": {
+        "title": "Precios",
+        "fields": {
+          "pricePerSeat": "Precio por Asiento (COP)",
+          "pricePerSeatHelp": "Tu precio base por asiento (se agregará una comisión del 30% para los clientes)",
+          "marketPricePerSeat": "Precio de Mercado por Asiento (COP) - Opcional", 
+          "marketPricePerSeatHelp": "Opcional: Tarifa regular del mercado por asiento para comparación"
+        },
+        "savingsCalculation": {
+          "savings": "Ahorro",
+          "perSeat": "por asiento",
+          "off": "de descuento"
+        },
+        "commission": {
+          "customerPrice": "Precio para el Cliente:",
+          "perSeat": "por asiento",
+          "commissionNote": "Agregamos una comisión del 30%. Los clientes verán el precio anterior en COP."
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "createFlight": "Crear Vuelo",
+      "creatingFlight": "Creando Vuelo..."
+    }
+  },
+  "editFlight": {
+    "title": "Editar Vuelo",
+    "subtitle": "Actualiza la información de tu vuelo",
+    "backToDashboard": "Volver al Panel",
+    "buttons": {
+      "cancel": "Cancelar",
+      "updateFlight": "Actualizar Vuelo",
+      "updatingFlight": "Actualizando Vuelo..."
+    }
+  },
   "regularJetRequest": {
     "title": "Solicitar Charter de Jet Regular",
     "subtitle": "Cuéntanos sobre tus requerimientos de vuelo y te contactaremos con una cotización personalizada.",
@@ -206,7 +308,135 @@
       },
       "action": "Obtener Cotización"
     },
-    "browseBoth": "Exploraré ambas opciones"
+        "browseBoth": "Exploraré ambas opciones"
+  },
+  "admin": {
+    "dashboard": {
+      "welcomeBack": "Bienvenido de vuelta",
+      "superAdmin": "Super Administrador",
+      "allOperators": "Todos los Operadores",
+      "tabs": {
+        "catalog": "Catálogo de Vuelos",
+        "approvals": "Aprobaciones de Vuelos",
+        "operators": "Gestión de Operadores",
+        "create": "Crear Vuelo",
+        "crm": "CRM"
+      },
+      "catalog": {
+        "title": "Catálogo de Vuelos",
+        "subtitle": "Explora y gestiona todos los vuelos en el sistema"
+      },
+      "approvals": {
+        "title": "Aprobaciones de Vuelos",
+        "subtitle": "Revisar y aprobar envíos de vuelos pendientes",
+        "loading": "Cargando vuelos pendientes...",
+        "allCaughtUp": "¡Todo al día!",
+        "noPendingFlights": "No hay aprobaciones de vuelos pendientes en este momento."
+      },
+      "operators": {
+        "title": "Gestión de Operadores",
+        "subtitle": "Gestionar operadores de vuelos y sus permisos",
+        "companyNameFallback": "Empresa Desconocida",
+        "noFlightsFound": "No se encontraron vuelos para este operador",
+        "flightsTitle": "Vuelos",
+        "actions": {
+          "approve": "Aprobar",
+          "deny": "Denegar",
+          "processing": "Procesando..."
+        },
+        "stats": {
+          "flights": "Vuelos",
+          "bookings": "Reservas",
+          "revenue": "Ingresos"
+        },
+        "flightCount": {
+          "single": "vuelo",
+          "plural": "vuelos"
+        },
+        "flightDetails": {
+          "loading": "Cargando detalles del vuelo...",
+          "headers": {
+            "route": "Ruta",
+            "date": "Fecha",
+            "bookings": "Reservas",
+            "seats": "Asientos",
+            "revenue": "Ingresos",
+            "status": "Estado"
+          }
+        }
+      },
+      "create": {
+        "title": "Crear Nuevo Vuelo",
+        "subtitle": "Agregar un nuevo vuelo al sistema",
+        "navigateButton": "Crear Nuevo Vuelo"
+      },
+      "flights": {
+        "status": {
+          "pending": "Pendiente",
+          "available": "Disponible",
+          "declined": "Rechazado",
+          "partiallyBooked": "Parcialmente Reservado",
+          "fullyBooked": "Completamente Reservado",
+          "cancelled": "Cancelado"
+        }
+      },
+      "errors": {
+        "networkError": "Ocurrió un error de red",
+        "deleteFailed": "Error al eliminar vuelo",
+        "deleteFailedUnknown": "Error al eliminar vuelo: Error desconocido",
+        "approveFailed": "Error al aprobar vuelo",
+        "approveError": "Error aprobando vuelo",
+        "denyFailed": "Error al rechazar vuelo",
+        "denyError": "Error rechazando vuelo"
+      },
+      "crm": {
+        "title": "CRM de la Plataforma",
+        "subtitle": "Gestionar todas las reservas de la plataforma",
+        "stats": {
+          "totalRevenue": "Ingresos Totales",
+          "platformCommission": "Comisión de la Plataforma",
+          "totalBookings": "Reservas Totales",
+          "totalPassengers": "Pasajeros Totales"
+        },
+        "loadingMessage": "Cargando datos del CRM..."
+      },
+      "quotes": {
+        "title": "Cotizaciones Enviadas",
+        "subtitle": "Todas las solicitudes de cotización de clientes enviadas a través del sitio web.",
+        "loading": "Cargando cotizaciones...",
+        "stats": {
+          "total": "Cotizaciones Totales",
+          "notContacted": "No Contactados",
+          "contacted": "Contactados",
+          "last24h": "Últimas 24h"
+        },
+        "table": {
+          "title": "Todas las Cotizaciones",
+          "columns": {
+            "date": "Fecha",
+            "name": "Nombre",
+            "email": "Email",
+            "phone": "Teléfono",
+            "serviceType": "Servicio",
+            "route": "Ruta",
+            "contactStatus": "Estado de Contacto",
+            "status": "Estado de Vista"
+          },
+          "contactStatus": {
+            "notContacted": "No Contactado",
+            "contacted": "Contactado"
+          },
+          "status": {
+            "seen": "Visto",
+            "unseen": "No Visto"
+          }
+        },
+        "noData": {
+          "title": "No se Encontraron Cotizaciones",
+          "message": "Aún no se han enviado cotizaciones."
+        }
+      }
+    }
   },
   "flightFilters": {
     "from": "Desde",
@@ -251,8 +481,8 @@
   },
   "operators": {
     "hero": {
-      "title": "Alianza con ChanceFly",
-      "subtitle": "Únete a la plataforma premier para aviación de lujo. Conecta con viajeros de alto valor, maximiza la utilización de tu flota y haz crecer tu negocio con el marketplace innovador de ChanceFly.",
+      "title": "Alianza con JetChance",
+      "subtitle": "Únete a la plataforma premier para aviación de lujo. Conecta con viajeros de alto valor, maximiza la utilización de tu flota y haz crecer tu negocio con el marketplace innovador de JetChance.",
       "button": "Conviértete en Socio"
     },
     "benefits": {
@@ -297,7 +527,7 @@
     },
     "applicationForm": {
       "title": "Solicitud de Operador",
-      "subtitle": "Completa este formulario para comenzar tu alianza con ChanceFly",
+      "subtitle": "Completa este formulario para comenzar tu alianza con JetChance",
       "companyName": {
         "label": "Nombre de la Empresa",
         "placeholder": "Ingresa el nombre de tu empresa"
@@ -333,6 +563,30 @@
       "submitButton": "Enviar Solicitud",
       "submitting": "Enviando...",
       "required": "Campos requeridos"
+    }
+  },
+  "airportAutocomplete": {
+    "placeholder": "Buscar aeropuerto...",
+    "notListed": "¿No está en la lista?",
+    "addCustom": "Agregar aeropuerto personalizado",
+    "addCustomAirport": "Agregar Aeropuerto Personalizado",
+    "smallerAirportsNote": "Para aeropuertos más pequeños o privados que no aparecen en nuestra base de datos",
+    "airportCode": "Código del Aeropuerto",
+    "airportCodeHelp": "Código único de 3-4 letras (ej., BOG, SKBO). Debe ser diferente a aeropuertos existentes.",
+    "airportName": "Nombre del Aeropuerto",
+    "city": "Ciudad",
+    "country": "País",
+    "addAirport": "Agregar Aeropuerto",
+    "cancel": "Cancelar",
+    "placeholders": {
+      "code": "BOG",
+      "name": "Aeropuerto Internacional El Dorado",
+      "city": "Bogotá"
+    },
+    "validation": {
+      "required": "Por favor completa todos los campos requeridos",
+      "error": "Error al guardar el aeropuerto. Inténtalo de nuevo.",
+      "duplicateCode": "El código de aeropuerto '{code}' ya existe. Por favor usa un código diferente."
     }
   }
 }

@@ -15,7 +15,7 @@ export default function ContactPage() {
             <div className="absolute inset-0 z-0">
               <img 
                 src="/images/home/contact.jpeg" 
-                alt="Contact ChanceFly"
+                alt="Contact JetChance"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-800/85 to-slate-950/95"></div>

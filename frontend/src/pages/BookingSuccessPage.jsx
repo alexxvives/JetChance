@@ -304,7 +304,7 @@ export default function BookingSuccessPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <div className="flex items-center text-gray-700">
                 <EnvelopeIcon className="h-5 w-5 mr-2" />
-                support@chancefly.com
+                support@jetchance.com
               </div>
               <div className="text-gray-700">
                 📞 +1 (555) 123-4567

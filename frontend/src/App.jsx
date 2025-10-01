@@ -8,8 +8,6 @@ import SimpleGradientBackground from './components/SimpleGradientBackground';
 import PerformanceIndicator from './components/PerformanceIndicator';
 import LandingPage from './pages/LandingPage';
 import LuxuryLandingPage from './pages/LuxuryLandingPageNew';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import FlightDetailsPage from './pages/FlightDetailsPage';
 import PaymentPage from './pages/PaymentPage';

@@ -13,6 +13,9 @@ const uploadRoutes = require('./routes/upload-hybrid');
 const profileRoutes = require('./routes/profile');
 const paymentRoutes = require('./routes/payments_new');
 const { router: notificationRoutes } = require('./routes/notifications');
+const emailRoutes = require('./routes/email');
+const quotesRoutes = require('./routes/quotes');
+const airportsRoutes = require('./routes/airports');
 
 const app = express();
 
@@ -48,6 +51,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api', emailRoutes);
+app.use('/api/quotes', quotesRoutes);
+app.use('/api/airports', airportsRoutes);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

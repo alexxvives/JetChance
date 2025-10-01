@@ -174,3 +174,19 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 -- 4. ✅ Clean relationships (proper foreign keys, no orphaned data)
 -- 5. ✅ Performance optimized (strategic indexes for flight search)
 -- 6. ✅ Scalable foundation (can add features post-MVP based on user feedback)
+
+-- Quotes table - Store quote requests from landing page
+CREATE TABLE IF NOT EXISTS quotes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  service_type TEXT NOT NULL CHECK (service_type IN ('full-charter', 'empty-leg')),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  departure TEXT NOT NULL,
+  destination TEXT NOT NULL,
+  date TEXT NOT NULL,
+  passengers INTEGER NOT NULL,
+  details TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  seen_at DATETIME DEFAULT NULL  -- When admin viewed this quote
+);

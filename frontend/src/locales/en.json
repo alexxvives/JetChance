@@ -14,7 +14,7 @@
   "auth": {
     "login": {
       "title": "Welcome back",
-      "subtitle": "Sign in to your ChanceFly account",
+      "subtitle": "Sign in to your JetChance account",
       "emailLabel": "Email address",
       "emailPlaceholder": "Enter your email",
       "passwordLabel": "Password",
@@ -25,7 +25,7 @@
       "signUp": "Sign up"
     },
     "signup": {
-      "title": "Join ChanceFly",
+      "title": "Join JetChance",
       "subtitle": "Create your account to start booking flights",
       "accountTypeLabel": "Account Type",
       "customerLabel": "Customer",
@@ -42,7 +42,7 @@
       "passwordPlaceholder": "Create a password",
       "signupCodeLabel": "Operator Signup Code",
       "signupCodePlaceholder": "Enter operator signup code",
-      "signupCodeHelp": "Contact ChanceFly to obtain your operator signup code",
+      "signupCodeHelp": "Contact JetChance to obtain your operator signup code",
       "operatorCompanyLabel": "Company Name",
       "operatorCompanyPlaceholder": "Enter your company name",
       "operatorCompanyHelp": "Type your name if you are not with a company",
@@ -237,12 +237,18 @@
           "airportsIn": "Airports in {{city}}",
           "originPlaceholder": "Type city or airport...",
           "destinationPlaceholder": "Type city or airport..."
+        },
+        "help": {
+          "notInDatabase": "Don't see your airport in our database?",
+          "noProblem": "No problem! Use the 'Add custom airport' option to add smaller or private airports."
         }
       },
       "flightSchedule": {
         "title": "Flight Schedule",
         "departure": "Departure",
         "arrival": "Arrival",
+        "departureDateTimeTitle": "Departure Date & Time",
+        "arrivalDateTimeTitle": "Arrival Date & Time",
         "fields": {
           "date": "Date",
           "time": "Time"
@@ -331,7 +337,7 @@
     }
   },
   "whyChoose": {
-    "title": "Why Choose ChanceFly",
+    "title": "Why Choose JetChance",
     "subtitle": "Experience the difference with our premium platform designed for discerning travelers.",
     "savings": {
       "title": "Massive Savings",
@@ -360,7 +366,7 @@
     "title": "Don't just take our word for it",
     "subtitle": "Hundreds of travelers already fly private with our empty leg deals.",
     "customer1": {
-      "text": "Found ChanceFly through a family member and it's been great for business trips. Good pricing and reliable service. I've used it several times now without any issues.",
+      "text": "Found JetChance through a family member and it's been great for business trips. Good pricing and reliable service. I've used it several times now without any issues.",
       "name": "Carolina Vargas"
     },
     "customer2": {
@@ -374,7 +380,7 @@
   },
   "cta": {
     "title": "Ready to Experience Luxury Travel?",
-    "subtitle": "Join thousands of smart travelers who've discovered the ChanceFly advantage. Your next luxury flight is just a click away.",
+    "subtitle": "Join thousands of smart travelers who've discovered the JetChance advantage. Your next luxury flight is just a click away.",
     "startBooking": "Start Booking Now",
     "browseFlights": "Browse Flights"
   },
@@ -410,12 +416,12 @@
       "terms": "Terms of Service",
       "safety": "Safety & Security"
     },
-    "copyright": "© 2025 ChanceFly. All rights reserved."
+    "copyright": "© 2025 JetChance. All rights reserved."
   },
   "about": {
     "hero": {
       "title": "Redefining Luxury Travel",
-      "subtitle": "ChanceFly is revolutionizing private aviation by making luxury travel accessible, transparent, and effortless. Discover our story and the passion that drives us forward."
+      "subtitle": "JetChance is revolutionizing private aviation by making luxury travel accessible, transparent, and effortless. Discover our story and the passion that drives us forward."
     },
     "mission": {
       "title": "Our Mission",
@@ -453,14 +459,14 @@
     },
     "cta": {
       "title": "Join Our Journey",
-      "subtitle": "Whether you're a traveler seeking your next adventure, an operator looking to grow your business, or simply someone who shares our passion for aviation, we invite you to be part of the ChanceFly story.",
+      "subtitle": "Whether you're a traveler seeking your next adventure, an operator looking to grow your business, or simply someone who shares our passion for aviation, we invite you to be part of the JetChance story.",
       "getStarted": "Get Started Today"
     }
   },
   "contact": {
     "hero": {
       "title": "Get in Touch",
-      "subtitle": "Have questions about ChanceFly? Need support with your booking? Want to partner with us? We're here to help and would love to hear from you."
+      "subtitle": "Have questions about JetChance? Need support with your booking? Want to partner with us? We're here to help and would love to hear from you."
     },
     "options": {
       "title": "How Can We Help?",
@@ -473,7 +479,7 @@
       "email": {
         "title": "Email Support",
         "description": "Get detailed assistance via email",
-        "address": "support@chancefly.com"
+        "address": "support@jetchance.com"
       },
       "chat": {
         "title": "Live Chat",
@@ -506,7 +512,7 @@
     },
     "faq": {
       "title": "Frequently Asked Questions",
-      "subtitle": "Quick answers to common questions about ChanceFly and our services.",
+      "subtitle": "Quick answers to common questions about JetChance and our services.",
       "questions": {
         "booking": {
           "question": "How far in advance should I book?",
@@ -529,8 +535,8 @@
   },
   "operators": {
     "hero": {
-      "title": "Partner with ChanceFly",
-      "subtitle": "Join the premier platform for luxury aviation. Connect with high-value travelers, maximize your fleet utilization, and grow your business with ChanceFly's innovative marketplace.",
+      "title": "Partner with JetChance",
+      "subtitle": "Join the premier platform for luxury aviation. Connect with high-value travelers, maximize your fleet utilization, and grow your business with JetChance's innovative marketplace.",
       "button": "Become a Partner"
     },
     "benefits": {
@@ -575,7 +581,7 @@
     },
     "applicationForm": {
       "title": "Operator Application",
-      "subtitle": "Complete this form to begin your partnership with ChanceFly",
+      "subtitle": "Complete this form to begin your partnership with JetChance",
       "companyName": {
         "label": "Company Name",
         "placeholder": "Enter your company name"
@@ -839,7 +845,8 @@
       },
       "create": {
         "title": "Create New Flight",
-        "subtitle": "Add a new flight to the system"
+        "subtitle": "Add a new flight to the system",
+        "navigateButton": "Create New Flight"
       },
       "flights": {
         "status": {
@@ -870,6 +877,42 @@
           "totalPassengers": "Total Passengers"
         },
         "loadingMessage": "Loading CRM data..."
+      },
+      "quotes": {
+        "title": "Submitted Quotes",
+        "subtitle": "All customer quote requests submitted via the website.",
+        "loading": "Loading quotes...",
+        "stats": {
+          "total": "Total Quotes",
+          "notContacted": "Not Contacted",
+          "contacted": "Contacted",
+          "last24h": "Last 24h"
+        },
+        "table": {
+          "title": "All Quotes",
+          "columns": {
+            "date": "Date",
+            "name": "Name",
+            "email": "Email",
+            "phone": "Phone",
+            "serviceType": "Service",
+            "route": "Route",
+            "contactStatus": "Contact Status",
+            "status": "View Status"
+          },
+          "contactStatus": {
+            "notContacted": "Not Contacted",
+            "contacted": "Contacted"
+          },
+          "status": {
+            "seen": "Seen",
+            "unseen": "Unseen"
+          }
+        },
+        "noData": {
+          "title": "No Quotes Found",
+          "message": "No quotes have been submitted yet."
+        }
       }
     }
   },
@@ -885,21 +928,21 @@
     "addCustomAirport": "Add Custom Airport",
     "smallerAirportsNote": "For smaller or private airports not appearing in our database",
     "airportCode": "Airport Code",
+    "airportCodeHelp": "3-4 letter unique code (e.g., BOG, SKBO). Must be different from existing airports.",
     "airportName": "Airport Name",
     "city": "City",
     "country": "Country",
-    "coordinates": "Coordinates",
-    "coordinatesNote": "Find coordinates using Google Maps or GPS. Example: Bogotá El Dorado is 4.7016, -74.1469",
-    "latitude": "Latitude",
-    "longitude": "Longitude",
     "addAirport": "Add Airport",
     "cancel": "Cancel",
     "placeholders": {
       "code": "BOG",
       "name": "El Dorado International Airport",
-      "city": "Bogotá",
-      "latitude": "4.7016",
-      "longitude": "-74.1469"
+      "city": "Bogotá"
+    },
+    "validation": {
+      "required": "Please fill in all required fields",
+      "error": "Error saving airport. Please try again.",
+      "duplicateCode": "Airport code '{code}' already exists. Please use a different code."
     }
   },
   "currency": {

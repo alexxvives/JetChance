@@ -129,7 +129,7 @@ class Particle {
   }
 }
 
-const DEFAULT_WORDS = ["CONTACT", "ChanceFly", "GET IN TOUCH", "REACH OUT", "CONNECT"]
+const DEFAULT_WORDS = ["CONTACT", "JetChance", "GET IN TOUCH", "REACH OUT", "CONNECT"]
 
 export function ParticleTextEffect({ words = DEFAULT_WORDS }) {
   const canvasRef = useRef(null)

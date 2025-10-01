@@ -46,22 +46,11 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
     } shadow-2xl relative z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - Left */}
-          <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center flex-shrink-0">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-black p-2 rounded-lg mr-3 shadow-xl">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">
-                ChanceFly
-              </span>
-            </div>
-          </Link>
+          {/* Empty left space for balance */}
+          <div className="flex-1"></div>
 
           {/* Main Navigation - Center */}
-          <div className="hidden md:flex items-center justify-center flex-1 mx-8">
+          <div className="hidden md:flex items-center justify-center">
             <div className="flex items-center space-x-8">
               {!isAuthenticated ? (
                 // Public Navigation
@@ -107,7 +96,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
           </div>
             
           {/* User Actions & Settings - Right */}
-          <div className="hidden md:flex items-center space-x-3 flex-shrink-0">
+          <div className="hidden md:flex items-center space-x-3 flex-1 justify-end">
             {isAuthenticated ? (
               // Authenticated User Actions
               <>
