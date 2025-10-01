@@ -18,11 +18,15 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import OperatorOnlyRoute from './components/OperatorOnlyRoute';
 
 function AppContent() {
   const [useSimpleBackground, setUseSimpleBackground] = useState(false);
   const [currentFPS, setCurrentFPS] = useState(null);
   const location = useLocation();
+
+  // Check if we're on the home page
+  const isHomePage = location.pathname === '/';
 
   // Performance detection
   useEffect(() => {
@@ -87,7 +91,9 @@ function AppContent() {
                 path="/create-flight" 
                 element={
                   <ProtectedRoute>
-                    <CreateFlightPage />
+                    <OperatorOnlyRoute>
+                      <CreateFlightPage />
+                    </OperatorOnlyRoute>
                   </ProtectedRoute>
                 } 
               />
@@ -95,7 +101,9 @@ function AppContent() {
                 path="/edit-flight/:id" 
                 element={
                   <ProtectedRoute>
-                    <EditFlightPage />
+                    <OperatorOnlyRoute>
+                      <EditFlightPage />
+                    </OperatorOnlyRoute>
                   </ProtectedRoute>
                 } 
               />

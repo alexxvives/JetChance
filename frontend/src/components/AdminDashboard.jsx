@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, PlusIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
@@ -48,6 +48,7 @@ export default function AdminDashboard({ user }) {
   // Quotes management state
   const [quotes, setQuotes] = useState([]);
   const [unseenQuotesCount, setUnseenQuotesCount] = useState(0);
+  const [notContactedQuotesCount, setNotContactedQuotesCount] = useState(0);
   const [quotesLoading, setQuotesLoading] = useState(false);
 
   // Airports management state
@@ -454,13 +455,18 @@ export default function AdminDashboard({ user }) {
         const data = await response.json();
         console.log('📡 Admin quotes:', data);
         setQuotes(data || []);
+        // Calculate not contacted quotes count
+        const notContactedCount = (data || []).filter(quote => (quote.contact_status || 'not_contacted') === 'not_contacted').length;
+        setNotContactedQuotesCount(notContactedCount);
       } else {
         console.error('❌ Failed to fetch quotes:', response.status);
         setQuotes([]);
+        setNotContactedQuotesCount(0);
       }
     } catch (error) {
       console.error('❌ Error fetching quotes:', error);
       setQuotes([]);
+      setNotContactedQuotesCount(0);
     } finally {
       setQuotesLoading(false);
     }
@@ -753,8 +759,7 @@ export default function AdminDashboard({ user }) {
     { id: 'catalog', name: t('admin.dashboard.tabs.catalog'), icon: EyeIcon },
     { id: 'approvals', name: t('admin.dashboard.tabs.approvals'), icon: CheckIcon, badge: pendingFlights.length },
     { id: 'operators', name: t('admin.dashboard.tabs.operators'), icon: UsersIcon, badge: pendingOperators.length },
-    { id: 'quotes', name: 'Submitted Quotes', icon: DocumentTextIcon, badge: unseenQuotesCount },
-    { id: 'create', name: t('admin.dashboard.tabs.create'), icon: PlusIcon },
+    { id: 'quotes', name: 'Submitted Quotes', icon: DocumentTextIcon, badge: notContactedQuotesCount },
     ...(user?.role === 'super-admin' ? [
       { id: 'airports', name: 'Airport Requests', icon: ClipboardDocumentListIcon, badge: pendingAirports.length },
       { id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon }
@@ -1237,21 +1242,6 @@ export default function AdminDashboard({ user }) {
                   </table>
                 )}
               </div>
-            </div>
-          )}
-
-          {activeTab === 'create' && (
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.create.title')}</h2>
-              <p className="text-gray-600 mb-6">{t('admin.dashboard.create.subtitle')}</p>
-              
-              <button
-                onClick={() => navigate('/create-flight')}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                {t('admin.dashboard.create.navigateButton')}
-              </button>
             </div>
           )}
 
