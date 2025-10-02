@@ -8,7 +8,7 @@ import LocationAutocomplete from '../components/LocationAutocomplete';
 import AirportAutocomplete from '../components/AirportAutocomplete';
 import CurrencyInput from '../components/CurrencyInput';
 import CustomDateTimePicker from '../components/CustomDateTimePicker';
-import { searchAirports } from '../data/airportsAndCities';
+import AirportService from '../services/AirportService';
 import { getCountryByAirportCode } from '../utils/airportCountries';
 
 // Helper function to format Colombian Peso currency with COP label
@@ -98,8 +98,12 @@ export default function CreateFlightPage() {
     const arrival = new Date(formData.arrivalTime);
     const durationMs = arrival - departure;
     
-    // Check if arrival is before departure
-    if (durationMs < 0) {
+    // Check if arrival is before or equal to departure
+    if (durationMs <= 0) {
+      const errorMessage = durationMs === 0 
+        ? "Arrival time cannot be the same as departure time. Please ensure there is at least some flight duration."
+        : "Arrival time cannot be before departure time. Please check your flight schedule.";
+      
       return (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center space-x-2">
@@ -109,7 +113,7 @@ export default function CreateFlightPage() {
             <div>
               <p className="text-red-800 font-medium">Invalid Flight Times</p>
               <p className="text-red-700 text-sm">
-                Arrival time cannot be before departure time. Please check your flight schedule.
+                {errorMessage}
               </p>
             </div>
           </div>
@@ -204,7 +208,7 @@ export default function CreateFlightPage() {
     const departure = new Date(formData.departureTime);
     const arrival = new Date(formData.arrivalTime);
     
-    return arrival > departure; // Arrival must be after departure
+    return arrival > departure; // Arrival must be after departure (not equal)
   };
 
   // Simple airport change handlers
@@ -228,7 +232,7 @@ export default function CreateFlightPage() {
     
     // Validate that arrival time is after departure time
     if (!isFormValid()) {
-      alert('Error: Arrival time cannot be before departure time. Please check your flight schedule.');
+      alert('Error: Arrival time cannot be before or equal to departure time. Please ensure there is at least some flight duration.');
       setIsSubmitting(false);
       return;
     }
@@ -271,6 +275,79 @@ export default function CreateFlightPage() {
         }
       }
       
+      // Handle custom airports - create them in database before flight submission
+      const customAirports = [];
+      
+      // Check if origin airport is a pending custom airport
+      if (formData.originAirport?.isPending) {
+        console.log('Creating custom origin airport:', formData.originAirport);
+        try {
+          const response = await fetch('/api/airports', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+              code: formData.originAirport.code,
+              name: formData.originAirport.name,
+              city: formData.originAirport.city,
+              country: formData.originAirport.country
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 409) {
+              throw new Error(`Airport code '${formData.originAirport.code}' already exists. Please use a different code.`);
+            }
+            throw new Error(errorData.error || 'Failed to create origin airport');
+          }
+          
+          const createdAirport = await response.json();
+          customAirports.push(createdAirport);
+          console.log('✅ Origin airport created successfully:', createdAirport);
+        } catch (error) {
+          console.error('❌ Error creating origin airport:', error);
+          throw new Error(`Failed to create origin airport: ${error.message}`);
+        }
+      }
+      
+      // Check if destination airport is a pending custom airport
+      if (formData.destinationAirport?.isPending) {
+        console.log('Creating custom destination airport:', formData.destinationAirport);
+        try {
+          const response = await fetch('/api/airports', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+              code: formData.destinationAirport.code,
+              name: formData.destinationAirport.name,
+              city: formData.destinationAirport.city,
+              country: formData.destinationAirport.country
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 409) {
+              throw new Error(`Airport code '${formData.destinationAirport.code}' already exists. Please use a different code.`);
+            }
+            throw new Error(errorData.error || 'Failed to create destination airport');
+          }
+          
+          const createdAirport = await response.json();
+          customAirports.push(createdAirport);
+          console.log('✅ Destination airport created successfully:', createdAirport);
+        } catch (error) {
+          console.error('❌ Error creating destination airport:', error);
+          throw new Error(`Failed to create destination airport: ${error.message}`);
+        }
+      }
+      
       // Prepare flight data
       const flightData = {
         // Required backend fields
@@ -278,10 +355,12 @@ export default function CreateFlightPage() {
         originCode: formData.originAirport?.code || '',
         destinationCode: formData.destinationAirport?.code || '',
         departureDateTime: formData.departureTime,
-        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
         emptyLegPrice: parseFloat(formData.price) * 1.3, // Customer price with 30% commission
         operatorPrice: parseFloat(formData.price), // Operator's base price (stored for reference)
         totalSeats: parseInt(formData.seatsAvailable),
+        
+        // Add originalPrice only if provided
+        ...(formData.originalPrice && { originalPrice: parseFloat(formData.originalPrice) }),
         
         // Optional fields with improved airport naming format
         flightNumber: `CF${Date.now()}`, // Generate flight number

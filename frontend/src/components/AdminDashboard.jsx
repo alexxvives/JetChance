@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, XMarkIcon, EyeIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon, TrashIcon, UsersIcon, ClipboardDocumentListIcon, ChartBarIcon, ChevronDownIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, MapPinIcon, BellIcon, GlobeAltIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
+import { User, ChevronDown, LogOut } from 'lucide-react';
 import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import FlightFilters from './FlightFilters';
 import FlightList from '../FlightList';
 import ErrorBoundary from './ErrorBoundary';
 import ConfirmationModal from './ConfirmationModal';
+import LanguageSelector from './LanguageSelector';
+import NotificationBell from './NotificationBell';
+import CustomCalendar from './CustomCalendar';
+import AirportService from '../services/AirportService';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { extractAirportCode } from '../utils/airportUtils';
 
@@ -21,9 +27,18 @@ const formatCOPWithStyling = (amount) => {
 
 export default function AdminDashboard({ user }) {
   const { t } = useTranslation();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const languageDropdownRef = useRef(null);
+  const notificationDropdownRef = useRef(null);
   const [pendingFlights, setPendingFlights] = useState([]);
+  const [allFlights, setAllFlights] = useState([]);
+  const [availableCities, setAvailableCities] = useState({ origins: [], destinations: [] });
   const [pendingOperators, setPendingOperators] = useState([]);
   const [allOperators, setAllOperators] = useState([]);
   const [selectedOperator, setSelectedOperator] = useState(null);
@@ -44,6 +59,7 @@ export default function AdminDashboard({ user }) {
     date: '',
     passengers: 1
   });
+  const [maxAvailableSeats, setMaxAvailableSeats] = useState(12); // Default to 12, will be updated from flight data
 
   // Quotes management state
   const [quotes, setQuotes] = useState([]);
@@ -65,6 +81,142 @@ export default function AdminDashboard({ user }) {
   const [crmData, setCrmData] = useState(null);
   const [crmLoading, setCrmLoading] = useState(false);
   const [expandedBookings, setExpandedBookings] = useState(new Set());
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
+        setIsLanguageDropdownOpen(false);
+      }
+      if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target)) {
+        setIsNotificationDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch all flights for catalog and extract available cities from actual flight data
+  const fetchAllFlights = async () => {
+    try {
+      setIsLoading(true);
+      console.log('🔄 Admin fetching flights and extracting cities from actual flight data...');
+      
+      // Get all flights first
+      if (shouldUseRealAPI()) {
+        const response = await flightsAPI.getAllFlights();
+        console.log('📡 Admin all flights response:', response);
+        const flights = response.flights || response || [];
+        setAllFlights(flights);
+        
+        // Extract cities ONLY from actual flights (not from airport database)
+        const origins = new Set();
+        const destinations = new Set();
+        
+        flights.forEach(flight => {
+          // Extract origin city (try multiple field names)
+          const originCity = flight.origin_city || 
+                           flight.origin?.city || 
+                           flight.origin_name ||
+                           flight.origin ||
+                           (flight.route && flight.route.from);
+          
+          // Extract destination city (try multiple field names)
+          const destinationCity = flight.destination_city || 
+                                 flight.destination?.city || 
+                                 flight.destination_name ||
+                                 flight.destination ||
+                                 (flight.route && flight.route.to);
+
+          if (originCity) {
+            // Clean city name (remove airport codes in parentheses)
+            const cleanOrigin = originCity.includes('(') ? 
+                              originCity.split('(')[0].trim() : 
+                              originCity.trim();
+            if (cleanOrigin) origins.add(cleanOrigin);
+          }
+          
+          if (destinationCity) {
+            // Clean city name (remove airport codes in parentheses)  
+            const cleanDestination = destinationCity.includes('(') ? 
+                                    destinationCity.split('(')[0].trim() : 
+                                    destinationCity.trim();
+            if (cleanDestination) destinations.add(cleanDestination);
+          }
+        });
+        
+        // Set cities from flight data
+        const flightBasedCities = {
+          origins: Array.from(origins).sort(),
+          destinations: Array.from(destinations).sort()
+        };
+        
+        console.log(`🏙️ Extracted cities from ${flights.length} flights:`, {
+          origins: flightBasedCities.origins.length,
+          destinations: flightBasedCities.destinations.length,
+          sampleOrigins: flightBasedCities.origins.slice(0, 5),
+          sampleDestinations: flightBasedCities.destinations.slice(0, 5)
+        });
+        
+        setAvailableCities(flightBasedCities);
+        
+        // Calculate max available seats from flight data
+        const maxSeats = flights.reduce((max, flight) => {
+          const totalSeats = flight.total_seats || 0;
+          return Math.max(max, totalSeats);
+        }, 12); // Default minimum of 12
+        
+        console.log('✈️ Max available seats found:', maxSeats);
+        setMaxAvailableSeats(maxSeats);
+      } else {
+        // Fallback: try localStorage for flights, otherwise show empty
+        console.log('📡 Real API not available, checking localStorage...');
+        const localFlights = localStorage.getItem('chancefly_mock_flights');
+        if (localFlights) {
+          const flights = JSON.parse(localFlights);
+          console.log(`💾 Found ${flights.length} flights in localStorage`);
+          setAllFlights(flights);
+          
+          // Extract cities from localStorage flights too
+          const origins = new Set();
+          const destinations = new Set();
+          
+          flights.forEach(flight => {
+            const originCity = flight.origin_city || flight.origin_name || flight.origin;
+            const destinationCity = flight.destination_city || flight.destination_name || flight.destination;
+            if (originCity) origins.add(originCity.split('(')[0].trim());
+            if (destinationCity) destinations.add(destinationCity.split('(')[0].trim());
+          });
+          
+          setAvailableCities({
+            origins: Array.from(origins).sort(),
+            destinations: Array.from(destinations).sort()
+          });
+        } else {
+          console.log('💾 No flights in localStorage either');
+          setAllFlights([]);
+          setAvailableCities({ origins: [], destinations: [] });
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error fetching flights and cities:', error);
+      // Show empty cities on error (don't fall back to airport database)
+      console.log('⚠️ Admin dashboard: Showing empty dropdowns due to error');
+      setAvailableCities({ 
+        origins: [], 
+        destinations: [] 
+      });
+      setAllFlights([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Fetch pending flights for approval
   const fetchPendingFlights = async () => {
@@ -493,6 +645,41 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  const fetchNotContactedQuotesCount = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/quotes/not-contacted-count', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotContactedQuotesCount(data.count || 0);
+      } else {
+        // If endpoint doesn't exist, fetch all quotes and count locally
+        const quotesResponse = await fetch('/api/quotes', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (quotesResponse.ok) {
+          const quotesData = await quotesResponse.json();
+          const notContactedCount = (quotesData || []).filter(quote => (quote.contact_status || 'not_contacted') === 'not_contacted').length;
+          setNotContactedQuotesCount(notContactedCount);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error fetching not contacted quotes count:', error);
+    }
+  };
+
   const markQuotesAsSeen = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -736,8 +923,13 @@ export default function AdminDashboard({ user }) {
   };
 
   useEffect(() => {
-    // Always fetch unseen quotes count for badge
+    // Clear airport cache to ensure we get fresh data after migration
+    AirportService.clearCache();
+    
+    // Always fetch counts for badges and all flights for dropdowns
     fetchUnseenQuotesCount();
+    fetchNotContactedQuotesCount();
+    fetchAllFlights();
     
     if (activeTab === 'approvals') {
       fetchPendingFlights();
@@ -755,6 +947,17 @@ export default function AdminDashboard({ user }) {
     }
   }, [activeTab]);
 
+  // Fetch initial badge counts on component mount
+  useEffect(() => {
+    fetchNotContactedQuotesCount();
+    fetchUnseenQuotesCount();
+    fetchPendingFlights(); // Load pending flights badge
+    fetchPendingOperators(); // Load pending operators badge
+    if (user?.role === 'super-admin') {
+      fetchPendingAirports(); // Load pending airports badge for super-admin
+    }
+  }, []);
+
   const tabs = [
     { id: 'catalog', name: t('admin.dashboard.tabs.catalog'), icon: EyeIcon },
     { id: 'approvals', name: t('admin.dashboard.tabs.approvals'), icon: CheckIcon, badge: pendingFlights.length },
@@ -767,40 +970,37 @@ export default function AdminDashboard({ user }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">
-                {t('admin.dashboard.welcomeBack')} {user?.firstName} {user?.lastName}
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  {t('admin.dashboard.superAdmin')}
-                </span>
-              </p>
-            </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Fixed Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
+        {/* Sidebar Header with Logo */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-center">
+            <img 
+              src="/images/logo/logo2.svg" 
+              alt="ChanceFly" 
+              className="h-16 w-auto"
+            />
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-8">
+        {/* Sidebar Navigation */}
+        <nav className="p-4 flex-1">
+          <div className="space-y-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === tab.id
                       ? 'bg-blue-100 text-blue-700 border border-blue-200'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
-                  <Icon className="h-5 w-5 mr-2" />
-                  {tab.name}
+                  <Icon className="h-5 w-5 mr-3" />
+                  <span className="flex-1 text-left">{tab.name}</span>
                   {tab.badge > 0 && (
                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                       {tab.badge}
@@ -809,20 +1009,348 @@ export default function AdminDashboard({ user }) {
                 </button>
               );
             })}
-          </nav>
+          </div>
+        </nav>
+      </div>
+
+      {/* Main Content Area - Full Width */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
+                </div>
+                <p className="text-gray-600">
+                  {t('admin.dashboard.welcomeBack')} {user?.firstName} {user?.lastName}
+                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    {t('admin.dashboard.superAdmin')}
+                  </span>
+                </p>
+              </div>
+            </div>
+            
+            {/* Right side navigation components */}
+            <div className="flex items-center space-x-4">
+              {/* Language Selector */}
+              <div className="relative" ref={languageDropdownRef}>
+                <button 
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200 min-w-[50px]"
+                >
+                  <GlobeAltIcon className="h-4 w-4 mr-1" />
+                  <span className="text-sm font-medium">EN</span>
+                  <ChevronDown className={`h-3 w-3 ml-1 transition-transform duration-200 ${isLanguageDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Language Dropdown */}
+                {isLanguageDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          // Add language change logic here
+                          setIsLanguageDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        🇺🇸 English
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Add language change logic here
+                          setIsLanguageDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        🇪🇸 Español
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Notification Bell */}
+              <div className="relative" ref={notificationDropdownRef}>
+                <button 
+                  onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
+                  className="relative flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200"
+                >
+                  <BellIcon className="h-5 w-5" />
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">3</span>
+                </button>
+                
+                {/* Notifications Dropdown */}
+                {isNotificationDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-96 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                        <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">3 new</span>
+                      </div>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-blue-400 transition-colors">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                            <DocumentTextIcon className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">New flight submission</div>
+                            <div className="text-sm text-gray-600 mt-1">A new flight has been submitted for approval by operator AeroJet</div>
+                            <div className="text-xs text-gray-400 mt-2 flex items-center">
+                              <span>2 minutes ago</span>
+                              <span className="ml-2 w-2 h-2 bg-green-400 rounded-full"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-yellow-400 transition-colors">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mt-0.5">
+                            <UsersIcon className="h-4 w-4 text-yellow-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">Operator registered</div>
+                            <div className="text-sm text-gray-600 mt-1">SkyWings Aviation has completed registration and is pending approval</div>
+                            <div className="text-xs text-gray-400 mt-2">1 hour ago</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-green-400 transition-colors">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                            <CurrencyDollarIcon className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">Payment received</div>
+                            <div className="text-sm text-gray-600 mt-1">Flight booking payment of $2,500 confirmed for BOG → MIA</div>
+                            <div className="text-xs text-gray-400 mt-2">3 hours ago</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+                      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">View all notifications →</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Profile Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center justify-center bg-blue-500/10 text-gray-700 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md min-w-[50px]"
+                >
+                  <User className="h-4 w-4 mr-1" />
+                  <span className="text-sm font-medium">{user?.firstName}</span>
+                  <ChevronDown className={`h-3 w-3 ml-1 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white backdrop-blur-sm border border-gray-200 rounded-lg shadow-xl z-50">
+                    {/* User Info Header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</div>
+                      <div className="text-xs text-gray-500">{user?.role} • {user?.id}</div>
+                    </div>
+                    
+                    {/* Menu Items */}
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          navigate('/profile');
+                          setIsProfileDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <User className="h-4 w-4 mr-3" />
+                        {t('nav.profile')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          logout();
+                          navigate('/');
+                          setIsProfileDropdownOpen(false);
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        {t('nav.logout')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {/* Content Area */}
+        <div className="flex-1 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full p-6">
           {activeTab === 'catalog' && (
             <ErrorBoundary>
-              <div className="px-6 py-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.dashboard.catalog.title')}</h2>
-                <p className="text-gray-600 mb-6">{t('admin.dashboard.catalog.subtitle')}</p>
-                
-                <FlightFilters filters={filters} setFilters={setFilters} />
+              {/* Enhanced Filters Section */}
+              <div className="bg-white border-b border-gray-200 px-6 py-6">
+                {/* Enhanced Filter Controls */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  {/* Main Filter Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    {/* Origin Dropdown */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center space-x-1">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>From ({availableCities.origins.length} cities)</span>
+                      </label>
+                      <select
+                        value={filters.origin}
+                        onChange={(e) => setFilters({...filters, origin: e.target.value})}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      >
+                        <option value="">Select departure city...</option>
+                        {availableCities.origins.map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Destination Dropdown */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center space-x-1">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>To ({availableCities.destinations.length} cities)</span>
+                      </label>
+                      <select
+                        value={filters.destination}
+                        onChange={(e) => setFilters({...filters, destination: e.target.value})}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      >
+                        <option value="">Select destination city...</option>
+                        {availableCities.destinations.map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Custom Date Selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center space-x-1">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Date</span>
+                      </label>
+                      <CustomCalendar
+                        value={filters.date}
+                        onChange={(date) => setFilters({...filters, date})}
+                        minDate={new Date().toISOString().split('T')[0]}
+                        placeholder="Select departure date..."
+                        theme="departure"
+                      />
+                    </div>
+
+                    {/* Passengers Input */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 flex items-center space-x-1">
+                        <UserIcon className="w-4 h-4 text-gray-500" />
+                        <span>Passengers (max {maxAvailableSeats})</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <UserIcon className="w-5 h-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="number"
+                          min="1"
+                          max={maxAvailableSeats}
+                          value={filters.passengers}
+                          onChange={(e) => {
+                            const value = Math.min(Math.max(1, parseInt(e.target.value) || 1), maxAvailableSeats);
+                            setFilters({...filters, passengers: value});
+                          }}
+                          className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="Number of passengers"
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <span className="text-gray-400 text-sm">
+                            {filters.passengers === 1 ? 'passenger' : 'passengers'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Row - Standard UX Pattern */}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    {/* Left side - Clear + Active Filters */}
+                    <div className="flex items-center gap-4">
+                      <button 
+                        onClick={() => setFilters({ origin: '', destination: '', date: '', passengers: 1 })}
+                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200 flex items-center space-x-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Clear all</span>
+                      </button>
+                      
+                      {/* Active Filter Tags */}
+                      {(filters.origin || filters.destination || filters.date || filters.passengers > 1) && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">•</span>
+                          <div className="flex flex-wrap gap-1">
+                            {filters.origin && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                From: {filters.origin}
+                              </span>
+                            )}
+                            {filters.destination && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                To: {filters.destination}
+                              </span>
+                            )}
+                            {filters.date && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {new Date(filters.date).toLocaleDateString()}
+                              </span>
+                            )}
+                            {filters.passengers > 1 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {filters.passengers} pax
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right side - Sort Options */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">Sort by:</span>
+                      <select className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="departure">Departure Time</option>
+                        <option value="duration">Flight Duration</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="px-2">
+              
+              {/* Flight List Section */}
+              <div className="px-6 py-6">
                 <FlightList 
                   filters={filters} 
                   isAdminView={true} 
@@ -1216,7 +1744,7 @@ export default function AdminDashboard({ user }) {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{q.phone}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{q.origin} → {q.destination}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div className="flex justify-center">
+                            <div className="flex justify-start">
                               <button
                                 onClick={() => {
                                   const currentStatus = q.contact_status || 'not_contacted';
@@ -1263,36 +1791,44 @@ export default function AdminDashboard({ user }) {
                   </div>
                 ) : (
                   pendingAirports.map((airport) => (
-                    <div key={airport.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-start justify-between">
+                    <div key={airport.id} className="border rounded-lg p-3 hover:bg-gray-50">
+                      <div className="flex items-center justify-between">
                         <div className="flex-1">
+                          {/* Header with name and code */}
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-medium text-gray-900">{airport.code}</h3>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <h3 className="text-base font-medium text-gray-900">{airport.name} ({airport.code})</h3>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                               Pending Review
                             </span>
                           </div>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Airport Name</p>
-                              <p className="text-sm text-gray-600">{airport.name}</p>
+                          {/* Compact horizontal info layout */}
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                            <div className="flex items-center space-x-1">
+                              <span className="font-medium text-gray-700">Airport:</span>
+                              <span className="text-gray-600">{airport.name} ({airport.code})</span>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Location</p>
-                              <p className="text-sm text-gray-600">{airport.city}, {airport.country}</p>
+                            <div className="flex items-center space-x-1">
+                              <span className="font-medium text-gray-700">Location:</span>
+                              <span className="text-gray-600">{airport.city}, {airport.country}</span>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Requested By</p>
-                              <p className="text-sm text-gray-600">{airport.created_by_email || 'Unknown'}</p>
+                            <div className="flex items-center space-x-1">
+                              <span className="font-medium text-gray-700">Requested by:</span>
+                              <span className="text-gray-600">
+                                {airport.operator_company_name || 
+                                 (airport.created_by_email 
+                                   ? airport.created_by_email.split('@')[0] 
+                                   : 'System/Unknown')}
+                              </span>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Requested Date</p>
-                              <p className="text-sm text-gray-600">{new Date(airport.created_at).toLocaleDateString()}</p>
+                            <div className="flex items-center space-x-1">
+                              <span className="font-medium text-gray-700">Date:</span>
+                              <span className="text-gray-600">{new Date(airport.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
                         
+                        {/* Action buttons */}
                         <div className="flex space-x-2 ml-4">
                           <button
                             onClick={() => setApprovalModal({
@@ -1566,6 +2102,7 @@ export default function AdminDashboard({ user }) {
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
@@ -1579,8 +2116,11 @@ export default function AdminDashboard({ user }) {
               </div>
               <div className="mt-4 text-center">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Approve Airport: {approvalModal.airport?.code}
+                  Approve Airport
                 </h3>
+                <p className="text-md text-gray-700 mt-1">
+                  {approvalModal.airport?.name} ({approvalModal.airport?.code})
+                </p>
                 <div className="mt-4 text-left">
                   <p className="text-sm text-gray-500 mb-4">
                     Please provide the exact coordinates for this airport to complete the approval.

@@ -134,6 +134,19 @@ router.get('/unseen-count', async (req, res) => {
   }
 });
 
+// Get not contacted quotes count
+router.get('/not-contacted-count', async (req, res) => {
+  try {
+    const queryText = `SELECT COUNT(*) as count FROM quotes WHERE (contact_status IS NULL OR contact_status = 'not_contacted')`;
+    const result = await query(queryText);
+    const count = result.rows[0]?.count || 0;
+    res.json({ count });
+  } catch (error) {
+    console.error('Error getting not contacted quotes count:', error);
+    res.status(500).json({ error: 'Failed to get not contacted quotes count' });
+  }
+});
+
 // Update quote contact status
 router.patch('/:id/contact-status', async (req, res) => {
   try {

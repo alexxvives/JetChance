@@ -46,11 +46,35 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
     } shadow-2xl relative z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Empty left space for balance */}
-          <div className="flex-1"></div>
+          
+          {/* Mobile: Hamburger menu (left) */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
 
-          {/* Main Navigation - Center */}
-          <div className="hidden md:flex items-center justify-center">
+          {/* Mobile: Logo (center) / Desktop: Logo (left) */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="text-2xl font-bold text-amber-300">
+              
+            </Link>
+          </div>
+
+          {/* Mobile: Empty space (right) / Desktop: Navigation (center) */}
+          <div className="flex-1 hidden md:flex justify-center">
             <div className="flex items-center space-x-8">
               {!isAuthenticated ? (
                 // Public Navigation
@@ -95,7 +119,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
             </div>
           </div>
             
-          {/* User Actions & Settings - Right */}
+          {/* Desktop: Authentication & User Actions (right) / Mobile: Hidden */}
           <div className="hidden md:flex items-center space-x-3 flex-1 justify-end">
             {isAuthenticated ? (
               // Authenticated User Actions
@@ -146,39 +170,22 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
                 </div>
               </>
             ) : (
-              // Guest User Actions
-              <div className="flex items-center space-x-3">
+              // Guest User Actions  
+              <>
                 <Link
                   to="/login"
-                  className="text-white/90 hover:text-amber-300 px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold hover:from-amber-600 hover:to-amber-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
                   {t('nav.signIn')}
                 </Link>
-                <Link
-                  to="/signup"
-                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold hover:from-amber-600 hover:to-amber-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                >
-                  {t('auth.login.signUp')}
-                </Link>
                 <LanguageSelector />
-              </div>
+              </>
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile: Language selector (far right) */}
           <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white/90 hover:text-amber-300 p-2 rounded-lg hover:bg-amber-500/20 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            <LanguageSelector />
           </div>
         </div>
 
@@ -242,13 +249,6 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
                       <div className="text-sm font-medium text-amber-300">{user?.firstName} {user?.lastName}</div>
                       <div className="text-xs text-white/60">{user?.role} • {user?.id}</div>
                     </div>
-                    {/* Language Settings for Authenticated Users */}
-                    <div className="border-b border-amber-300/20 pb-3 mb-3">
-                      <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
-                      <div className="px-4 py-2">
-                        <LanguageSelector />
-                      </div>
-                    </div>
                     {/* Profile Icon Button */}
                     <button
                       onClick={() => {
@@ -270,26 +270,13 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {/* Language Settings for Non-authenticated Users */}
-                    <div className="border-b border-amber-300/20 pb-3 mb-3">
-                      <div className="text-sm text-white/60 mb-3 px-4 font-medium uppercase tracking-wide">Settings</div>
-                      <div className="px-4 py-2">
-                        <LanguageSelector />
-                      </div>
-                    </div>
+                    {/* Highlighted Sign In Button */}
                     <Link
                       to="/login"
                       onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 text-white/80 hover:text-amber-300 hover:bg-white/5 rounded-lg transition-all duration-200 font-medium"
-                    >
-                      {t('nav.signIn')}
-                    </Link>
-                    <Link
-                      to="/signup"
-                      onClick={() => setIsMenuOpen(false)}
                       className="block mx-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 py-3 rounded-xl font-semibold text-center hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg"
                     >
-                      {t('auth.login.signUp')}
+                      {t('nav.signIn')}
                     </Link>
                   </div>
                 )}

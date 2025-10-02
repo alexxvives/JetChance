@@ -63,11 +63,14 @@ function AppContent() {
       <div className="min-h-screen">
           {/* Content */}
           <div className="relative z-10">
-            <Navbar 
-              useSimpleBackground={useSimpleBackground}
-              setUseSimpleBackground={setUseSimpleBackground}
-              isHomePage={isHomePage}
-            />
+            {/* Show Navbar only on landing page routes */}
+            {(location.pathname === '/' || location.pathname === '/luxury' || location.pathname === '/login' || location.pathname === '/signup') && (
+              <Navbar 
+                useSimpleBackground={useSimpleBackground}
+                setUseSimpleBackground={setUseSimpleBackground}
+                isHomePage={isHomePage}
+              />
+            )}
             <Routes>
               <Route path="/" element={<LuxuryLandingPage />} />
               <Route path="/luxury" element={<LuxuryLandingPage />} />

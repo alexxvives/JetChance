@@ -7,7 +7,63 @@ import { flightsAPI, shouldUseRealAPI } from '../api/flightsAPI';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import CustomCalendar from '../components/CustomCalendar';
 import CustomTimePicker from '../components/CustomTimePicker';
-import { searchCities, searchAirports, getCityAirports } from '../data/airportsAndCities';
+import AirportService from '../services/AirportService';
+
+// Compatibility wrapper functions for legacy hardcoded airport functions
+let airportsCache = null;
+
+const getAirportsSync = () => {
+  if (!airportsCache) {
+    // Try to get from cache or use fallback
+    const cached = AirportService.cache.get('approved_airports');
+    if (cached && Date.now() - cached.timestamp < AirportService.cacheTimeout) {
+      airportsCache = cached.data;
+    } else {
+      // Use fallback airports if no cache
+      airportsCache = AirportService.getFallbackAirports();
+    }
+  }
+  return airportsCache;
+};
+
+const searchAirports = (query, limit = 10) => {
+  const airports = getAirportsSync();
+  if (!query || query.length < 1) return [];
+  
+  const lowercaseQuery = query.toLowerCase();
+  return airports
+    .filter(airport => 
+      airport.code.toLowerCase().includes(lowercaseQuery) ||
+      airport.name.toLowerCase().includes(lowercaseQuery) ||
+      airport.city.toLowerCase().includes(lowercaseQuery)
+    )
+    .slice(0, limit);
+};
+
+const searchCities = (query, limit = 10) => {
+  const airports = getAirportsSync();
+  const cities = [...new Set(airports.map(a => a.city))].sort();
+  
+  if (!query || query.length < 1) return cities.slice(0, limit);
+  
+  const lowercaseQuery = query.toLowerCase();
+  return cities
+    .filter(city => city.toLowerCase().includes(lowercaseQuery))
+    .slice(0, limit);
+};
+
+const getCityAirports = (cityName) => {
+  const airports = getAirportsSync();
+  return airports.filter(airport => airport.city === cityName);
+};
+
+// Initialize cache on component load
+AirportService.getApprovedAirports().then(airports => {
+  airportsCache = airports;
+}).catch(error => {
+  console.warn('Failed to load airports from database, using fallback');
+  airportsCache = AirportService.getFallbackAirports();
+});
 
 // Function to get high-quality private jet images based on aircraft type
 const getDefaultAircraftImage = (aircraftType) => {
@@ -49,6 +105,30 @@ export default function EditFlightPage() {
     const departure = new Date(formData.departureTime);
     const arrival = new Date(formData.arrivalTime);
     const durationMs = arrival - departure;
+    
+    // Check if arrival is before or equal to departure
+    if (durationMs <= 0) {
+      const errorMessage = durationMs === 0 
+        ? "Arrival time cannot be the same as departure time. Please ensure there is at least some flight duration."
+        : "Arrival time cannot be before departure time. Please check your flight schedule.";
+      
+      return (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="text-red-800 font-medium">Invalid Flight Times</p>
+              <p className="text-red-700 text-sm">
+                {errorMessage}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     const durationMinutes = Math.round(durationMs / (1000 * 60));
     const hours = Math.floor(durationMinutes / 60);
     
@@ -339,10 +419,27 @@ export default function EditFlightPage() {
     }
   };
 
+  // Validation function to check if dates/times are valid
+  const isFormValid = () => {
+    if (!formData.departureTime || !formData.arrivalTime) return true; // Let normal required field validation handle this
+    
+    const departure = new Date(formData.departureTime);
+    const arrival = new Date(formData.arrivalTime);
+    
+    return arrival > departure; // Arrival must be after departure (not equal)
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
+
+    // Validate that arrival time is after departure time
+    if (!isFormValid()) {
+      alert('Error: Arrival time cannot be before or equal to departure time. Please ensure there is at least some flight duration.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       if (!shouldUseRealAPI()) {

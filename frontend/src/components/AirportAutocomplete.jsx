@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUpDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { searchAirports } from '../data/airportsAndCities';
+import AirportService from '../services/AirportService';
 import { useTranslation } from '../contexts/TranslationContext';
 
 const AirportAutocomplete = ({ 
@@ -44,6 +44,9 @@ const AirportAutocomplete = ({
       'Ibagué', 'Manizales', 'Medellín', 'Montería', 'Neiva', 'Pasto',
       'Pereira', 'Santa Marta', 'Soacha', 'Soledad', 'Valledupar', 'Villavicencio'
     ],
+    'CR': [
+      'Cartago', 'Liberia', 'Puntarenas', 'San José'
+    ],
     'EC': [
       'Ambato', 'Cuenca', 'Esmeraldas', 'Guayaquil', 'Ibarra', 'Loja',
       'Machala', 'Manta', 'Portoviejo', 'Quito', 'Riobamba', 'Santo Domingo'
@@ -51,6 +54,9 @@ const AirportAutocomplete = ({
     'MX': [
       'Acapulco', 'Cancún', 'Guadalajara', 'Los Cabos', 'Mazatlán', 'Mérida',
       'Mexico City', 'Monterrey', 'Playa del Carmen', 'Puebla', 'Puerto Vallarta', 'Tijuana'
+    ],
+    'PA': [
+      'Colón', 'David', 'Panama City', 'Santiago'
     ],
     'PE': [
       'Arequipa', 'Chiclayo', 'Chimbote', 'Cusco', 'Huancayo', 'Ica',
@@ -60,6 +66,13 @@ const AirportAutocomplete = ({
       'Atlanta', 'Boston', 'Charlotte', 'Chicago', 'Dallas', 'Denver',
       'Houston', 'Las Vegas', 'Los Angeles', 'Miami', 'New York', 'Philadelphia',
       'Phoenix', 'Portland', 'San Antonio', 'San Diego', 'San Francisco', 'Seattle'
+    ],
+    'UY': [
+      'Canelones', 'Maldonado', 'Montevideo', 'Punta del Este', 'Salto'
+    ],
+    'VE': [
+      'Barquisimeto', 'Caracas', 'Ciudad Guayana', 'Maracaibo', 'Maracay',
+      'Maturín', 'Puerto La Cruz', 'San Cristóbal', 'Valencia'
     ]
   };
 
@@ -79,38 +92,19 @@ const AirportAutocomplete = ({
   }, [value]);
 
   // Search function that looks for airports by city name OR airport code/name
-  const searchFunction = (query, limit = 10) => {
+  const searchFunction = async (query, limit = 10) => {
     if (!query || query.length < 1) return [];
     
-    const results = searchAirports(query, limit);
-    
-    // Also search by city name and show all airports in that city
-    const cityResults = [];
-    const lowercaseQuery = query.toLowerCase();
-    
-    // Get unique cities that match the query
-    const matchingCities = new Set();
-    searchAirports('', 1000).forEach(airport => {
-      if (airport.city && airport.city.toLowerCase().includes(lowercaseQuery)) {
-        matchingCities.add(airport.city);
-      }
-    });
-    
-    // For each matching city, add all its airports
-    matchingCities.forEach(city => {
-      const airportsInCity = searchAirports('', 1000).filter(airport => 
-        airport.city === city && !results.some(r => r.code === airport.code)
-      );
-      cityResults.push(...airportsInCity);
-    });
-    
-    // Combine and limit results
-    const combined = [...results, ...cityResults];
-    const unique = combined.filter((airport, index, self) => 
-      index === self.findIndex(a => a.code === airport.code)
-    );
-    
-    return unique.slice(0, limit);
+    try {
+      // Use AirportService for database-driven search
+      const results = await AirportService.searchAirports(query);
+      
+      // Limit results and return
+      return results.slice(0, limit);
+    } catch (error) {
+      console.error('Error searching airports:', error);
+      return [];
+    }
   };
 
   const handleInputChange = (e) => {
@@ -118,9 +112,13 @@ const AirportAutocomplete = ({
     setInputValue(query);
     
     if (query.length > 0) {
-      const options = searchFunction(query);
-      setFilteredOptions(options);
-      setIsOpen(true);
+      searchFunction(query).then(options => {
+        setFilteredOptions(options);
+        setIsOpen(true);
+      }).catch(error => {
+        console.error('Search error:', error);
+        setFilteredOptions([]);
+      });
     } else {
       setFilteredOptions([]);
       setIsOpen(false);
@@ -132,9 +130,13 @@ const AirportAutocomplete = ({
 
   const handleFocus = () => {
     if (inputValue.length > 0) {
-      const options = searchFunction(inputValue);
-      setFilteredOptions(options);
-      setIsOpen(true);
+      searchFunction(inputValue).then(options => {
+        setFilteredOptions(options);
+        setIsOpen(true);
+      }).catch(error => {
+        console.error('Search error:', error);
+        setFilteredOptions([]);
+      });
     }
   };
 
@@ -170,58 +172,30 @@ const AirportAutocomplete = ({
     setShowCustomForm(true);
   };
 
-  const handleCustomAirportSubmit = async () => {
+  const handleCustomAirportSubmit = () => {
     // Validate required fields
     if (!customAirport.code || !customAirport.name || !customAirport.city || !customAirport.country) {
       alert(t('airportAutocomplete.validation.required'));
       return;
     }
 
-    try {
-      const response = await fetch('/api/airports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          code: customAirport.code.toUpperCase(),
-          name: customAirport.name,
-          city: customAirport.city,
-          country: customAirport.country
-        })
-      });
+    // Create a temporary custom airport object (will be saved when flight is submitted)
+    const tempCustomAirport = {
+      code: customAirport.code.toUpperCase(),
+      name: customAirport.name,
+      city: customAirport.city,
+      country: customAirport.country,
+      isCustom: true,
+      isPending: true // Flag to indicate this needs to be saved to database
+    };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        if (response.status === 409) {
-          // Airport code already exists
-          alert(t('airportAutocomplete.validation.duplicateCode').replace('{code}', customAirport.code.toUpperCase()));
-          return;
-        }
-        
-        throw new Error(errorData.error || 'Failed to save airport');
-      }
-
-      const newAirport = await response.json();
-      
-      // Select this new airport using the onChange prop
-      if (onChange) {
-        onChange(newAirport);
-      }
-      setInputValue(`${newAirport.code} - ${newAirport.name} (Custom)`);
-      
-      // Reset form and close modal
-      resetCustomForm();
-      setIsOpen(false);
-      
-    } catch (error) {
-      console.error('Error saving custom airport:', error);
-      if (error.message.includes('code') && error.message.includes('exists')) {
-        // Already handled above
-      } else {
-        alert(t('airportAutocomplete.validation.error'));
-      }
+    // Set the temporary custom airport as selected
+    setInputValue(`${tempCustomAirport.code} - ${tempCustomAirport.name} (Custom - Pending)`);
+    setShowCustomForm(false);
+    setCustomAirport({ code: '', name: '', country: '', city: '' });
+    
+    if (onChange) {
+      onChange(tempCustomAirport);
     }
   };
 

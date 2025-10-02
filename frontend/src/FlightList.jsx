@@ -75,7 +75,7 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
   // Show loading state
   if (loading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         <div className="col-span-full text-center py-12">
           <div className="text-gray-400 text-4xl mb-4">⏳</div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('flightList.loading')}</h3>
@@ -111,7 +111,7 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
       {filteredFlights.map(flight => (
         <FlightCard 
           key={flight.id} 

@@ -1,5 +1,6 @@
 {
   "nav": {
+    "navigation": "Navigation",
     "home": "For Customers",
     "operators": "For Operators",
     "about": "About Us",
@@ -58,6 +59,8 @@
     "operator": {
       "title": "Operator Dashboard",
       "welcome": "Welcome back! Manage your flights and track their status.",
+      "welcomeBack": "Welcome back",
+      "role": "Operator",
       "createFlight": "Create Flight",
       "createFirstFlight": "Create Your First Flight",
       "loading": {
@@ -943,6 +946,9 @@
       "required": "Please fill in all required fields",
       "error": "Error saving airport. Please try again.",
       "duplicateCode": "Airport code '{code}' already exists. Please use a different code."
+    },
+    "info": {
+      "willBeCreated": "Airport will be created when the flight is submitted for review."
     }
   },
   "currency": {

@@ -1,10 +1,11 @@
 {
   "nav": {
+    "navigation": "Navegación",
     "home": "Para Clientes",
     "operators": "Para Operadores",
     "about": "Acerca de Nosotros",
     "contact": "Contáctanos",
-    "dashboard": "Panel",
+    "dashboard": "Panel de Control",
     "profile": "Perfil",
     "signIn": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
@@ -58,6 +59,8 @@
     "operator": {
       "title": "Panel del Operador",
       "welcome": "¡Bienvenido de vuelta! Gestiona tus vuelos y rastrea su estado.",
+      "welcomeBack": "Bienvenido de vuelta",
+      "role": "Operador",
       "createFlight": "Crear Vuelo",
       "createFirstFlight": "Crear Tu Primer Vuelo",
       "loading": {
@@ -587,6 +590,9 @@
       "required": "Por favor completa todos los campos requeridos",
       "error": "Error al guardar el aeropuerto. Inténtalo de nuevo.",
       "duplicateCode": "El código de aeropuerto '{code}' ya existe. Por favor usa un código diferente."
+    },
+    "info": {
+      "willBeCreated": "El aeropuerto se creará cuando el vuelo sea enviado para revisión."
     }
   }
 }
