@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { query: dbQuery, run, db } = require('../config/database-sqlite');
 const { authenticate, authorize } = require('../middleware/auth');
 const SimpleIDGenerator = require('../utils/idGenerator');
+const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
@@ -275,6 +276,23 @@ router.post('/', authenticate, [
         'UPDATE flights SET available_seats = available_seats - ? WHERE id = ?'
       );
       updateFlightStmt.run(passengers.length, flightId);
+
+      // Notify operator about new booking
+      try {
+        const operatorUserId = flight.user_id;
+        if (operatorUserId) {
+          await createNotification(
+            db,
+            operatorUserId,
+            'New Booking Received! 🎉',
+            `You have a new booking for your flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+          );
+          console.log(`✅ Created booking notification for operator ${operatorUserId}`);
+        }
+      } catch (notificationError) {
+        console.error('❌ Failed to create booking notification:', notificationError);
+        // Don't fail the booking if notification fails
+      }
 
       res.status(201).json({
         message: 'Booking created successfully',

@@ -79,6 +79,16 @@ CREATE TABLE notifications (
 
 ---
 
+### 7. Flight Booking Received (NEW)
+**Event:** When a customer books one of the operator's flights
+**Trigger:** `POST /api/bookings`
+**Recipient:** The operator who owns the flight
+**Title:** `"New Booking Received! 🎉"`
+**Message:** `"You have a new booking for your flight [ORIGIN] → [DESTINATION]. Booking ID: [BOOKING_ID]. Passengers: [COUNT]"`
+**Icon:** 🎉 Green (new booking)
+
+---
+
 ## Frontend Implementation
 
 ### Real-time Updates
