@@ -12,18 +12,22 @@ import {
   Bell,
   Lock,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  Trash2
 } from 'lucide-react';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const [user, setUser] = useState(null);
   const [operator, setOperator] = useState(null);
   const [profileData, setProfileData] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -132,6 +136,42 @@ const Profile = () => {
       setMessage('Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setMessage('Please type DELETE to confirm account deletion');
+      return;
+    }
+
+    setDeleting(true);
+    setMessage('');
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/profile', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setMessage('Account deleted successfully. Redirecting...');
+        setTimeout(() => {
+          logout();
+          navigate('/');
+        }, 2000);
+      } else {
+        const data = await response.json();
+        setMessage(data.error || 'Failed to delete account');
+        setDeleting(false);
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setMessage('Failed to delete account. Please try again.');
+      setDeleting(false);
     }
   };
 
@@ -426,6 +466,74 @@ const Profile = () => {
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Danger Zone - Delete Account */}
+            <div className="mt-8 pt-8 border-t border-red-200">
+              <div className="bg-red-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-red-900 mb-2 flex items-center">
+                  <Shield className="h-5 w-5 mr-2" />
+                  Danger Zone
+                </h3>
+                <p className="text-sm text-red-700 mb-4">
+                  Once you delete your account, there is no going back. This action cannot be undone.
+                </p>
+                
+                {!showDeleteConfirm ? (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="inline-flex items-center px-4 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-red-900 mb-2">
+                        Type <span className="font-bold">DELETE</span> to confirm:
+                      </label>
+                      <input
+                        type="text"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        placeholder="DELETE"
+                        className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        disabled={deleting}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleDeleteAccount}
+                        disabled={deleting || deleteConfirmText !== 'DELETE'}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {deleting ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Permanently Delete Account
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeleteConfirmText('');
+                        }}
+                        disabled={deleting}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

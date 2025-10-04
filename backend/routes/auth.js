@@ -5,6 +5,7 @@ const SimpleIDGenerator = require('../utils/idGenerator');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database-sqlite');
 const { authenticate } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
@@ -136,6 +137,27 @@ router.post('/register', registerValidation, async (req, res) => {
          VALUES (?, ?, ?, ?, ?)`,
         [roleSpecificId, userId, companyName.trim(), 0, new Date().toISOString()]
       );
+      
+      // Notify all admins about new operator registration
+      try {
+        const adminQuery = await db.query(
+          'SELECT id FROM users WHERE role IN (?, ?)',
+          ['admin', 'super-admin']
+        );
+        
+        for (const admin of adminQuery.rows) {
+          await createNotification(
+            db,
+            admin.id,
+            'New Operator Registration',
+            `New operator account registered: ${companyName.trim()} (${email})`
+          );
+        }
+        console.log(`✅ Notified ${adminQuery.rows.length} admins about new operator registration`);
+      } catch (notificationError) {
+        console.error('❌ Failed to create admin notification for operator registration:', notificationError);
+        // Don't fail registration if notification fails
+      }
     }
 
     // Get the created user data

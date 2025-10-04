@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { query, run } = require('../config/database-sqlite');
 const { authenticate } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
+const db = require('../config/database-sqlite');
 
 const router = express.Router();
 
@@ -182,6 +184,72 @@ router.put('/', authenticate, async (req, res) => {
     }
     
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/profile - Delete user account
+router.delete('/', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get user data before deletion
+    const userResult = await query(
+      'SELECT u.id, u.email, u.role, o.company_name, c.first_name, c.last_name FROM users u LEFT JOIN operators o ON u.id = o.user_id LEFT JOIN customers c ON u.id = c.user_id WHERE u.id = ?',
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = userResult.rows[0];
+    const isOperator = user.role === 'operator';
+    const userName = isOperator ? user.company_name : `${user.first_name} ${user.last_name}`;
+    
+    // Delete role-specific records first (foreign key constraints)
+    if (isOperator) {
+      await run('DELETE FROM operators WHERE user_id = ?', [userId]);
+      
+      // Also delete any flights owned by this operator
+      await run('DELETE FROM flights WHERE user_id = ?', [userId]);
+    } else {
+      await run('DELETE FROM customers WHERE user_id = ?', [userId]);
+    }
+    
+    // Delete notifications for this user
+    await run('DELETE FROM notifications WHERE user_id = ?', [userId]);
+    
+    // Delete the user account
+    await run('DELETE FROM users WHERE id = ?', [userId]);
+    
+    // Notify admins about account deletion
+    try {
+      const adminQuery = await query(
+        'SELECT id FROM users WHERE role IN (?, ?)',
+        ['admin', 'super-admin']
+      );
+      
+      const roleLabel = isOperator ? 'Operator' : 'Customer';
+      for (const admin of adminQuery.rows) {
+        await createNotification(
+          db,
+          admin.id,
+          `${roleLabel} Account Deleted`,
+          `${roleLabel} account deleted: ${userName} (${user.email})`
+        );
+      }
+      console.log(`✅ Notified ${adminQuery.rows.length} admins about account deletion`);
+    } catch (notificationError) {
+      console.error('❌ Failed to create admin notification for account deletion:', notificationError);
+      // Don't fail deletion if notification fails
+    }
+    
+    console.log(`✅ Account deleted successfully: ${user.email} (${user.role})`);
+    res.json({ message: 'Account deleted successfully' });
+    
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ error: 'Failed to delete account. Please try again.' });
   }
 });
 

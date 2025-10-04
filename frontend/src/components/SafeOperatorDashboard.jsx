@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import OperatorFlightBookings from './OperatorFlightBookings';
 import ConfirmationModal from './ConfirmationModal';
+import NotificationsAPI from '../api/notificationsAPI';
 import { 
   PlusIcon, 
   PaperAirplaneIcon, 
@@ -34,6 +35,11 @@ function ActualOperatorDashboard({ user }) {
   const [isUpcomingFlightsCollapsed, setIsUpcomingFlightsCollapsed] = useState(false);
   const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(false);
   
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
   // Dropdown state management
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
@@ -52,6 +58,18 @@ function ActualOperatorDashboard({ user }) {
 
   useEffect(() => {
     loadFlights();
+    loadNotifications(); // Load notifications when component mounts
+  }, [user]);
+
+  // Set up periodic notification refresh
+  useEffect(() => {
+    if (!user || !user.id) return;
+
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {
@@ -107,6 +125,34 @@ function ActualOperatorDashboard({ user }) {
       setFlights([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadNotifications = async () => {
+    if (!user || !user.id) {
+      console.log('❌ No user available for loading notifications');
+      return;
+    }
+
+    try {
+      setNotificationsLoading(true);
+      console.log('🔄 Loading notifications for operator:', user.id);
+      
+      const notificationsData = await NotificationsAPI.getNotifications();
+      console.log('✅ Loaded notifications:', notificationsData);
+      
+      setNotifications(notificationsData || []);
+      
+      // Count unread notifications (using read_status field)
+      const unread = notificationsData.filter(notification => !notification.read_status);
+      setUnreadCount(unread.length);
+      
+    } catch (error) {
+      console.error('❌ Error loading notifications:', error);
+      setNotifications([]);
+      setUnreadCount(0);
+    } finally {
+      setNotificationsLoading(false);
     }
   };
 
@@ -269,9 +315,11 @@ function ActualOperatorDashboard({ user }) {
                   className="relative flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200"
                 >
                   <BellIcon className="h-5 w-5" />
-                  {/* Only show notification badge if there are actual notifications */}
-                  {false && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">0</span>
+                  {/* Show notification badge if there are unread notifications */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
                   )}
                 </button>
                 
@@ -281,20 +329,100 @@ function ActualOperatorDashboard({ user }) {
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                        <span className="bg-gray-100 text-gray-500 text-xs font-medium px-2 py-1 rounded-full">0 new</span>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          unreadCount > 0 
+                            ? 'bg-red-100 text-red-700' 
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {unreadCount} new
+                        </span>
                       </div>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="px-6 py-8 text-center">
-                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <BellIcon className="h-6 w-6 text-gray-400" />
+                      {notificationsLoading ? (
+                        <div className="px-6 py-8 text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                          <p className="text-gray-500 text-sm">Loading notifications...</p>
                         </div>
-                        <p className="text-gray-500 text-sm">No notifications yet</p>
-                        <p className="text-gray-400 text-xs mt-1">You'll see updates about your flights here</p>
-                      </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="px-6 py-8 text-center">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <BellIcon className="h-6 w-6 text-gray-400" />
+                          </div>
+                          <p className="text-gray-500 text-sm">No notifications yet</p>
+                          <p className="text-gray-400 text-xs mt-1">You'll see updates about your flights here</p>
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div 
+                            key={notification.id} 
+                            className={`px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 transition-colors ${
+                              notification.read_at 
+                                ? 'border-l-gray-200 bg-white' 
+                                : 'border-l-blue-400 bg-blue-50/30'
+                            }`}
+                            onClick={() => {
+                              // Mark as read when clicked (implement this function)
+                              if (!notification.read_at) {
+                                // markNotificationAsRead(notification.id);
+                              }
+                            }}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${
+                                notification.type === 'flight_submitted' ? 'bg-blue-100' :
+                                notification.type === 'flight_approved' ? 'bg-green-100' :
+                                notification.type === 'flight_rejected' ? 'bg-red-100' :
+                                'bg-gray-100'
+                              }`}>
+                                {notification.type === 'flight_submitted' ? (
+                                  <DocumentTextIcon className="h-4 w-4 text-blue-600" />
+                                ) : notification.type === 'flight_approved' ? (
+                                  <DocumentTextIcon className="h-4 w-4 text-green-600" />
+                                ) : notification.type === 'flight_rejected' ? (
+                                  <DocumentTextIcon className="h-4 w-4 text-red-600" />
+                                ) : (
+                                  <BellIcon className="h-4 w-4 text-gray-600" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {notification.title}
+                                </div>
+                                <div className="text-sm text-gray-600 mt-1">
+                                  {notification.message}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-2 flex items-center">
+                                  <span>
+                                    {new Date(notification.created_at).toLocaleDateString()} {' '}
+                                    {new Date(notification.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  </span>
+                                  {!notification.read_at && (
+                                    <span className="ml-2 w-2 h-2 bg-blue-400 rounded-full"></span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                     <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                      <button className="text-sm text-gray-400 font-medium cursor-not-allowed">No notifications to view</button>
+                      {notifications.length > 0 ? (
+                        <button 
+                          onClick={() => {
+                            // Refresh notifications
+                            loadNotifications();
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                        >
+                          Refresh notifications
+                        </button>
+                      ) : (
+                        <button className="text-sm text-gray-400 font-medium cursor-not-allowed">
+                          No notifications to view
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
