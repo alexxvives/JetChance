@@ -1,7 +1,7 @@
-# ChanceFly AI Coding Agent Instructions
+# JetChance AI Coding Agent Instructions
 
 ## Project Overview
-ChanceFly is a React + Node.js platform connecting customers with private jet charter operators, featuring role-based authentication and bilingual support (English/Spanish).
+JetChance is a React + Node.js platform connecting customers with private jet charter operators, featuring role-based authentication and bilingual support (English/Spanish).
 
 ## Core Architecture
 
@@ -11,7 +11,7 @@ ChanceFly is a React + Node.js platform connecting customers with private jet ch
 - **Translation system**: Context-based with `useTranslation()` hook, all UI text should use `t('key.path')`
 - **Authentication flow**: Login → Dashboard (role-specific redirect)
 
-### Backend (`/backend` + `/workers/chancefly-api`)
+### Backend (`/backend` + `/workers/jetchance-api`)
 - **Dual API support**: Legacy Node.js backend + modern Cloudflare Workers API
 - **Database**: SQLite (backend) and Cloudflare D1 (workers)
 - **Role system**: `customer`, `operator`, `admin`, `super-admin` with separate profile tables

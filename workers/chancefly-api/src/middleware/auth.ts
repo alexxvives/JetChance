@@ -42,7 +42,7 @@ export async function authenticate(request: Request, env: Env): Promise<AuthResu
       }
 
       // Get user from database
-      const userQuery = await env.chancefly_db.prepare(
+      const userQuery = await env.jetchance_db.prepare(
         'SELECT id, email, role FROM users WHERE id = ?'
       ).bind(decoded.userId).first();
 
@@ -60,7 +60,7 @@ export async function authenticate(request: Request, env: Env): Promise<AuthResu
 
       // Add role-specific data if needed (for future use)
       if (userQuery.role === 'customer') {
-        const customerQuery = await env.chancefly_db.prepare(
+        const customerQuery = await env.jetchance_db.prepare(
           'SELECT first_name, last_name FROM customers WHERE user_id = ?'
         ).bind(decoded.userId).first();
         
@@ -69,7 +69,7 @@ export async function authenticate(request: Request, env: Env): Promise<AuthResu
           user.last_name = customerQuery.last_name as string;
         }
       } else if (userQuery.role === 'operator') {
-        const operatorQuery = await env.chancefly_db.prepare(
+        const operatorQuery = await env.jetchance_db.prepare(
           'SELECT company_name FROM operators WHERE user_id = ?'
         ).bind(decoded.userId).first();
         

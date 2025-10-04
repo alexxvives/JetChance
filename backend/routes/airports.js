@@ -5,7 +5,7 @@ const path = require('path');
 const router = express.Router();
 
 // Initialize database connection
-const dbPath = path.join(__dirname, '..', 'chancefly.db');
+const dbPath = path.join(__dirname, '..', 'jetchance.db');
 const db = new Database(dbPath);
 
 // Create airports table if it doesn't exist
@@ -121,13 +121,18 @@ router.get('/admin/pending', (req, res) => {
     // TODO: Add super admin auth middleware check
     
     const pendingAirports = db.prepare(`
-      SELECT a.*, u.email as created_by_email 
+      SELECT 
+        a.*,
+        u.email as created_by_email,
+        o.company_name as operator_company_name
       FROM airports a 
-      LEFT JOIN users u ON a.created_by = u.id 
+      LEFT JOIN users u ON CAST(a.created_by AS TEXT) = u.id 
+      LEFT JOIN operators o ON u.id = o.user_id
       WHERE a.status = 'pending' 
       ORDER BY a.created_at DESC
     `).all();
     
+    console.log('📡 Pending airports with operator info:', pendingAirports);
     res.json(pendingAirports);
   } catch (error) {
     console.error('Error fetching pending airports:', error);

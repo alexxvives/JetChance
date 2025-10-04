@@ -53,8 +53,8 @@ The original schema had a logical inconsistency:
 
 ## Files Modified
 - `backend/schema.sql` - Updated table definition
-- `workers/chancefly-api/src/handlers/auth.ts` - Fixed registration/login logic  
-- `workers/chancefly-api/src/middleware/auth.ts` - Updated auth middleware
+- `workers/jetchance-api/src/handlers/auth.ts` - Fixed registration/login logic  
+- `workers/jetchance-api/src/middleware/auth.ts` - Updated auth middleware
 - `PRODUCTION_CHECKLIST.md` - Marked database optimization as completed
 
 ## Verification

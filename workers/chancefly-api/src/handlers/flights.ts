@@ -89,7 +89,7 @@ async function handleFlightSearch(request: Request, env: Env): Promise<Response>
     
     query += ' ORDER BY departure_time ASC';
     
-    const stmt = env.chancefly_db.prepare(query);
+    const stmt = env.jetchance_db.prepare(query);
     const result = await stmt.bind(...params).all();
     
     return new Response(JSON.stringify({
@@ -126,7 +126,7 @@ async function handleFlightSearch(request: Request, env: Env): Promise<Response>
 
 async function handleGetFlight(request: Request, env: Env, flightId: string): Promise<Response> {
   try {
-    const flight = await env.chancefly_db.prepare(
+    const flight = await env.jetchance_db.prepare(
       `SELECT 
         id, operator_id, origin, destination, origin_code, destination_code,
         departure_time, arrival_time, aircraft_type, aircraft_image,

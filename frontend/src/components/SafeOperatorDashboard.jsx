@@ -164,7 +164,7 @@ function ActualOperatorDashboard({ user }) {
           <div className="flex items-center justify-center">
             <img 
               src="/images/logo/logo2.svg" 
-              alt="ChanceFly" 
+              alt="JetChance" 
               className="h-16 w-auto"
             />
           </div>

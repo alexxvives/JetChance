@@ -4,8 +4,8 @@
 declare namespace Cloudflare {
 	interface Env {
 		NODE_ENV: "production";
-		CORS_ORIGINS: "https://chancefly.alexxvives.workers.dev";
-		chancefly_db: D1Database;
+		CORS_ORIGINS: "https://jetchance.alexxvives.workers.dev";
+		jetchance_db: D1Database;
 	}
 }
 interface Env extends Cloudflare.Env {}

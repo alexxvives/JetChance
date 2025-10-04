@@ -2,7 +2,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 // Database migration to add airport approval system
-const dbPath = path.join(__dirname, 'chancefly.db');
+const dbPath = path.join(__dirname, 'jetchance.db');
 const db = new Database(dbPath);
 
 console.log('🔄 Starting airport approval system migration...');

@@ -18,7 +18,7 @@ export function handleCors(request: Request): Response {
     const allowedOrigins = [
       'http://localhost:8000',
       'http://localhost:8001',
-      'https://chancefly.alexxvives.workers.dev'
+      'https://jetchance.alexxvives.workers.dev'
     ];
 
     const responseHeaders = { ...corsHeaders };
@@ -50,7 +50,7 @@ export function addCorsHeaders(response: Response, origin?: string): Response {
     const allowedOrigins = [
       'http://localhost:8000',
       'http://localhost:8001', 
-      'https://chancefly.alexxvives.workers.dev'
+      'https://jetchance.alexxvives.workers.dev'
     ];
     
     if (allowedOrigins.includes(origin)) {

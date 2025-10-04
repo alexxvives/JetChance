@@ -34,7 +34,7 @@ export default function FlightFilters({ filters, setFilters }) {
           console.warn('⚠️ FlightFilters: Checking localStorage...');
           
           // Try localStorage as backup
-          const localFlights = localStorage.getItem('chancefly_mock_flights');
+          const localFlights = localStorage.getItem('jetchance_mock_flights');
           if (localFlights) {
             flights = JSON.parse(localFlights);
             console.log(`💾 FlightFilters: Loaded ${flights.length} flights from localStorage`);

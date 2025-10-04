@@ -22,15 +22,15 @@ export const useTranslation = () => {
 export const TranslationProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     // Get saved language from localStorage or default to 'es' (Spanish)
-    return localStorage.getItem('chancefly-language') || 'es';
+    return localStorage.getItem('jetchance-language') || 'es';
   });
 
   // Save language preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('chancefly-language', currentLanguage);
+    localStorage.setItem('jetchance-language', currentLanguage);
   }, [currentLanguage]);
   useEffect(() => {
-    localStorage.setItem('chancefly-language', currentLanguage);
+    localStorage.setItem('jetchance-language', currentLanguage);
   }, [currentLanguage]);
 
   const t = (key, defaultValue = key) => {

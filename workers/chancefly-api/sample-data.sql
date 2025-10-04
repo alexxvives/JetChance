@@ -1,4 +1,4 @@
--- Sample data for ChanceFly D1 database
+-- Sample data for JetChance D1 database
 
 -- Insert test users (using proper bcrypt hashes)
 INSERT OR REPLACE INTO users (id, email, password_hash, first_name, last_name, role) 

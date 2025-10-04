@@ -4,7 +4,7 @@ const path = require('path');
 
 class OperatorFlightCounter {
   static getDatabase() {
-    const dbPath = path.join(__dirname, '../chancefly.db');
+    const dbPath = path.join(__dirname, '../jetchance.db');
     return new Database(dbPath);
   }
 

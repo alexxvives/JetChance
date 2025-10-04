@@ -94,7 +94,7 @@ async function startServer() {
     console.log('✅ Database connected successfully');
     
     app.listen(PORT, () => {
-      console.log(`🚀 ChanceFly API server running on port ${PORT}`);
+      console.log(`🚀 JetChance API server running on port ${PORT}`);
       console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
     });

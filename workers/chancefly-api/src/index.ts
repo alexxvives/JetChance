@@ -1,5 +1,5 @@
 /**
- * ChanceFly API - Cloudflare Workers Backend
+ * JetChance API - Cloudflare Workers Backend
  * Migrated from Node.js/Express to Cloudflare Workers with D1 Database
  */
 
@@ -27,7 +27,7 @@ export default {
 			if (path === '/health') {
 				return new Response(JSON.stringify({
 					status: 'OK',
-					message: 'ChanceFly API is running',
+					message: 'JetChance API is running',
 					timestamp: new Date().toISOString(),
 					environment: 'production',
 				}), {

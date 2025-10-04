@@ -1,4 +1,4 @@
-# ChanceFly - Development Notes
+# JetChance - Development Notes
 ========================================
 
 ## � **Current Architecture Overview**
@@ -16,7 +16,7 @@
 - **Database**: SQLite (local development) or D1 (Cloudflare production)
 
 ### **Deployment:**
-- **Frontend**: Cloudflare Pages (`chancefly-frontend.pages.dev`)
+- **Frontend**: Cloudflare Pages (`jetchance-frontend.pages.dev`)
 - **Backend**: Can deploy to Cloudflare Workers if needed
 - **Auto-deployment**: Git push to main triggers deployment
 
@@ -40,7 +40,7 @@ npm run dev        # Starts on http://localhost:8000
 #### Option 2: Cloudflare Workers Backend
 ```bash
 # Terminal 1 - Backend
-cd workers/chancefly-api
+cd workers/jetchance-api
 wrangler dev --local --port 8787
 
 # Terminal 2 - Frontend
@@ -56,8 +56,8 @@ npm run dev
 - Production uses Cloudflare Workers API
 
 ### **Port Assumptions:**
-- **Port 8000**: Assume ChanceFly frontend is running (no need to restart)
-- **Port 4000**: Assume ChanceFly backend is running (no need to restart)
+- **Port 8000**: Assume JetChance frontend is running (no need to restart)
+- **Port 4000**: Assume JetChance backend is running (no need to restart)
 - If ports are occupied, the application is likely already running
 
 ### **Database:**
@@ -73,7 +73,7 @@ npm run dev
 ```
 Operator: operator@gmail.com / password
 Customer: customer@gmail.com / password  
-Admin: admin@chancefly.com / Admin123!
+Admin: admin@jetchance.com / Admin123!
 ```
 
 ### **Authentication Flow:**
@@ -169,7 +169,7 @@ src/
 ## 🚀 **Deployment Status**
 
 ### **Live URLs:**
-- **Frontend**: https://chancefly-frontend.pages.dev
+- **Frontend**: https://jetchance-frontend.pages.dev
 - **Backend**: Local Express server (production can use Cloudflare Workers)
 
 ### **Deployment Process:**
@@ -202,8 +202,8 @@ src/
 ## 📋 **Development Workflow**
 
 1. **Check if servers are running**:
-   - Frontend: http://localhost:8000 (assume ChanceFly if occupied)
-   - Backend: http://localhost:4000 (assume ChanceFly if occupied)
+   - Frontend: http://localhost:8000 (assume JetChance if occupied)
+   - Backend: http://localhost:4000 (assume JetChance if occupied)
 2. **Start servers only if needed** (backend + frontend)
 3. **Test locally** with sample data
 4. **Use operator@gmail.com** to test flight management

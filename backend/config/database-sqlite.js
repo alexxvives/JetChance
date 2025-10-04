@@ -1,7 +1,7 @@
 ﻿const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = path.join(__dirname, '..', 'chancefly.db');
+const dbPath = path.join(__dirname, '..', 'jetchance.db');
 const db = new Database(dbPath);
 
 const query = (sql, params = []) => {

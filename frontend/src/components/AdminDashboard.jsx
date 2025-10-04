@@ -177,7 +177,7 @@ export default function AdminDashboard({ user }) {
       } else {
         // Fallback: try localStorage for flights, otherwise show empty
         console.log('📡 Real API not available, checking localStorage...');
-        const localFlights = localStorage.getItem('chancefly_mock_flights');
+        const localFlights = localStorage.getItem('jetchance_mock_flights');
         if (localFlights) {
           const flights = JSON.parse(localFlights);
           console.log(`💾 Found ${flights.length} flights in localStorage`);
@@ -978,7 +978,7 @@ export default function AdminDashboard({ user }) {
           <div className="flex items-center justify-center">
             <img 
               src="/images/logo/logo2.svg" 
-              alt="ChanceFly" 
+              alt="JetChance" 
               className="h-16 w-auto"
             />
           </div>

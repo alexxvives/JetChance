@@ -1,7 +1,7 @@
 {
-  "name": "chancefly-backend",
+  "name": "jetchance-backend",
   "version": "1.0.0",
-  "description": "Backend API for ChanceFly private jet marketplace",
+  "description": "Backend API for JetChance private jet marketplace",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -13,7 +13,7 @@
     "empty-leg",
     "aviation"
   ],
-  "author": "ChanceFly",
+  "author": "JetChance",
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.893.0",

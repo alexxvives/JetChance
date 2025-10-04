@@ -3,7 +3,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, 'chancefly.db');
+const DB_PATH = path.join(__dirname, 'jetchance.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 const createDatabase = async () => {

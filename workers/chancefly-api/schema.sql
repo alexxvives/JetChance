@@ -1,4 +1,4 @@
--- ChanceFly Database Schema - Optimized for Colombian Flight Booking MVP
+-- JetChance Database Schema - Optimized for Colombian Flight Booking MVP
 -- ========================================================================
 -- ⚠️  WARNING: DO NOT ADD COLUMNS WITHOUT EXPLICIT APPROVAL
 -- This schema is optimized for MVP launch in Colombian market

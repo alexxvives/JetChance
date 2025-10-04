@@ -1,5 +1,5 @@
 {
-  "name": "chancefly-monorepo",
+  "name": "jetchance-monorepo",
   "version": "1.0.1",
   "scripts": {
     "build": "npm install --prefix frontend && npm run build --prefix frontend",

@@ -1,4 +1,4 @@
-# ChanceFly - Private Jet Charter Marketplace
+# JetChance - Private Jet Charter Marketplace
 
 A comprehensive platform for booking shared private jet charters, featuring role-based access for customers and operators.
 
@@ -38,7 +38,7 @@ A comprehensive platform for booking shared private jet charters, featuring role
 ## 📁 Project Structure
 
 ```
-ChanceFly/
+JetChance/
 ├── frontend/                 # React frontend application
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
@@ -64,8 +64,8 @@ ChanceFly/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/alexxvives/ChanceFly.git
-   cd ChanceFly
+   git clone https://github.com/alexxvives/JetChance.git
+   cd JetChance
    ```
 
 2. **Install backend dependencies**

@@ -104,7 +104,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     }
     
     // Check if user already exists
-    const existingUser = await env.chancefly_db.prepare(
+    const existingUser = await env.jetchance_db.prepare(
       'SELECT id FROM users WHERE email = ?'
     ).bind(data.email).first();
     
@@ -126,7 +126,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     const role = data.role || 'customer';
     
     // Create user (authentication data only)
-    await env.chancefly_db.prepare(
+    await env.jetchance_db.prepare(
       `INSERT INTO users (id, email, password_hash, role)
        VALUES (?, ?, ?, ?)`
     ).bind(userId, data.email, passwordHash, role).run();
@@ -134,18 +134,18 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     // Create role-specific profile
     if (role === 'customer') {
       const customerId = uuidv4();
-      await env.chancefly_db.prepare(
+      await env.jetchance_db.prepare(
         'INSERT INTO customers (id, user_id, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)'
       ).bind(customerId, userId, firstName, lastName, data.phone || null).run();
     } else if (role === 'operator') {
       const operatorId = uuidv4();
-      await env.chancefly_db.prepare(
+      await env.jetchance_db.prepare(
         'INSERT INTO operators (id, user_id, company_name, status) VALUES (?, ?, ?, ?)'
       ).bind(operatorId, userId, `${firstName} ${lastName} Aviation`, 'pending').run();
     }
     
     // Get the created user and role-specific data
-    const userResult = await env.chancefly_db.prepare(
+    const userResult = await env.jetchance_db.prepare(
       'SELECT id, email, role, created_at FROM users WHERE id = ?'
     ).bind(userId).first();
     
@@ -161,7 +161,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     };
 
     if (role === 'customer') {
-      const customerResult = await env.chancefly_db.prepare(
+      const customerResult = await env.jetchance_db.prepare(
         'SELECT first_name, last_name FROM customers WHERE user_id = ?'
       ).bind(userId).first();
       
@@ -170,7 +170,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
         userData.lastName = customerResult.last_name;
       }
     } else if (role === 'operator') {
-      const operatorResult = await env.chancefly_db.prepare(
+      const operatorResult = await env.jetchance_db.prepare(
         'SELECT company_name FROM operators WHERE user_id = ?'
       ).bind(userId).first();
       
@@ -227,7 +227,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     }
     
     // Get user from database
-    const user = await env.chancefly_db.prepare(
+    const user = await env.jetchance_db.prepare(
       'SELECT id, email, password_hash, role FROM users WHERE email = ?'
     ).bind(data.email).first();
     
@@ -262,7 +262,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     };
 
     if (user.role === 'customer') {
-      const customerResult = await env.chancefly_db.prepare(
+      const customerResult = await env.jetchance_db.prepare(
         'SELECT first_name, last_name FROM customers WHERE user_id = ?'
       ).bind(user.id).first();
       
@@ -271,7 +271,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
         userData.lastName = customerResult.last_name;
       }
     } else if (user.role === 'operator') {
-      const operatorResult = await env.chancefly_db.prepare(
+      const operatorResult = await env.jetchance_db.prepare(
         'SELECT company_name FROM operators WHERE user_id = ?'
       ).bind(user.id).first();
       

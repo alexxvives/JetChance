@@ -102,7 +102,7 @@ export const americanAirports = {
 };
 
 // Custom airports added by operators (stored in localStorage)
-const CUSTOM_AIRPORTS_KEY = 'chancefly_custom_airports';
+const CUSTOM_AIRPORTS_KEY = 'jetchance_custom_airports';
 
 // Get custom airports from localStorage
 export const getCustomAirports = () => {

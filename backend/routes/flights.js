@@ -474,7 +474,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
   body('originCode').isLength({ min: 3, max: 4 }),
   body('destinationCode').isLength({ min: 3, max: 4 }),
   body('departureDateTime').isISO8601(),
-  body('originalPrice').isFloat({ min: 0 }),
+  body('originalPrice').optional().isFloat({ min: 0 }),
   body('emptyLegPrice').isFloat({ min: 0 }),
   body('totalSeats').isInt({ min: 1 }),
 ], async (req, res) => {

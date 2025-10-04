@@ -10,7 +10,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
 
 // Initialize database
-const db = new Database(path.join(__dirname, '..', 'chancefly.db'));
+const db = new Database(path.join(__dirname, '..', 'jetchance.db'));
 
 // Create payments table if it doesn't exist
 db.exec(`
@@ -47,7 +47,7 @@ db.exec(`
 // Helper function to generate booking reference
 function generateBookingReference() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = 'CF'; // ChanceFly prefix
+  let result = 'JC'; // JetChance prefix
   for (let i = 0; i < 6; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -95,7 +95,7 @@ router.post('/create-intent', async (req, res) => {
         ...metadata // Include all the valuable business data
       },
       receipt_email: customerInfo.email,
-      description: `ChanceFly Flight Booking - ${flight.origin_code} to ${flight.destination_code}`
+      description: `JetChance Flight Booking - ${flight.origin_code} to ${flight.destination_code}`
     });
 
     res.json({

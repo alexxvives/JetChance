@@ -1,4 +1,4 @@
-# ChanceFly MVP → Production Launch Checklist
+# JetChance MVP → Production Launch Checklist
 
 ## Immediate Changes for Production
 

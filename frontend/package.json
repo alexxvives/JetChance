@@ -1,5 +1,5 @@
 {
-  "name": "chancefly-frontend",
+  "name": "jetchance-frontend",
   "version": "1.0.0",
   "private": true,
   "main": "src/index.jsx",
@@ -14,7 +14,7 @@
     "@react-three/fiber": "^8.15.19",
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^2.4.0",
-    "chancefly-monorepo": "file:..",
+    "jetchance-monorepo": "file:..",
     "i18next": "^25.5.3",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.1",

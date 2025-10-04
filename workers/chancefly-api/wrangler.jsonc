@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "chancefly-api",
+	"name": "jetchance-api",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-09-18",
 	"compatibility_flags": [
@@ -16,12 +16,12 @@
 	},
 	"vars": {
 		"NODE_ENV": "production",
-		"CORS_ORIGINS": "https://chancefly.alexxvives.workers.dev"
+		"CORS_ORIGINS": "https://jetchance.alexxvives.workers.dev"
 	},
 	"d1_databases": [
 		{
-			"binding": "chancefly_db",
-			"database_name": "chancefly-db",
+			"binding": "jetchance_db",
+			"database_name": "jetchance-db",
 			"database_id": "bd813b42-7b4f-4040-9beb-6b5194e96081"
 		}
 	]

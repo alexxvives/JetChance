@@ -1,4 +1,4 @@
-﻿// Sequential ID generator for ChanceFly
+﻿// Sequential ID generator for JetChance
 // Generates clean, sequential IDs: US000001, OP000001, FL000001, etc.
 
 const Database = require('better-sqlite3');
@@ -6,7 +6,7 @@ const path = require('path');
 
 class SimpleIDGenerator {
   static getDatabase() {
-    const dbPath = path.join(__dirname, '../chancefly.db');
+    const dbPath = path.join(__dirname, '../jetchance.db');
     return new Database(dbPath);
   }
 

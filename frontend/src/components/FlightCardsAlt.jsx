@@ -33,7 +33,7 @@ export default function FlightCardsAlt({ onNavigate }) {
   // Listen for localStorage changes (when flights are added/updated)
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key === 'chancefly_mock_flights') {
+      if (e.key === 'jetchance_mock_flights') {
         setLastUpdate(Date.now());
       }
     };
