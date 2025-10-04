@@ -144,7 +144,7 @@ Component: `Profile.jsx`
 Location: `backend/routes/notifications.js`
 
 ```javascript
-const createNotification = async (db, userId, title, message) => {
+const createNotification = async (userId, title, message) => {
   const notificationId = SimpleIDGenerator.generateNotificationId();
   const sql = `
     INSERT INTO notifications (id, user_id, title, message, created_at)
@@ -155,6 +155,13 @@ const createNotification = async (db, userId, title, message) => {
   return notificationId;
 };
 ```
+
+**Usage:**
+```javascript
+await createNotification(userId, 'Title', 'Message');
+```
+
+**Note:** The `db` instance is imported at the module level, so there's no need to pass it as a parameter.
 
 ### Error Handling
 All notification creation is wrapped in try-catch blocks to ensure that notification failures don't break core functionality (flight creation, approval, etc.).

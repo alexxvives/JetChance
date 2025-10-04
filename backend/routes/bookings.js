@@ -283,7 +283,6 @@ router.post('/', authenticate, [
         const operatorUserId = flight.user_id;
         if (operatorUserId) {
           await createNotification(
-            db,
             operatorUserId,
             'New Booking Received! 🎉',
             `You have a new booking for your flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
@@ -299,7 +298,6 @@ router.post('/', authenticate, [
         
         for (const admin of admins) {
           await createNotification(
-            db,
             admin.id,
             'New Booking Created 🎉',
             `New booking received for flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`

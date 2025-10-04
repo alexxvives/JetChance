@@ -232,7 +232,6 @@ router.delete('/', authenticate, async (req, res) => {
       const roleLabel = isOperator ? 'Operator' : 'Customer';
       for (const admin of adminQuery.rows) {
         await createNotification(
-          db,
           admin.id,
           `${roleLabel} Account Deleted`,
           `${roleLabel} account deleted: ${userName} (${user.email})`

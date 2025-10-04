@@ -5,7 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../config/database-sqlite');
 
 // Helper function to create notification
-const createNotification = async (db, userId, title, message) => {
+const createNotification = async (userId, title, message) => {
   try {
     const notificationId = SimpleIDGenerator.generateNotificationId();
     const sql = `

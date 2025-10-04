@@ -639,7 +639,6 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
     // Create notification for the operator about successful flight submission
     try {
       await createNotification(
-        db,
         req.user.id, // The operator's user ID
         'Flight Submitted for Review',
         `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review.`
@@ -981,7 +980,6 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
         // Only super-admins can delete other people's flights, so this is admin deletion
         console.log('🔔 Creating admin deletion notification...');
         await createNotification(
-          db,
           flight.user_id,  // Use user_id instead of operator_id
           'Flight Deleted by Administration',
           `Your flight ${flight.origin_code} → ${flight.destination_code} (${flight.id}) has been deleted by administration.`
