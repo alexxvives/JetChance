@@ -33,13 +33,13 @@ router.get('/', (req, res) => {
     let airports;
     
     if (query) {
-      // Search approved airports by code, name, or city
+      // Search approved airports by code, name, city, or country
       const searchPattern = `%${query}%`;
       airports = db.prepare(`
         SELECT * FROM airports 
-        WHERE status = 'approved' AND (code LIKE ? OR name LIKE ? OR city LIKE ?)
+        WHERE status = 'approved' AND (code LIKE ? OR name LIKE ? OR city LIKE ? OR country LIKE ?)
         ORDER BY code
-      `).all(searchPattern, searchPattern, searchPattern);
+      `).all(searchPattern, searchPattern, searchPattern, searchPattern);
     } else {
       // Get all approved airports
       airports = db.prepare('SELECT * FROM airports WHERE status = \'approved\' ORDER BY code').all();

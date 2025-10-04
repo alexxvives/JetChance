@@ -205,7 +205,7 @@ function ActualOperatorDashboard({ user }) {
                   <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
                 </div>
                 <p className="text-gray-600">
-                  {t('dashboard.operator.welcomeBack') || 'Welcome back'} {user?.firstName} {user?.lastName}
+                  {t('dashboard.operator.welcome')} {user?.companyName?.toUpperCase() || user?.company_name?.toUpperCase() || (user?.firstName + ' ' + user?.lastName)?.toUpperCase()}
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     {t('dashboard.operator.role') || 'Operator'}
                   </span>
@@ -269,7 +269,10 @@ function ActualOperatorDashboard({ user }) {
                   className="relative flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200"
                 >
                   <BellIcon className="h-5 w-5" />
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">2</span>
+                  {/* Only show notification badge if there are actual notifications */}
+                  {false && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">0</span>
+                  )}
                 </button>
                 
                 {/* Notifications Dropdown */}
@@ -278,40 +281,20 @@ function ActualOperatorDashboard({ user }) {
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                        <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">2 new</span>
+                        <span className="bg-gray-100 text-gray-500 text-xs font-medium px-2 py-1 rounded-full">0 new</span>
                       </div>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-green-400 transition-colors">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                            <DocumentTextIcon className="h-4 w-4 text-green-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">Flight approved</div>
-                            <div className="text-sm text-gray-600 mt-1">Your flight BOG → MIA has been approved and is now live</div>
-                            <div className="text-xs text-gray-400 mt-2 flex items-center">
-                              <span>1 hour ago</span>
-                              <span className="ml-2 w-2 h-2 bg-green-400 rounded-full"></span>
-                            </div>
-                          </div>
+                      <div className="px-6 py-8 text-center">
+                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <BellIcon className="h-6 w-6 text-gray-400" />
                         </div>
-                      </div>
-                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-blue-400 transition-colors">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                            <CurrencyDollarIcon className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">New booking</div>
-                            <div className="text-sm text-gray-600 mt-1">Someone booked your MDE → BOG flight for tomorrow</div>
-                            <div className="text-xs text-gray-400 mt-2">3 hours ago</div>
-                          </div>
-                        </div>
+                        <p className="text-gray-500 text-sm">No notifications yet</p>
+                        <p className="text-gray-400 text-xs mt-1">You'll see updates about your flights here</p>
                       </div>
                     </div>
                     <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">View all notifications →</button>
+                      <button className="text-sm text-gray-400 font-medium cursor-not-allowed">No notifications to view</button>
                     </div>
                   </div>
                 )}
@@ -504,13 +487,6 @@ function ActualOperatorDashboard({ user }) {
 function FlightCard({ flight, navigate, isPast = false, onDelete }) {
   const { t, currentLanguage } = useTranslation();
   
-  console.log('🎯 FlightCard flight data:', flight);
-  console.log('🎯 Available seats:', flight.capacity?.availableSeats);
-  console.log('🎯 Original price:', flight.pricing?.originalPrice);
-  console.log('🎯 Flight duration:', flight.duration);
-  console.log('🎯 Schedule duration:', flight.schedule?.duration);
-  console.log('🎯 Estimated duration:', flight.estimated_duration_minutes);
-  
   const cardOpacity = isPast ? 'opacity-75' : '';
   
   // Status styling - for past flights show booking status, for future flights show approval status
@@ -569,155 +545,88 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
 
   const statusBadge = getStatusBadge(flight, isPast);
 
-  // Parse dates - use correct field names from API
+  // Parse departure date
   const departureDate = new Date(flight.departure_time || flight.departureDateTime);
-  const arrivalDate = flight.arrival_time ? new Date(flight.arrival_time) : (flight.arrivalDateTime ? new Date(flight.arrivalDateTime) : null);
   
-  // Format dates and times
-  const formatDateTime = (date) => {
-    return {
-      date: date.toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
-        weekday: 'short',
-        month: 'short', 
-        day: 'numeric'
-      }),
-      time: date.toLocaleTimeString(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      })
-    };
+  // Format date exactly like in FlightDetailsPage
+  const formatFullDate = (date) => {
+    const dateStr = date.toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long', 
+      day: 'numeric'
+    });
+    // Capitalize the first letter
+    return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
   };
-
-  const departure = formatDateTime(departureDate);
-  const arrival = arrivalDate ? formatDateTime(arrivalDate) : null;
-
-  // Calculate duration
-  const getDuration = () => {
-    if (flight.estimated_duration_minutes) {
-      const hours = Math.floor(flight.estimated_duration_minutes / 60);
-      const minutes = flight.estimated_duration_minutes % 60;
-      return `${hours}h ${minutes}m`;
-    }
-    
-    if (flight.schedule?.duration) {
-      return flight.schedule.duration;
-    }
-    
-    if (flight.duration) {
-      return flight.duration;
-    }
-    
-    if (arrivalDate) {
-      const durationMs = arrivalDate - departureDate;
-      const hours = Math.floor(durationMs / (1000 * 60 * 60));
-      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-      return `${hours}h ${minutes}m`;
-    }
-    
-    return '-';
-  };
-
-  const formatPrice = (price) => {
-    if (!price || price === 0) return t('dashboard.operator.flightCard.pricing.notSet');
-    return new Intl.NumberFormat(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  };
-
-  const currentPrice = flight.pricing?.currentPrice || flight.empty_leg_price || flight.seat_leg_price || flight.price;
-  const originalPrice = flight.pricing?.originalPrice || flight.market_price || flight.seat_market_price;
 
   return (
-    <div className={`bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 ${cardOpacity}`}>
+    <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 ${cardOpacity}`}>
       <div className="p-6">
-        {/* Header Row */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <PaperAirplaneIcon className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                {flight.origin_code || 'Unknown'} → {flight.destination_code || 'Unknown'}
-              </h3>
-            </div>
+        {/* Aircraft Header - exact copy from FlightDetailsPage */}
+        <div className="flex items-start space-x-4 mb-6">
+          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge.style}`}>
-            {statusBadge.text}
-          </span>
-        </div>
-
-        {/* Flight Route Details */}
-        <div className="mb-4">
-          <div className="text-sm text-gray-600 mb-1">
-            {flight.origin_name || 'Unknown Airport'} → {flight.destination_name || 'Unknown Airport'}
-          </div>
-          {flight.origin_city && flight.destination_city && (
-            <div className="text-xs text-gray-500">
-              {flight.origin_city}, {flight.origin_country} → {flight.destination_city}, {flight.destination_country}
-            </div>
-          )}
-        </div>
-
-        {/* Flight Times */}
-        <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">{t('dashboard.operator.flightCard.departure')}</div>
-            <div className="font-semibold text-gray-900">{departure.time}</div>
-            <div className="text-xs text-gray-600">{departure.date}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">{t('dashboard.operator.flightCard.duration')}</div>
-            <div className="font-semibold text-blue-600 flex items-center justify-center">
-              <ClockIcon className="h-4 w-4 mr-1" />
-              {getDuration()}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">{t('dashboard.operator.flightCard.arrival')}</div>
-            <div className="font-semibold text-gray-900">{arrival ? arrival.time : '-'}</div>
-            <div className="text-xs text-gray-600">{arrival ? arrival.date : '-'}</div>
-          </div>
-        </div>
-
-        {/* Flight Details Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div className="flex items-center">
-            <UserGroupIcon className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-600">{t('dashboard.operator.flightCard.capacity')}: </span>
-            <span className="font-medium ml-1">{flight.max_passengers || 0}</span>
-          </div>
-          <div className="flex items-center">
-            <CreditCardIcon className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-600">{t('dashboard.operator.flightCard.price')}: </span>
-            <span className="font-medium ml-1 text-green-600">{formatPrice(currentPrice)}</span>
-          </div>
-          {flight.aircraft_name && (
-            <div className="flex items-center col-span-2">
-              <PaperAirplaneIcon className="h-4 w-4 text-gray-400 mr-2" />
-              <span className="text-gray-600">{t('dashboard.operator.flightCard.aircraft')}: </span>
-              <span className="font-medium ml-1">{flight.aircraft_name}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Pricing Details */}
-        {originalPrice && originalPrice !== currentPrice && (
-          <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-green-700">{t('dashboard.operator.flightCard.pricing.discounted')}</span>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500 line-through">{formatPrice(originalPrice)}</span>
-                <span className="text-sm font-semibold text-green-600">{formatPrice(currentPrice)}</span>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 truncate">
+                  {flight.aircraft_model || flight.aircraft_name || 'Private Jet'}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {formatFullDate(departureDate)}
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge.style}`}>
+                {statusBadge.text}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Route Section - exact copy from FlightDetailsPage */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {flight.originCode || flight.origin_code || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">
+                ORIGIN
+              </div>
+            </div>
+            
+            <div className="flex-1 px-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-dashed border-gray-300"></div>
+                </div>
+                <div className="relative flex items-center">
+                  <div style={{marginLeft: '10%'}}>
+                    <svg className="w-10 h-10 text-blue-500 transform rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {flight.destinationCode || flight.destination_code || 'N/A'}
+              </div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide">
+                DESTINATION
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-4 border-t border-gray-200">
+        <div className="flex gap-2">
           <button
             onClick={() => navigate(`/flight/${flight.id}`)}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"

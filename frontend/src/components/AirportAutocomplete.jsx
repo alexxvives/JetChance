@@ -76,6 +76,22 @@ const AirportAutocomplete = ({
     ]
   };
 
+  // Country name mapping for better search experience
+  const countryNames = {
+    'AR': 'Argentina',
+    'BR': 'Brazil',
+    'CL': 'Chile',
+    'CO': 'Colombia',
+    'CR': 'Costa Rica',
+    'EC': 'Ecuador',
+    'MX': 'Mexico',
+    'PA': 'Panama',
+    'PE': 'Peru',
+    'US': 'United States',
+    'UY': 'Uruguay',
+    'VE': 'Venezuela'
+  };
+
   // Update input value when external value changes
   useEffect(() => {
     if (value && value.code) {
@@ -91,13 +107,30 @@ const AirportAutocomplete = ({
     }
   }, [value]);
 
-  // Search function that looks for airports by city name OR airport code/name
+  // Search function that looks for airports by city name OR airport code/name OR country name
   const searchFunction = async (query, limit = 10) => {
     if (!query || query.length < 1) return [];
     
     try {
-      // Use AirportService for database-driven search
-      const results = await AirportService.searchAirports(query);
+      // First, try direct database search (covers code, name, city, and country code)
+      let results = await AirportService.searchAirports(query);
+      
+      // If searching by country name (e.g., "Colombia", "United States"), 
+      // also search by country code
+      const queryLower = query.toLowerCase();
+      const countryCodeMatch = Object.entries(countryNames).find(
+        ([code, name]) => name.toLowerCase().includes(queryLower)
+      );
+      
+      if (countryCodeMatch && results.length < limit) {
+        const [countryCode] = countryCodeMatch;
+        const countryResults = await AirportService.searchAirports(countryCode);
+        
+        // Merge results, avoiding duplicates
+        const existingCodes = new Set(results.map(r => r.code));
+        const newResults = countryResults.filter(r => !existingCodes.has(r.code));
+        results = [...results, ...newResults];
+      }
       
       // Limit results and return
       return results.slice(0, limit);
@@ -256,6 +289,9 @@ const AirportAutocomplete = ({
       return `${airport.code} - ${airport.name}${airport.isCustom ? ' (Custom)' : ''}`;
     }
     
+    // Get full country name or fallback to country code
+    const countryDisplay = countryNames[airport.country] || airport.country;
+    
     return (
       <div className="py-2">
         <div className="font-medium text-gray-900 flex items-center">
@@ -267,7 +303,7 @@ const AirportAutocomplete = ({
           )}
         </div>
         <div className="text-sm text-gray-500">
-          {airport.city}, {airport.state ? `${airport.state}, ` : ''}{airport.country}
+          {airport.city}, {airport.state ? `${airport.state}, ` : ''}{countryDisplay}
         </div>
       </div>
     );

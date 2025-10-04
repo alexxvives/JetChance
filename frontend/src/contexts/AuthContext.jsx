@@ -147,7 +147,20 @@ export const AuthProvider = ({ children }) => {
       
       return response;
     } catch (error) {
-      const errorMessage = error.message || 'Login failed. Please try again.';
+      // Clear any existing error first
+      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+      
+      // Extract user-friendly error message
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.toString().includes('NetworkError') || error.toString().includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      }
+      
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
@@ -172,7 +185,20 @@ export const AuthProvider = ({ children }) => {
       
       return response;
     } catch (error) {
-      const errorMessage = error.message || 'Registration failed. Please try again.';
+      // Clear any existing error first
+      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+      
+      // Extract user-friendly error message
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.toString().includes('NetworkError') || error.toString().includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      }
+      
       dispatch({
         type: AUTH_ACTIONS.REGISTER_FAILURE,
         payload: errorMessage,

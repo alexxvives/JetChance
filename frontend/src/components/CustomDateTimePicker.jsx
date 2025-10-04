@@ -178,13 +178,13 @@ const CustomDateTimePicker = ({
 
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-  // Generate time options (every 30 minutes)
+  // Generate time options (every 15 minutes)
   const generateTimeOptions = () => {
     const times = [];
-    for (let i = 0; i < 48; i++) {
-      const hour = Math.floor(i / 2);
-      const minute = i % 2 === 0 ? '00' : '30';
-      const time24 = `${hour.toString().padStart(2, '0')}:${minute}`;
+    for (let i = 0; i < 96; i++) { // 96 intervals for 15-minute increments (24 hours * 4)
+      const hour = Math.floor(i / 4);
+      const minute = (i % 4) * 15;
+      const time24 = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       times.push(time24);
     }
     return times;

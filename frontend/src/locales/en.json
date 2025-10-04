@@ -113,7 +113,7 @@
   "dashboard": {
     "operator": {
       "title": "Operator Dashboard",
-      "welcome": "Welcome back! Manage your flights and track their status.",
+      "welcome": "Welcome",
       "welcomeBack": "Welcome back",
       "role": "Operator",
       "createFlight": "Create Flight",
@@ -984,7 +984,7 @@
     "selectTime": "Select time"
   },
   "airportAutocomplete": {
-    "placeholder": "Search airport...",
+    "placeholder": "Search by airport code, city, or country...",
     "notListed": "Not listed?",
     "addCustom": "Add custom airport",
     "addCustomAirport": "Add Custom Airport",

@@ -59,7 +59,32 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        
+        // Map backend errors to user-friendly messages
+        let userMessage = errorData.message || 'An error occurred. Please try again.';
+        
+        // Handle specific error cases
+        if (response.status === 400) {
+          if (errorData.error === 'User already exists') {
+            userMessage = 'An account with this email already exists. Please use a different email or try signing in.';
+          } else if (errorData.error === 'Wrong Signup Code') {
+            userMessage = 'Invalid operator signup code. Please contact support for assistance.';
+          } else if (errorData.error === 'Missing required fields') {
+            userMessage = errorData.message || 'Please fill in all required fields.';
+          } else if (errorData.message && errorData.message.includes('Password')) {
+            userMessage = errorData.message;
+          }
+        } else if (response.status === 401) {
+          userMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (response.status === 403) {
+          userMessage = 'Access denied. Please contact support if you believe this is an error.';
+        } else if (response.status === 500) {
+          userMessage = 'Server error. Please try again later or contact support if the problem persists.';
+        } else if (response.status >= 500) {
+          userMessage = 'Service temporarily unavailable. Please try again later.';
+        }
+        
+        throw new Error(userMessage);
       }
 
       const contentType = response.headers.get('content-type');

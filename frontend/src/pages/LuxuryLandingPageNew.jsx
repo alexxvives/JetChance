@@ -28,16 +28,19 @@ const LuxuryLandingPage = () => {
   
   // Monitor URL changes to show modals
   useEffect(() => {
-    if (location.pathname === '/login') {
+    const currentPath = location.pathname;
+    const currentSearch = location.search;
+    
+    if (currentPath === '/login') {
       setShowLoginModal(true);
-      // Replace the URL without the login path
-      window.history.replaceState({}, '', '/');
-    } else if (location.pathname === '/signup') {
+      // Replace the URL without the login path, but preserve any search params
+      window.history.replaceState({}, '', '/' + currentSearch);
+    } else if (currentPath === '/signup') {
       setShowSignupModal(true);
-      // Replace the URL without the signup path
-      window.history.replaceState({}, '', '/');
+      // Replace the URL without the signup path, but preserve any search params
+      window.history.replaceState({}, '', '/' + currentSearch);
     }
-  }, [location.pathname]);
+  }, [location]); // Monitor entire location object for any changes
   const [formData, setFormData] = useState({
     serviceType: 'full-charter',
     name: '',
@@ -53,6 +56,7 @@ const LuxuryLandingPage = () => {
   const [authFormData, setAuthFormData] = useState({
     firstName: '',
     lastName: '',
+    companyName: '',
     email: '',
     password: '',
     role: 'customer'
@@ -68,18 +72,35 @@ const LuxuryLandingPage = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    
+    // Validate that a role is selected
+    if (!authFormData.role) {
+      return; // The UI will show which role should be selected
+    }
+    
     try {
-      await register({
+      // Prepare data based on role
+      const signupData = {
         email: authFormData.email,
         password: authFormData.password,
-        first_name: authFormData.firstName,
-        last_name: authFormData.lastName,
         role: authFormData.role
-      });
+      };
+      
+      // Add role-specific fields
+      if (authFormData.role === 'customer') {
+        signupData.first_name = authFormData.firstName;
+        signupData.last_name = authFormData.lastName;
+      } else if (authFormData.role === 'operator') {
+        signupData.companyName = authFormData.companyName;
+        signupData.signupCode = 'code'; // Required for operators
+      }
+      
+      await register(signupData);
       setShowSignupModal(false);
       navigate('/dashboard');
     } catch (error) {
       console.error('Signup failed:', error);
+      // Error will be displayed by the AuthContext error state
     }
   };
 
@@ -199,6 +220,10 @@ const LuxuryLandingPage = () => {
 
   const navigateToSignup = () => {
     setShowSignupModal(true);
+  };
+
+  const navigateToLogin = () => {
+    setShowLoginModal(true);
   };
 
   return (
@@ -696,8 +721,55 @@ const LuxuryLandingPage = () => {
               </button>
               
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">Sign Up</h2>
-                <p className="text-gray-300">Create your account to book flights</p>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">{t('auth.signup.title')}</h2>
+                <p className="text-gray-300">{t('auth.signup.subtitle')}</p>
+              </div>
+
+              {/* Account Type Selection */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-white mb-4 text-center">{t('auth.signup.accountTypeLabel')}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAuthFormData({
+                      ...authFormData, 
+                      role: 'customer',
+                      companyName: '' // Clear company name when switching to customer
+                    })}
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${
+                      authFormData.role === 'customer' 
+                        ? 'border-amber-500 bg-gradient-to-br from-amber-500/20 to-amber-600/10 shadow-xl transform scale-105' 
+                        : 'border-gray-600 hover:border-amber-400/50 hover:bg-amber-500/5 hover:transform hover:scale-102'
+                    }`}
+                  >
+                    <div className="mb-2">
+                      <h4 className="text-white font-bold text-base mb-1">{t('auth.signup.customerLabel')}</h4>
+                      <div className="w-10 h-0.5 bg-amber-500 mx-auto rounded-full"></div>
+                    </div>
+                    <p className="text-gray-300 text-xs leading-snug">{t('auth.signup.customerDescription')}</p>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setAuthFormData({
+                      ...authFormData, 
+                      role: 'operator',
+                      firstName: '', // Clear first name when switching to operator
+                      lastName: ''   // Clear last name when switching to operator
+                    })}
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${
+                      authFormData.role === 'operator' 
+                        ? 'border-amber-500 bg-gradient-to-br from-amber-500/20 to-amber-600/10 shadow-xl transform scale-105' 
+                        : 'border-gray-600 hover:border-amber-400/50 hover:bg-amber-500/5 hover:transform hover:scale-102'
+                    }`}
+                  >
+                    <div className="mb-2">
+                      <h4 className="text-white font-bold text-base mb-1">{t('auth.signup.operatorLabel')}</h4>
+                      <div className="w-10 h-0.5 bg-amber-500 mx-auto rounded-full"></div>
+                    </div>
+                    <p className="text-gray-300 text-xs leading-snug">{t('auth.signup.operatorDescription')}</p>
+                  </button>
+                </div>
               </div>
 
               <form onSubmit={handleSignup} className="space-y-6">
@@ -707,32 +779,48 @@ const LuxuryLandingPage = () => {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Dynamic fields based on role */}
+                {authFormData.role === 'customer' ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-200 mb-2">{t('auth.signup.firstNameLabel')}</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={authFormData.firstName}
+                        onChange={handleAuthInputChange}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
+                        placeholder={t('auth.signup.firstNamePlaceholder')}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-200 mb-2">{t('auth.signup.lastNameLabel')}</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={authFormData.lastName}
+                        onChange={handleAuthInputChange}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
+                        placeholder={t('auth.signup.lastNamePlaceholder')}
+                        required
+                      />
+                    </div>
+                  </div>
+                ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-200 mb-2">First Name</label>
+                    <label className="block text-sm font-medium text-gray-200 mb-2">{t('auth.signup.operatorCompanyLabel')}</label>
                     <input
                       type="text"
-                      name="firstName"
-                      value={authFormData.firstName}
+                      name="companyName"
+                      value={authFormData.companyName}
                       onChange={handleAuthInputChange}
                       className="w-full px-4 py-3 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                      placeholder="Enter first name"
+                      placeholder={t('auth.signup.operatorCompanyPlaceholder')}
                       required
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-200 mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={authFormData.lastName}
-                      onChange={handleAuthInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                      placeholder="Enter last name"
-                      required
-                    />
-                  </div>
-                </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-200 mb-2">Email</label>
@@ -748,15 +836,16 @@ const LuxuryLandingPage = () => {
                 </div>
 
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-200 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">{t('auth.signup.passwordLabel')}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={authFormData.password}
                       onChange={handleAuthInputChange}
+                      autoComplete="new-password"
                       className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                      placeholder="Create a password"
+                      placeholder={t('auth.signup.passwordPlaceholder')}
                       required
                     />
                     <button
@@ -774,12 +863,12 @@ const LuxuryLandingPage = () => {
                   disabled={isLoading}
                   className="w-full bg-amber-500 text-black py-3 px-4 rounded-xl font-semibold hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                  {isLoading ? t('auth.signup.creatingAccount') : t('auth.signup.createAccountButton')}
                 </button>
 
                 <div className="text-center">
                   <p className="text-gray-300">
-                    Already have an account?{' '}
+                    {t('auth.signup.haveAccount')}{' '}
                     <button
                       type="button"
                       onClick={() => {
@@ -788,7 +877,7 @@ const LuxuryLandingPage = () => {
                       }}
                       className="text-amber-400 hover:text-amber-300 font-semibold"
                     >
-                      Sign In
+                      {t('auth.signup.signIn')}
                     </button>
                   </p>
                 </div>
@@ -811,8 +900,8 @@ const LuxuryLandingPage = () => {
               </button>
               
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">Sign In</h2>
-                <p className="text-gray-300">Welcome back to JetChance</p>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">{t('auth.login.title')}</h2>
+                <p className="text-gray-300">{t('auth.login.subtitle')}</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-6">
@@ -836,15 +925,16 @@ const LuxuryLandingPage = () => {
                 </div>
 
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-200 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">{t('auth.login.passwordLabel')}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={authFormData.password}
                       onChange={handleAuthInputChange}
+                      autoComplete="current-password"
                       className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.login.passwordPlaceholder')}
                       required
                     />
                     <button
@@ -862,12 +952,12 @@ const LuxuryLandingPage = () => {
                   disabled={isLoading}
                   className="w-full bg-amber-500 text-black py-3 px-4 rounded-xl font-semibold hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  {isLoading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
                 </button>
 
                 <div className="text-center">
                   <p className="text-gray-300">
-                    Don't have an account?{' '}
+                    {t('auth.login.noAccount')}{' '}
                     <button
                       type="button"
                       onClick={() => {
@@ -876,7 +966,7 @@ const LuxuryLandingPage = () => {
                       }}
                       className="text-amber-400 hover:text-amber-300 font-semibold"
                     >
-                      Sign Up
+                      {t('auth.login.signUp')}
                     </button>
                   </p>
                 </div>

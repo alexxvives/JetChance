@@ -113,7 +113,7 @@
   "dashboard": {
     "operator": {
       "title": "Panel del Operador",
-      "welcome": "¡Bienvenido de vuelta! Gestiona tus vuelos y rastrea su estado.",
+      "welcome": "Bienvenido",
       "welcomeBack": "Bienvenido de vuelta",
       "role": "Operador",
       "createFlight": "Crear Vuelo",
@@ -630,7 +630,7 @@
     }
   },
   "airportAutocomplete": {
-    "placeholder": "Buscar aeropuerto...",
+    "placeholder": "Buscar por código, ciudad o país...",
     "notListed": "¿No está en la lista?",
     "addCustom": "Agregar aeropuerto personalizado",
     "addCustomAirport": "Agregar Aeropuerto Personalizado",
