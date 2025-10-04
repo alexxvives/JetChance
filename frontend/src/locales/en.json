@@ -1,4 +1,8 @@
 {
+  "messages": {
+    "errorSubmitting": "There was an error submitting your request. Please try again.",
+    "quoteRequestSent": "Quote request sent successfully!"
+  },
   "nav": {
     "navigation": "Navigation",
     "home": "For Customers",
@@ -11,6 +15,57 @@
     "logout": "Logout",
     "welcome": "Welcome",
     "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "headline": {
+        "whatIf": "What if flying ",
+        "private": "private",
+        "wasAccessible": "was as accessible as a ",
+        "commercial": "commercial",
+        "ticket": " ticket?"
+      },
+      "subtitle": "Access luxury private jets through empty leg flights at up to 90% off, or book your perfect full charter experience",
+      "cta": {
+        "emptyLeg": "Book Empty Leg Flight",
+        "fullCharter": "Request Full Charter"
+      },
+      "trust": {
+        "safety": "Safety Certified",
+        "concierge": "24/7 Concierge",
+        "booking": "Instant Booking"
+      }
+    },
+    "services": {
+      "title": "Two Ways to Fly Private",
+      "subtitle": "Choose the option that best fits your schedule and budget",
+      "emptyLeg": {
+        "title": "Empty Leg Flights",
+        "description": "Premium flights at massive discounts when jets return empty",
+        "badge": "Save up to 90%",
+        "perfectFor": "Perfect for:",
+        "benefits": [
+          "Flexible travel dates",
+          "Budget-conscious travelers",
+          "Last-minute getaways"
+        ],
+        "whatYouGet": "What you get:",
+        "details": "Same luxury experience at a fraction of the cost. Access to premium jets returning empty from previous charters."
+      },
+      "fullCharter": {
+        "title": "Full Charter",
+        "description": "Complete luxury and flexibility for your perfect flight",
+        "badge": "Premium",
+        "perfectFor": "Perfect for:",
+        "benefits": [
+          "Business travel",
+          "Special occasions",
+          "Group travel"
+        ],
+        "whatYouGet": "What you get:",
+        "details": "Complete control over your flight experience. Choose your aircraft, schedule, and every detail of your journey."
+      }
+    }
   },
   "auth": {
     "login": {
@@ -388,36 +443,34 @@
     "browseFlights": "Browse Flights"
   },
   "footer": {
-    "newsletter": {
-      "title": "Stay Updated with Exclusive Deals",
-      "subtitle": "Subscribe to our newsletter and be the first to know about new empty-leg flights and special offers.",
-      "placeholder": "Enter your email address",
-      "subscribe": "Subscribe"
+    "brand": {
+      "description": "Your gateway to luxury private aviation. Experience the world with unmatched comfort, convenience, and style."
+    },
+    "services": {
+      "title": "Services",
+      "emptyLeg": "Empty Leg Flights",
+      "fullCharter": "Full Charter",
+      "groupTravel": "Group Travel",
+      "cargoCharter": "Cargo Charter"
+    },
+    "contact": {
+      "title": "Contact",
+      "available": "24/7 Available",
+      "phone": "+1 (555) 123-4567",
+      "email": "info@jetchance.com",
+      "getQuote": "Get Quote"
     },
     "company": {
-      "description": "Your gateway to luxury travel at accessible prices. Discover empty-leg flights and experience premium aviation."
+      "title": "Company",
+      "aboutUs": "About Us",
+      "safety": "Safety",
+      "fleet": "Fleet",
+      "careers": "Careers"
     },
-    "quickLinks": {
-      "title": "Quick Links",
-      "browseFlights": "Browse Flights",
-      "howItWorks": "How It Works",
-      "pricing": "Pricing",
-      "about": "About Us",
-      "contact": "Contact"
-    },
-    "operators": {
-      "title": "For Operators",
-      "listAircraft": "List Your Aircraft",
-      "partnerProgram": "Partner Program",
-      "operatorPortal": "Operator Portal",
-      "resources": "Resources"
-    },
-    "support": {
-      "title": "Support",
-      "helpCenter": "Help Center",
+    "legal": {
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
-      "safety": "Safety & Security"
+      "safetyStandards": "Safety Standards"
     },
     "copyright": "© 2025 JetChance. All rights reserved."
   },
@@ -540,7 +593,8 @@
     "hero": {
       "title": "Partner with JetChance",
       "subtitle": "Join the premier platform for luxury aviation. Connect with high-value travelers, maximize your fleet utilization, and grow your business with JetChance's innovative marketplace.",
-      "button": "Become a Partner"
+      "button": "Become a Partner",
+      "signupButton": "Join Our Network"
     },
     "benefits": {
       "title": "Why Partner with Us?",
@@ -581,6 +635,11 @@
     "cta": {
       "title": "Ready to Maximize Your Fleet?",
       "subtitle": "Join our exclusive network of premium operators and start generating higher returns from your aircraft investments."
+    },
+    "signup": {
+      "title": "Get Started Today",
+      "subtitle": "Ready to join our exclusive network? Sign up and we'll guide you through the operator onboarding process.",
+      "button": "Sign Up as Operator"
     },
     "applicationForm": {
       "title": "Operator Application",

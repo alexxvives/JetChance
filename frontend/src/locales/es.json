@@ -1,4 +1,8 @@
 {
+  "messages": {
+    "errorSubmitting": "Hubo un error al enviar su solicitud. Por favor, inténtelo de nuevo.",
+    "quoteRequestSent": "¡Solicitud de cotización enviada con éxito!"
+  },
   "nav": {
     "navigation": "Navegación",
     "home": "Para Clientes",
@@ -11,6 +15,57 @@
     "logout": "Cerrar Sesión",
     "welcome": "Bienvenido",
     "language": "Idioma"
+  },
+  "home": {
+    "hero": {
+      "headline": {
+        "whatIf": "¿Y si volar en ",
+        "private": "privado",
+        "wasAccessible": " fuera tan accesible como un boleto ",
+        "commercial": "comercial",
+        "ticket": "?"
+      },
+      "subtitle": "Accede a jets privados de lujo a través de vuelos empty leg con hasta 90% de descuento, o reserva tu experiencia de charter completo perfecta",
+      "cta": {
+        "emptyLeg": "Reservar Vuelo Empty Leg",
+        "fullCharter": "Solicitar Charter Completo"
+      },
+      "trust": {
+        "safety": "Certificado de Seguridad",
+        "concierge": "Concierge 24/7",
+        "booking": "Reserva Instantánea"
+      }
+    },
+    "services": {
+      "title": "Dos Formas de Volar Privado",
+      "subtitle": "Elige la opción que mejor se adapte a tu horario y presupuesto",
+      "emptyLeg": {
+        "title": "Vuelos Empty Leg",
+        "description": "Vuelos premium con descuentos masivos cuando los jets regresan vacíos",
+        "badge": "Ahorra hasta 90%",
+        "perfectFor": "Perfecto para:",
+        "benefits": [
+          "Fechas de viaje flexibles",
+          "Viajeros conscientes del presupuesto",
+          "Escapadas de último minuto"
+        ],
+        "whatYouGet": "Lo que obtienes:",
+        "details": "La misma experiencia de lujo a una fracción del costo. Acceso a jets premium que regresan vacíos de charters anteriores."
+      },
+      "fullCharter": {
+        "title": "Charter Completo",
+        "description": "Lujo y flexibilidad completos para tu vuelo perfecto",
+        "badge": "Premium",
+        "perfectFor": "Perfecto para:",
+        "benefits": [
+          "Viajes de negocios",
+          "Ocasiones especiales",
+          "Viajes en grupo"
+        ],
+        "whatYouGet": "Lo que obtienes:",
+        "details": "Control completo sobre tu experiencia de vuelo. Elige tu aeronave, horario y cada detalle de tu viaje."
+      }
+    }
   },
   "auth": {
     "login": {
@@ -486,7 +541,8 @@
     "hero": {
       "title": "Alianza con JetChance",
       "subtitle": "Únete a la plataforma premier para aviación de lujo. Conecta con viajeros de alto valor, maximiza la utilización de tu flota y haz crecer tu negocio con el marketplace innovador de JetChance.",
-      "button": "Conviértete en Socio"
+      "button": "Conviértete en Socio",
+      "signupButton": "Únete a Nuestra Red"
     },
     "benefits": {
       "title": "¿Por Qué Asociarse con Nosotros?",
@@ -527,6 +583,11 @@
     "cta": {
       "title": "¿Listo para Maximizar tu Flota?",
       "subtitle": "Únete a nuestra red exclusiva de operadores premium y comienza a generar mayores retornos de tus inversiones en aeronaves."
+    },
+    "signup": {
+      "title": "Comienza Hoy",
+      "subtitle": "¿Listo para unirte a nuestra red exclusiva? Regístrate y te guiaremos a través del proceso de incorporación de operadores.",
+      "button": "Registrarse como Operador"
     },
     "applicationForm": {
       "title": "Solicitud de Operador",
@@ -593,6 +654,157 @@
     },
     "info": {
       "willBeCreated": "El aeropuerto se creará cuando el vuelo sea enviado para revisión."
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Contáctanos",
+      "subtitle": "¿Tienes preguntas sobre JetChance? ¿Necesitas apoyo con tu reserva? ¿Quieres asociarte con nosotros? Estamos aquí para ayudar y nos encantaría saber de ti."
+    },
+    "options": {
+      "title": "¿Cómo Podemos Ayudarte?",
+      "subtitle": "Elige la mejor manera de contactar a nuestro equipo según tus necesidades.",
+      "call": {
+        "title": "Llámanos",
+        "description": "Habla directamente con nuestros especialistas en reservas",
+        "number": "+1 (555) 123-4567"
+      },
+      "email": {
+        "title": "Soporte por Email",
+        "description": "Obtén asistencia detallada por correo electrónico",
+        "address": "support@jetchance.com"
+      },
+      "chat": {
+        "title": "Chat en Vivo",
+        "description": "Chatea con nosotros en tiempo real",
+        "button": "Iniciar Chat"
+      }
+    },
+    "form": {
+      "title": "Envíanos un Mensaje",
+      "subtitle": "Completa el formulario a continuación y te responderemos dentro de 24 horas.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Email",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "placeholders": {
+        "firstName": "Juan",
+        "lastName": "Pérez",
+        "email": "juan.perez@ejemplo.com",
+        "subject": "Selecciona un tema",
+        "message": "¿Cómo podemos ayudarte?"
+      },
+      "subjects": {
+        "booking": "Asistencia con Reservas",
+        "support": "Soporte al Cliente",
+        "partnership": "Consulta de Asociación",
+        "other": "Otro"
+      },
+      "button": "Enviar Mensaje"
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Encuentra respuestas a las preguntas más comunes sobre nuestros servicios.",
+      "questions": {
+        "booking": {
+          "question": "¿Cómo funciona el proceso de reserva?",
+          "answer": "Simplemente navega por nuestros vuelos disponibles, selecciona tu vuelo preferido y completa el proceso de reserva seguro. Nuestro equipo te contactará para confirmar todos los detalles."
+        },
+        "payment": {
+          "question": "¿Qué métodos de pago aceptan?",
+          "answer": "Aceptamos todas las tarjetas de crédito principales, transferencias bancarias y métodos de pago digital. El pago se procesa de forma segura a través de nuestra plataforma encriptada."
+        },
+        "cancellation": {
+          "question": "¿Cuál es su política de cancelación?",
+          "answer": "Ofrecemos cancelación flexible con diferentes términos según el tipo de reserva. Los vuelos empty leg tienen términos diferentes a los charters completos. Contacta a nuestro equipo para detalles específicos."
+        },
+        "safety": {
+          "question": "¿Cómo aseguran la seguridad?",
+          "answer": "Todos nuestros operadores pasan por una verificación rigurosa de seguridad y certificaciones. Solo trabajamos con operadores certificados que cumplen con los más altos estándares de la industria."
+        },
+        "pets": {
+          "question": "¿Puedo viajar con mascotas?",
+          "answer": "Sí, la mayoría de nuestros vuelos permiten mascotas. Las políticas específicas varían según el operador. Por favor menciona los requerimientos de mascotas al hacer tu reserva."
+        }
+      }
+    }
+  },
+  "footer": {
+    "brand": {
+      "description": "Tu puerta de entrada a la aviación privada de lujo. Experimenta el mundo con comodidad, conveniencia y estilo inigualables."
+    },
+    "services": {
+      "title": "Servicios",
+      "emptyLeg": "Vuelos Empty Leg",
+      "fullCharter": "Charter Completo",
+      "groupTravel": "Viajes Grupales",
+      "cargoCharter": "Charter de Carga"
+    },
+    "contact": {
+      "title": "Contacto",
+      "available": "Disponible 24/7",
+      "phone": "+1 (555) 123-4567",
+      "email": "info@jetchance.com",
+      "getQuote": "Obtener Cotización"
+    },
+    "company": {
+      "title": "Empresa",
+      "aboutUs": "Acerca de Nosotros",
+      "safety": "Seguridad",
+      "fleet": "Flota",
+      "careers": "Carreras"
+    },
+    "legal": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "safetyStandards": "Estándares de Seguridad"
+    },
+    "copyright": "© 2025 JetChance. Todos los derechos reservados."
+  },
+  "about": {
+    "hero": {
+      "title": "Redefiniendo los Viajes de Lujo",
+      "subtitle": "JetChance está revolucionando la aviación privada al hacer que los viajes de lujo sean accesibles, transparentes y sin esfuerzo. Descubre nuestra historia y la pasión que nos impulsa hacia adelante."
+    },
+    "mission": {
+      "title": "Nuestra Misión",
+      "subtitle": "Democratizar los viajes de lujo y crear un mundo donde las experiencias excepcionales estén al alcance de todos.",
+      "breaking": {
+        "title": "Derribando Barreras",
+        "description1": "La aviación privada ha estado reservada durante mucho tiempo para los ultra ricos. Creemos que este no debería ser el caso. Al conectar viajeros con vuelos empty leg y ofertas exclusivas, estamos haciendo que los viajes de lujo sean accesibles para más personas que nunca antes.",
+        "description2": "Nuestro enfoque impulsado por la tecnología elimina ineficiencias, reduce costos y crea escenarios ganar-ganar tanto para viajeros como para operadores."
+      },
+      "stats": {
+        "savings": "95%",
+        "savingsLabel": "Ahorro Promedio",
+        "savingsDesc": "comparado con precios de charter tradicionales"
+      }
+    },
+    "values": {
+      "title": "Nuestros Valores",
+      "subtitle": "Estos principios guían todo lo que hacemos y moldean el futuro de los viajes de lujo.",
+      "customerFirst": {
+        "title": "Cliente Primero",
+        "description": "Cada decisión que tomamos prioriza las necesidades, comodidad y satisfacción de nuestros clientes por encima de todo."
+      },
+      "innovation": {
+        "title": "Innovación",
+        "description": "Aprovechamos tecnología de vanguardia para resolver problemas complejos y crear experiencias fluidas."
+      },
+      "trustSafety": {
+        "title": "Confianza y Seguridad",
+        "description": "Mantenemos los más altos estándares de seguridad, protección y transparencia en todo lo que hacemos."
+      }
+    },
+    "team": {
+      "title": "Construido por Entusiastas de la Aviación",
+      "subtitle": "Nuestro equipo combina décadas de experiencia en la industria de la aviación con experiencia en tecnología de vanguardia. Somos apasionados por hacer que los viajes de lujo sean accesibles para todos mientras mantenemos los más altos estándares de servicio y seguridad."
+    },
+    "cta": {
+      "title": "Únete a Nuestro Viaje",
+      "subtitle": "Ya seas un viajero buscando tu próxima aventura, un operador que busca hacer crecer su negocio, o simplemente alguien que comparte nuestra pasión por la aviación, te invitamos a ser parte de la historia de JetChance.",
+      "getStarted": "Comienza Hoy"
     }
   }
 }

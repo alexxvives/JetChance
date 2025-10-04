@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import Footer from '../components/Footer';
 
 const LuxuryLandingPage = () => {
   const navigate = useNavigate();
@@ -176,7 +177,7 @@ const LuxuryLandingPage = () => {
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('There was an error submitting your request. Please try again.');
+      alert(t('messages.errorSubmitting'));
     }
     
     setTimeout(() => setShowSuccessToast(false), 3000);
@@ -205,12 +206,12 @@ const LuxuryLandingPage = () => {
       {/* Success Toast */}
       {showSuccessToast && (
         <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in">
-          Quote request sent successfully!
+          {t('messages.quoteRequestSent')}
         </div>
       )}
 
       {/* 1. Hero Section */}
-      <section className="relative h-screen flex items-start justify-center pt-20 overflow-hidden">
+      <section className="relative min-h-[125vh] flex items-start justify-center pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -260,20 +261,19 @@ const LuxuryLandingPage = () => {
           {/* Headline */}
           <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight m-0">
-              <span className="text-white">What if flying </span>
-              <span className="text-amber-500">private</span>
+              <span className="text-white">{t('home.hero.headline.whatIf')}</span>
+              <span className="text-amber-500">{t('home.hero.headline.private')}</span>
               <br />
-              <span className="text-white">was as accessible as a </span>
-              <span className="text-amber-500">commercial</span>
-              <span className="text-white"> ticket?</span>
+              <span className="text-white">{t('home.hero.headline.wasAccessible')}</span>
+              <span className="text-amber-500">{t('home.hero.headline.commercial')}</span>
+              <span className="text-white">{t('home.hero.headline.ticket')}</span>
             </h1>
           </div>
 
           {/* Subheadline */}
           <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Access luxury private jets through empty leg flights at up to 90% off, 
-              or book your perfect full charter experience
+              {t('home.hero.subtitle')}
             </p>
           </div>
 
@@ -283,30 +283,30 @@ const LuxuryLandingPage = () => {
               onClick={navigateToSignup}
               className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg text-lg font-semibold hover:bg-white/20 transition-all duration-300 hover:scale-105"
             >
-              Book Empty Leg Flight
+              {t('home.hero.cta.emptyLeg')}
             </button>
             <button 
               onClick={scrollToForm}
               className="px-8 py-4 bg-amber-500 text-black rounded-lg text-lg font-semibold hover:bg-amber-600 transition-all duration-300 hover:scale-105 shadow-lg"
             >
-              Request Full Charter
+              {t('home.hero.cta.fullCharter')}
             </button>
           </div>
 
           {/* Trust Indicators */}
           <div className="mb-16 animate-fade-in-up" style={{ animationDelay: '1s' }}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-gray-300">
+            <div className="flex items-center justify-center gap-4 sm:gap-8 text-gray-300">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span>Safety Certified</span>
+                <span className="text-sm sm:text-base">{t('home.hero.trust.safety')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span>24/7 Concierge</span>
+                <span className="text-sm sm:text-base">{t('home.hero.trust.concierge')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span>Instant Booking</span>
+                <span className="text-sm sm:text-base">{t('home.hero.trust.booking')}</span>
               </div>
             </div>
           </div>
@@ -321,116 +321,120 @@ const LuxuryLandingPage = () => {
       </section>
 
       {/* 2. Service Comparison Section */}
-      <section className="py-24 bg-gradient-to-b from-slate-700 to-slate-800">
+      <section className="pt-12 pb-24 bg-gradient-to-b from-slate-700 to-slate-800">
         <div className="max-w-7xl mx-auto px-4">
           {/* Section Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Two Ways to Fly Private
+              {t('home.services.title')}
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Choose the option that best fits your schedule and budget
+              {t('home.services.subtitle')}
             </p>
           </div>
 
           {/* Two Card Layout */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-8 max-w-6xl mx-auto">
             {/* Empty Leg Card */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-green-200">
-              <div className="p-8 relative">
+            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-green-200" style={{minHeight: 'clamp(200px, 50vw, 400px)'}}>
+              <div className="relative flex flex-col justify-between h-full" style={{padding: 'clamp(0.5rem, 3vw, 2rem)'}}>
                 {/* Badge - Top Right */}
-                <div className="absolute top-4 right-4">
-                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                    <ArrowTrendingDownIcon className="w-4 h-4" />
-                    Save up to 90%
+                <div className="absolute" style={{top: 'clamp(0.25rem, 2vw, 1rem)', right: 'clamp(0.25rem, 2vw, 1rem)'}}>
+                  <div className="bg-green-500 text-white rounded-full font-semibold flex items-center" style={{padding: 'clamp(0.125rem, 1vw, 0.25rem) clamp(0.25rem, 2vw, 0.75rem)', fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', gap: 'clamp(0.125rem, 1vw, 0.25rem)'}}>
+                    <ArrowTrendingDownIcon style={{width: 'clamp(0.5rem, 2vw, 1rem)', height: 'clamp(0.5rem, 2vw, 1rem)'}} />
+                    <span className="hidden xs:inline">{t('home.services.emptyLeg.badge')}</span>
+                    <span className="xs:hidden">-90%</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3 mt-2">
-                  <PaperAirplaneIcon className="w-8 h-8 text-amber-500" />
-                  Empty Leg Flights
+                <h3 className="font-bold text-gray-900 flex items-center" style={{fontSize: 'clamp(0.875rem, 4vw, 1.5rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)', marginTop: 'clamp(1.5rem, 6vw, 0.5rem)', gap: 'clamp(0.25rem, 2vw, 0.75rem)'}}>
+                  <PaperAirplaneIcon className="text-amber-500" style={{width: 'clamp(1rem, 4vw, 2rem)', height: 'clamp(1rem, 4vw, 2rem)'}} />
+                  <span style={{fontSize: 'clamp(0.75rem, 4vw, 1.5rem)'}}>{t('home.services.emptyLeg.title')}</span>
                 </h3>
-                <p className="text-gray-600 text-sm mb-6">Premium flights at massive discounts when jets return empty</p>
+                <p className="text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', marginBottom: 'clamp(0.5rem, 2vw, 1.5rem)', lineHeight: '1.3'}}>
+                  {t('home.services.emptyLeg.description')}
+                </p>
 
                 {/* Perfect for */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-3">Perfect for:</h4>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Flexible travel dates
+                <div className="mb-2 sm:mb-6 h-28 sm:h-auto">
+                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.emptyLeg.perfectFor')}</h4>
+                  <ul style={{marginTop: 'clamp(0.25rem, 1vw, 0.5rem)'}}>
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.emptyLeg.benefits.0')}
                     </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Budget-conscious travelers
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.emptyLeg.benefits.1')}
                     </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Last-minute getaways
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.emptyLeg.benefits.2')}
                     </li>
                   </ul>
                 </div>
 
                 {/* Divisor */}
-                <div className="border-t border-gray-200 mb-6"></div>
+                <div className="border-t border-gray-200 mb-2 sm:mb-6 hidden md:block"></div>
 
                 {/* What you get */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-3">What you get:</h4>
-                  <p className="text-gray-600">
-                    Same luxury experience at a fraction of the cost. Access to premium jets 
-                    returning empty from previous charters.
+                <div className="mb-2 sm:mb-6 h-16 sm:h-auto hidden md:block">
+                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.emptyLeg.whatYouGet')}</h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-none sm:leading-normal">
+                    {t('home.services.emptyLeg.details')}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Full Charter Card */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-black">
-              <div className="p-8 relative">
+            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-black" style={{minHeight: 'clamp(200px, 50vw, 400px)'}}>
+              <div className="relative flex flex-col justify-between h-full" style={{padding: 'clamp(0.5rem, 3vw, 2rem)'}}>
                 {/* Badge - Top Right */}
-                <div className="absolute top-4 right-4">
-                  <div className="bg-black text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    Premium
+                <div className="absolute" style={{top: 'clamp(0.25rem, 2vw, 1rem)', right: 'clamp(0.25rem, 2vw, 1rem)'}}>
+                  <div className="bg-black text-white rounded-full font-semibold flex items-center" style={{padding: 'clamp(0.125rem, 1vw, 0.25rem) clamp(0.25rem, 2vw, 0.75rem)', fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', gap: 'clamp(0.125rem, 1vw, 0.25rem)'}}>
+                    <span className="hidden sm:inline">{t('home.services.fullCharter.badge')}</span>
+                    <span className="sm:hidden">{t('home.services.fullCharter.badge')}</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3 mt-2">
-                  <CalendarIcon className="w-8 h-8 text-amber-500" />
-                  Full Charter
+                <h3 className="font-bold text-gray-900 flex items-center" style={{fontSize: 'clamp(0.875rem, 4vw, 1.5rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)', marginTop: 'clamp(1.5rem, 6vw, 0.5rem)', gap: 'clamp(0.25rem, 2vw, 0.75rem)'}}>
+                  <CalendarIcon className="text-amber-500" style={{width: 'clamp(1rem, 4vw, 2rem)', height: 'clamp(1rem, 4vw, 2rem)'}} />
+                  <span style={{fontSize: 'clamp(0.75rem, 4vw, 1.5rem)'}}>{t('home.services.fullCharter.title')}</span>
                 </h3>
-                <p className="text-gray-600 text-sm mb-6">Complete control over your flight experience</p>
+                <p className="text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', marginBottom: 'clamp(0.5rem, 2vw, 1.5rem)', lineHeight: '1.3'}}>
+                  {t('home.services.fullCharter.description')}
+                </p>
 
                 {/* Perfect for */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-3">Perfect for:</h4>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Specific destinations
+                <div className="mb-2 sm:mb-6 h-28 sm:h-auto">
+                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.fullCharter.perfectFor')}</h4>
+                  <ul style={{marginTop: 'clamp(0.25rem, 1vw, 0.5rem)'}}>
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.fullCharter.benefits.0')}
                     </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Custom scheduling
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.fullCharter.benefits.1')}
                     </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500" />
-                      Group travel
+                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', lineHeight: '1.2'}}>
+                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
+                      {t('home.services.fullCharter.benefits.2')}
                     </li>
                   </ul>
                 </div>
 
                 {/* Divisor */}
-                <div className="border-t border-gray-200 mb-6"></div>
+                <div className="border-t border-gray-200 mb-2 sm:mb-6 hidden md:block"></div>
 
                 {/* What you get */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-3">What you get:</h4>
-                  <p className="text-gray-600">
-                    Complete flexibility and customization. Choose your aircraft, timing, 
-                    and destination for the ultimate private jet experience.
+                <div className="mb-2 sm:mb-6 h-16 sm:h-auto hidden md:block">
+                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.fullCharter.whatYouGet')}</h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-none sm:leading-normal">
+                    {t('home.services.fullCharter.details')}
                   </p>
                 </div>
               </div>
@@ -509,6 +513,16 @@ const LuxuryLandingPage = () => {
       {/* 4. Inquiry Form Section */}
       <section id="inquiry-form" className="py-24 bg-gradient-to-b from-slate-900 to-slate-950">
         <div className="max-w-7xl mx-auto px-4">
+          {/* Section Title */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Request Your Quote
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Get started with your private jet journey. Our team will provide you with a personalized quote within 24 hours.
+            </p>
+          </div>
+
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Image */}
             <div className="relative h-full">
@@ -526,8 +540,6 @@ const LuxuryLandingPage = () => {
 
             {/* Right: Form */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Request Your Quote</h3>
-              
               <form onSubmit={handleFormSubmit} className="space-y-6">
                 {/* Personal Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -669,69 +681,7 @@ const LuxuryLandingPage = () => {
       </section>
 
       {/* 5. Footer */}
-      <footer className="bg-black text-white py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* 4-Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {/* Brand Column */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <PaperAirplaneIcon className="w-8 h-8 text-amber-500" />
-                <span className="text-xl font-bold">JetChance</span>
-              </div>
-              <p className="text-gray-400 leading-relaxed">
-                Your gateway to luxury private aviation. Experience the world with unmatched 
-                comfort, convenience, and style.
-              </p>
-            </div>
-
-            {/* Services */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Services</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">Empty Leg Flights</a></li>
-                <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">Full Charter</a></li>
-                <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">Group Travel</a></li>
-                <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">Cargo Charter</a></li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Contact</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>24/7 Available</li>
-                <li>+1 (555) 123-4567</li>
-                <li>info@jetchance.com</li>
-                <li><a href="#inquiry" className="text-amber-500 hover:text-amber-400">Get Quote</a></li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Safety</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Fleet</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 JetChance. All rights reserved.
-            </p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Safety Standards</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Signup Modal */}
       {showSignupModal && (
