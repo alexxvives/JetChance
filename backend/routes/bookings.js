@@ -277,8 +277,9 @@ router.post('/', authenticate, [
       );
       updateFlightStmt.run(passengers.length, flightId);
 
-      // Notify operator about new booking
+      // Notify operator and admins about new booking
       try {
+        // Notify the operator
         const operatorUserId = flight.user_id;
         if (operatorUserId) {
           await createNotification(
@@ -289,6 +290,22 @@ router.post('/', authenticate, [
           );
           console.log(`✅ Created booking notification for operator ${operatorUserId}`);
         }
+
+        // Also notify all admins
+        const adminStmt = db.prepare(
+          'SELECT id FROM users WHERE role IN (?, ?)'
+        );
+        const admins = adminStmt.all('admin', 'super-admin');
+        
+        for (const admin of admins) {
+          await createNotification(
+            db,
+            admin.id,
+            'New Booking Created 🎉',
+            `New booking received for flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+          );
+        }
+        console.log(`✅ Notified ${admins.length} admins about new booking`);
       } catch (notificationError) {
         console.error('❌ Failed to create booking notification:', notificationError);
         // Don't fail the booking if notification fails
