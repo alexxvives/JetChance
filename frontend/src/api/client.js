@@ -156,6 +156,14 @@ class ApiClient {
     });
   }
 
+  // PATCH request
+  async patch(endpoint, data = {}) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: data,
+    });
+  }
+
   // DELETE request
   async delete(endpoint) {
     return this.request(endpoint, { method: 'DELETE' });

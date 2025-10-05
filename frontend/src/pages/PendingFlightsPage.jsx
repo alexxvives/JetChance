@@ -295,6 +295,7 @@ export default function PendingFlightsPage() {
         operatorName={deleteModal.operatorName}
         confirmText="Delete Flight"
         type="danger"
+        noteText="This action is permanent and the operator will be notified."
       />
     </div>
   );

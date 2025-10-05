@@ -219,9 +219,24 @@ router.get('/', [
           if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
             return imagePath;
           }
+          
           // If it's a relative path, convert to full URL
-          // Handle both "aircraft/..." and "uploads/aircraft/..." formats
-          const cleanPath = imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+          let cleanPath = imagePath;
+          
+          // Handle different path formats:
+          // 1. "uploads/aircraft/filename.webp" -> "aircraft/filename.webp"
+          // 2. "aircraft/filename.webp" -> "aircraft/filename.webp"
+          // 3. "/uploads/aircraft/filename.webp" -> "aircraft/filename.webp"
+          // 4. "filename.webp" -> "aircraft/filename.webp" (assume it's in aircraft folder)
+          if (cleanPath.startsWith('/uploads/')) {
+            cleanPath = cleanPath.substring(9); // Remove "/uploads/"
+          } else if (cleanPath.startsWith('uploads/')) {
+            cleanPath = cleanPath.substring(8); // Remove "uploads/"
+          } else if (!cleanPath.includes('/')) {
+            // Just a filename without path - add aircraft/ prefix
+            cleanPath = `aircraft/${cleanPath}`;
+          }
+          
           return `${req.protocol}://${req.get('host')}/uploads/${cleanPath}`;
         });
       } catch (e) {
@@ -345,9 +360,31 @@ router.get('/:id', async (req, res) => {
       SELECT 
         f.*,
         o.company_name as operator_name,
-        o.total_flights as operator_total_flights
+        o.total_flights as operator_total_flights,
+        orig_apt.code as origin_airport_code,
+        orig_apt.name as origin_airport_name,
+        orig_apt.city as origin_airport_city,
+        orig_apt.country as origin_airport_country,
+        orig_apt.latitude as origin_latitude,
+        orig_apt.longitude as origin_longitude,
+        orig_apt.status as origin_status,
+        dest_apt.code as destination_airport_code,
+        dest_apt.name as destination_airport_name,
+        dest_apt.city as destination_airport_city,
+        dest_apt.country as destination_airport_country,
+        dest_apt.latitude as destination_latitude,
+        dest_apt.longitude as destination_longitude,
+        dest_apt.status as destination_status
       FROM flights f
       LEFT JOIN operators o ON f.operator_id = o.id
+      LEFT JOIN airports orig_apt ON orig_apt.code = (
+        SELECT SUBSTR(f.origin_name, INSTR(f.origin_name, '(') + 1, INSTR(f.origin_name, ')') - INSTR(f.origin_name, '(') - 1)
+        WHERE INSTR(f.origin_name, '(') > 0
+      )
+      LEFT JOIN airports dest_apt ON dest_apt.code = (
+        SELECT SUBSTR(f.destination_name, INSTR(f.destination_name, '(') + 1, INSTR(f.destination_name, ')') - INSTR(f.destination_name, '(') - 1)
+        WHERE INSTR(f.destination_name, '(') > 0
+      )
       WHERE f.id = ?
     `);
     const result = stmt.get(id);
@@ -378,9 +415,24 @@ router.get('/:id', async (req, res) => {
         if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
           return imagePath;
         }
+        
         // If it's a relative path, convert to full URL
-        // Handle both "aircraft/..." and "uploads/aircraft/..." formats
-        const cleanPath = imagePath.startsWith('uploads/') ? imagePath.substring(8) : imagePath;
+        let cleanPath = imagePath;
+        
+        // Handle different path formats:
+        // 1. "uploads/aircraft/filename.webp" -> "aircraft/filename.webp"
+        // 2. "aircraft/filename.webp" -> "aircraft/filename.webp"
+        // 3. "/uploads/aircraft/filename.webp" -> "aircraft/filename.webp"
+        // 4. "filename.webp" -> "aircraft/filename.webp" (assume it's in aircraft folder)
+        if (cleanPath.startsWith('/uploads/')) {
+          cleanPath = cleanPath.substring(9); // Remove "/uploads/"
+        } else if (cleanPath.startsWith('uploads/')) {
+          cleanPath = cleanPath.substring(8); // Remove "uploads/"
+        } else if (!cleanPath.includes('/')) {
+          // Just a filename without path - add aircraft/ prefix
+          cleanPath = `aircraft/${cleanPath}`;
+        }
+        
         return `${req.protocol}://${req.get('host')}/uploads/${cleanPath}`;
       });
     } catch (e) {
@@ -429,10 +481,16 @@ router.get('/:id', async (req, res) => {
       origin_city: flight.origin_city,
       origin_country: flight.origin_country,
       origin_code: originCode,
+      origin_latitude: flight.origin_latitude,
+      origin_longitude: flight.origin_longitude,
+      origin_status: flight.origin_status,
       destination_name: flight.destination_name,
       destination_city: flight.destination_city,
       destination_country: flight.destination_country,
       destination_code: destinationCode,
+      destination_latitude: flight.destination_latitude,
+      destination_longitude: flight.destination_longitude,
+      destination_status: flight.destination_status,
       departure_time: flight.departure_datetime,
       arrival_time: flight.arrival_datetime,
       flight_time: flightTime,
@@ -488,7 +546,7 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
     }
 
     // Get operator ID
-    const operatorResult = await db.query(
+    const operatorResult = await dbQuery(
       'SELECT id FROM operators WHERE user_id = ?',
       [req.user.id]
     );
@@ -638,10 +696,14 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
 
     // Create notification for the operator about successful flight submission
     try {
+      // Extract airport codes from origin_name and destination_name (format: "Airport Name (CODE)")
+      const originCode = newFlight.origin_name?.match(/\(([^)]+)\)/)?.[1] || newFlight.origin_city;
+      const destCode = newFlight.destination_name?.match(/\(([^)]+)\)/)?.[1] || newFlight.destination_city;
+      
       await createNotification(
         req.user.id, // The operator's user ID
         'Flight Submitted for Review',
-        `Your flight ${newFlight.origin_code} → ${newFlight.destination_code} has been successfully submitted for admin review.`
+        `Your flight ${originCode} → ${destCode} has been successfully submitted for admin review.`
       );
       console.log(`✅ Created submission notification for user ${req.user.id} and flight ${newFlight.id}`);
     } catch (notificationError) {
@@ -688,7 +750,7 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
 
     // Get operator ID
     const operatorResult = await db.query(
-      'SELECT id FROM operators WHERE user_id = $1',
+      'SELECT id FROM operators WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -704,9 +766,9 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
     // Check flight ownership (unless admin)
     let flightCheck;
     if (req.user.role === 'admin') {
-      flightCheck = await db.query('SELECT id FROM flights WHERE id = $1', [id]);
+      flightCheck = await dbQuery('SELECT id FROM flights WHERE id = ?', [id]);
     } else {
-      flightCheck = await db.query('SELECT id FROM flights WHERE id = $1 AND operator_id = $2', [id, operatorId]);
+      flightCheck = await dbQuery('SELECT id FROM flights WHERE id = ? AND operator_id = ?', [id, operatorId]);
     }
 
     if (flightCheck.rows.length === 0) {
@@ -718,54 +780,41 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
 
     // Complete field mapping from DATABASE_SCHEMA.md reference
     const fieldMapping = {
-      // Basic Info
-      aircraftName: 'aircraft_name',
-      aircraftImage: 'aircraft_image_url',
+      // Aircraft Info
+      aircraftType: 'aircraft_model',
+      aircraftModel: 'aircraft_model',
+      aircraftName: 'aircraft_model',
       
-      // Route Info (frontend sends these field names)
-      origin: 'origin_code',
-      originCode: 'origin_code', 
+      // Route Info - Database has no origin_code/destination_code columns
       originName: 'origin_name',
       originCity: 'origin_city',
       originCountry: 'origin_country',
-      destination: 'destination_code',
-      destinationCode: 'destination_code',
       destinationName: 'destination_name',
       destinationCity: 'destination_city',
       destinationCountry: 'destination_country',
       
-      // Schedule (frontend sends these field names)
+      // Schedule
       departureTime: 'departure_datetime',
       departureDateTime: 'departure_datetime',
       arrivalTime: 'arrival_datetime',
       arrivalDateTime: 'arrival_datetime',
-      duration: 'estimated_duration_minutes',
-      bookingDeadline: 'booking_deadline',
       
       // Pricing
-      originalPrice: 'seat_market_price',
-      emptyLegPrice: 'seat_leg_price',
-      currency: 'currency',
+      originalPrice: 'market_price',
+      marketPrice: 'market_price',
+      emptyLegPrice: 'empty_leg_price',
+      price: 'empty_leg_price',
       
       // Capacity
       availableSeats: 'available_seats',
-      maxPassengers: 'max_passengers',
-      
-      // Services & Policies
-      cateringAvailable: 'catering_available',
-      groundTransportAvailable: 'ground_transport_available',
-      wifiAvailable: 'wifi_available',
-      petsAllowed: 'pets_allowed',
-      smokingAllowed: 'smoking_allowed',
-      flexibleDeparture: 'flexible_departure',
-      flexibleDestination: 'flexible_destination',
+      seatsAvailable: 'available_seats',
+      totalSeats: 'total_seats',
+      maxPassengers: 'total_seats',
       
       // Additional
-      maxDelayMinutes: 'max_delay_minutes',
-      cancellationPolicy: 'cancellation_policy',
       description: 'description',
-      specialRequirements: 'special_requirements',
-      status: 'status'
+      status: 'status',
+      images: 'images'
     };
 
     const updates = {};
@@ -774,7 +823,13 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
     for (const [frontendField, value] of Object.entries(req.body)) {
       if (value !== undefined && fieldMapping[frontendField]) {
         const dbColumn = fieldMapping[frontendField];
-        updates[dbColumn] = value;
+        
+        // Special handling for images - ensure it's stored as JSON string
+        if (dbColumn === 'images') {
+          updates[dbColumn] = Array.isArray(value) ? JSON.stringify(value) : value;
+        } else {
+          updates[dbColumn] = value;
+        }
       }
     }
 
@@ -800,13 +855,13 @@ router.put('/:id', authenticate, authorize(['operator', 'admin', 'super-admin'])
     console.log('📋 SQL Values:', values);
 
     // For SQLite, we need to run the update and then fetch the updated row
-    await db.run(
+    await dbRun(
       `UPDATE flights SET ${setClause} WHERE id = ?`,
       values
     );
 
     // Fetch the updated row
-    const result = await db.query(
+    const result = await dbQuery(
       'SELECT * FROM flights WHERE id = ?',
       [id]
     );
@@ -882,11 +937,15 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
     if (operator) {
       // Create notification for the operator
       try {
+        // Extract airport codes from origin_name and destination_name (format: "Airport Name (CODE)")
+        const originCode = flight.origin_name?.match(/\(([^)]+)\)/)?.[1] || flight.origin_city;
+        const destCode = flight.destination_name?.match(/\(([^)]+)\)/)?.[1] || flight.destination_city;
+        
         const notificationType = status === 'approved' ? 'flight_approved' : 'flight_declined';
-        const notificationTitle = status === 'approved' ? 'Flight Approved! ✅' : 'Flight Declined ❌';
+        const notificationTitle = status === 'approved' ? 'Flight Approved' : 'Flight Declined';
         const notificationMessage = status === 'approved' 
-          ? `Great news! Your flight ${flight.origin_name} → ${flight.destination_name} has been approved and is now live for customers to book.`
-          : `Your flight ${flight.origin_name} → ${flight.destination_name} was declined. ${reason ? `Reason: ${reason}` : 'Please contact admin for details.'}`;
+          ? `Great news! Your flight ${originCode} → ${destCode} has been approved and is now live for customers to book.`
+          : `Your flight ${originCode} → ${destCode} was declined. ${reason ? `Reason: ${reason}` : 'Please contact admin for details.'}`;
         
         await createNotification(
           operator.user_id,
@@ -938,7 +997,7 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
       WHERE f.id = ?
     `;
 
-    const flightResult = await db.query(getFlightSql, [id]);
+    const flightResult = await dbQuery(getFlightSql, [id]);
     const flight = flightResult.rows[0];
 
     if (!flight) {
@@ -954,7 +1013,7 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
 
     // Delete the flight
     const deleteSql = 'DELETE FROM flights WHERE id = ?';
-    await db.query(deleteSql, [id]);
+    await dbRun(deleteSql, [id]);
 
     // Update operator's flight count
     try {
@@ -979,10 +1038,15 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
       if (!isOwnFlight) {
         // Only super-admins can delete other people's flights, so this is admin deletion
         console.log('🔔 Creating admin deletion notification...');
+        
+        // Extract airport codes from names (pattern: "City Name (CODE)")
+        const originCode = flight.origin_name?.match(/\(([^)]+)\)/)?.[1] || flight.origin_city;
+        const destCode = flight.destination_name?.match(/\(([^)]+)\)/)?.[1] || flight.destination_city;
+        
         await createNotification(
           flight.user_id,  // Use user_id instead of operator_id
           'Flight Deleted by Administration',
-          `Your flight ${flight.origin_code} → ${flight.destination_code} (${flight.id}) has been deleted by administration.`
+          `Your flight ${originCode} → ${destCode} (${flight.id}) has been deleted by administration.`
         );
         console.log('✅ Admin deletion notification sent to operator:', flight.operator_email);
       } else {

@@ -437,6 +437,7 @@ export default function OperatorDashboard({ user }) {
         operatorName={user?.company_name || user?.name || 'Your company'}
         confirmText="Delete Flight"
         type="danger"
+        noteText="This action is permanent and cannot be undone."
       />
     </div>
   );

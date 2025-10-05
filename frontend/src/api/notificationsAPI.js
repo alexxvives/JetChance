@@ -7,8 +7,8 @@ class NotificationsAPI {
    */
   static async getNotifications() {
     try {
-      const response = await client.get('/api/notifications');
-      return response.data;
+      const response = await client.get('/notifications');
+      return response; // response is already the array of notifications
     } catch (error) {
       console.error('Error fetching notifications:', error);
       throw error;
@@ -20,8 +20,8 @@ class NotificationsAPI {
    */
   static async markAsRead(notificationId) {
     try {
-      const response = await client.patch(`/api/notifications/${notificationId}/read`);
-      return response.data;
+      const response = await client.patch(`/notifications/${notificationId}/read`);
+      return response; // response is already the data
     } catch (error) {
       console.error('Error marking notification as read:', error);
       throw error;
@@ -33,8 +33,8 @@ class NotificationsAPI {
    */
   static async markAllAsRead() {
     try {
-      const response = await client.patch('/api/notifications/mark-all-read');
-      return response.data;
+      const response = await client.patch('/notifications/mark-all-read');
+      return response; // response is already the data
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
       throw error;
@@ -46,8 +46,8 @@ class NotificationsAPI {
    */
   static async deleteNotification(notificationId) {
     try {
-      const response = await client.delete(`/api/notifications/${notificationId}`);
-      return response.data;
+      const response = await client.delete(`/notifications/${notificationId}`);
+      return response; // response is already the data
     } catch (error) {
       console.error('Error deleting notification:', error);
       throw error;

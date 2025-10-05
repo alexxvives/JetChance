@@ -279,13 +279,17 @@ router.post('/', authenticate, [
 
       // Notify operator and admins about new booking
       try {
+        // Extract airport codes from names (pattern: "City Name (CODE)")
+        const originCode = flight.origin_name?.match(/\(([^)]+)\)/)?.[1] || flight.origin_city;
+        const destCode = flight.destination_name?.match(/\(([^)]+)\)/)?.[1] || flight.destination_city;
+        
         // Notify the operator
         const operatorUserId = flight.user_id;
         if (operatorUserId) {
           await createNotification(
             operatorUserId,
             'New Booking Received! 🎉',
-            `You have a new booking for your flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+            `You have a new booking for your flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
           );
           console.log(`✅ Created booking notification for operator ${operatorUserId}`);
         }
@@ -300,7 +304,7 @@ router.post('/', authenticate, [
           await createNotification(
             admin.id,
             'New Booking Created 🎉',
-            `New booking received for flight ${flight.origin_code} → ${flight.destination_code}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+            `New booking received for flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
           );
         }
         console.log(`✅ Notified ${admins.length} admins about new booking`);

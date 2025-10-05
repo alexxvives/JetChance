@@ -541,10 +541,10 @@ const LuxuryLandingPage = () => {
           {/* Section Title */}
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Request Your Quote
+              {t('regularJetRequest.sectionTitle')}
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Get started with your private jet journey. Our team will provide you with a personalized quote within 24 hours.
+              {t('regularJetRequest.sectionSubtitle')}
             </p>
           </div>
 
@@ -558,8 +558,8 @@ const LuxuryLandingPage = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl"></div>
               <div className="absolute bottom-8 left-8 text-white">
-                <h3 className="text-3xl font-bold mb-2">Your Private Sanctuary</h3>
-                <p className="text-lg text-gray-200">Experience luxury at 40,000 feet</p>
+                <h3 className="text-3xl font-bold mb-2">{t('regularJetRequest.sanctuaryTitle')}</h3>
+                <p className="text-lg text-gray-200">{t('regularJetRequest.sanctuarySubtitle')}</p>
               </div>
             </div>
 
@@ -570,7 +570,7 @@ const LuxuryLandingPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
+                      {t('regularJetRequest.labels.name')}
                     </label>
                     <input
                       type="text"
@@ -583,7 +583,7 @@ const LuxuryLandingPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
+                      {t('regularJetRequest.labels.email')}
                     </label>
                     <input
                       type="email"
@@ -598,7 +598,7 @@ const LuxuryLandingPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
+                    {t('regularJetRequest.labels.phone')}
                   </label>
                   <input
                     type="tel"
@@ -614,7 +614,7 @@ const LuxuryLandingPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Departure
+                      {t('regularJetRequest.labels.departure')}
                     </label>
                     <input
                       type="text"
@@ -627,7 +627,7 @@ const LuxuryLandingPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Destination
+                      {t('regularJetRequest.labels.destination')}
                     </label>
                     <input
                       type="text"
@@ -643,7 +643,7 @@ const LuxuryLandingPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date
+                      {t('regularJetRequest.labels.date')}
                     </label>
                     <input
                       type="date"
@@ -656,7 +656,7 @@ const LuxuryLandingPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Passengers
+                      {t('regularJetRequest.labels.passengers')}
                     </label>
                     <input
                       type="number"
@@ -674,7 +674,7 @@ const LuxuryLandingPage = () => {
                 {/* Additional Details */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Details
+                    {t('regularJetRequest.labels.details')}
                   </label>
                   <textarea
                     name="details"
@@ -682,7 +682,7 @@ const LuxuryLandingPage = () => {
                     onChange={handleInputChange}
                     rows="3"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="Special requests, catering preferences, etc."
+                    placeholder={t('regularJetRequest.labels.detailsPlaceholder')}
                   ></textarea>
                 </div>
 
@@ -692,12 +692,12 @@ const LuxuryLandingPage = () => {
                   className="w-full bg-amber-500 text-black py-3 px-6 rounded-lg font-semibold text-lg hover:bg-amber-600 transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <PaperAirplaneIcon className="w-5 h-5" />
-                  Request Quote
+                  {t('regularJetRequest.buttons.submit')}
                 </button>
 
                 {/* Privacy Disclaimer */}
                 <p className="text-sm text-gray-500 text-center">
-                  Your information is secure and will only be used to provide your quote.
+                  {t('regularJetRequest.privacy')}
                 </p>
               </form>
             </div>

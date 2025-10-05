@@ -974,7 +974,7 @@ export default function AdminDashboard({ user }) {
       {/* Fixed Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
         {/* Sidebar Header with Logo */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4">
           <div className="flex items-center justify-center">
             <img 
               src="/images/logo/logo2.svg" 
@@ -1026,7 +1026,7 @@ export default function AdminDashboard({ user }) {
                 <p className="text-gray-600">
                   {t('admin.dashboard.welcomeBack')} {user?.firstName} {user?.lastName}
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    {t('admin.dashboard.superAdmin')}
+                    {user?.role === 'super-admin' ? t('admin.dashboard.superAdmin') : t('admin.dashboard.admin')}
                   </span>
                 </p>
               </div>
@@ -1079,7 +1079,6 @@ export default function AdminDashboard({ user }) {
                   className="relative flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200"
                 >
                   <BellIcon className="h-5 w-5" />
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium shadow-lg animate-pulse">3</span>
                 </button>
                 
                 {/* Notifications Dropdown */}
@@ -1088,52 +1087,15 @@ export default function AdminDashboard({ user }) {
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                        <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">3 new</span>
+                        <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">0 new</span>
                       </div>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-blue-400 transition-colors">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                            <DocumentTextIcon className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">New flight submission</div>
-                            <div className="text-sm text-gray-600 mt-1">A new flight has been submitted for approval by operator AeroJet</div>
-                            <div className="text-xs text-gray-400 mt-2 flex items-center">
-                              <span>2 minutes ago</span>
-                              <span className="ml-2 w-2 h-2 bg-green-400 rounded-full"></span>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="px-6 py-8 text-center text-gray-500">
+                        <BellIcon className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                        <p className="text-sm">No notifications yet</p>
+                        <p className="text-xs text-gray-400 mt-1">You'll be notified when new flights are submitted</p>
                       </div>
-                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-yellow-400 transition-colors">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mt-0.5">
-                            <UsersIcon className="h-4 w-4 text-yellow-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">Operator registered</div>
-                            <div className="text-sm text-gray-600 mt-1">SkyWings Aviation has completed registration and is pending approval</div>
-                            <div className="text-xs text-gray-400 mt-2">1 hour ago</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer border-l-4 border-l-green-400 transition-colors">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                            <CurrencyDollarIcon className="h-4 w-4 text-green-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">Payment received</div>
-                            <div className="text-sm text-gray-600 mt-1">Flight booking payment of $2,500 confirmed for BOG → MIA</div>
-                            <div className="text-xs text-gray-400 mt-2">3 hours ago</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">View all notifications →</button>
                     </div>
                   </div>
                 )}
@@ -1143,7 +1105,7 @@ export default function AdminDashboard({ user }) {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center justify-center bg-blue-500/10 text-gray-700 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md min-w-[50px]"
+                  className="flex items-center justify-center bg-blue-500/10 text-gray-700 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md min-w-[50px] h-10"
                 >
                   <User className="h-4 w-4 mr-1" />
                   <span className="text-sm font-medium">{user?.firstName}</span>
@@ -2192,6 +2154,7 @@ export default function AdminDashboard({ user }) {
         operatorName={deleteModal.operatorName}
         confirmText="Delete Flight"
         type="danger"
+        noteText="This action is permanent and the operator will be notified."
       />
     </div>
   );

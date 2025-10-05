@@ -48,7 +48,7 @@ export default function BookingSuccessPage() {
   }
 
   const handleViewBookings = () => {
-    navigate('/my-bookings');
+    navigate('/dashboard', { state: { activeTab: 'bookings' } });
   };
 
   const handleBookAnother = () => {

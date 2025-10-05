@@ -5,6 +5,7 @@ import { useTranslation } from '../contexts/TranslationContext';
 import OperatorFlightBookings from './OperatorFlightBookings';
 import ConfirmationModal from './ConfirmationModal';
 import NotificationsAPI from '../api/notificationsAPI';
+import { flightsAPI } from '../api/flightsAPI';
 import { 
   PlusIcon, 
   PaperAirplaneIcon, 
@@ -143,8 +144,8 @@ function ActualOperatorDashboard({ user }) {
       
       setNotifications(notificationsData || []);
       
-      // Count unread notifications (using read_status field)
-      const unread = notificationsData.filter(notification => !notification.read_status);
+      // Count unread notifications (using read_at field - null means unread)
+      const unread = notificationsData.filter(notification => !notification.read_at);
       setUnreadCount(unread.length);
       
     } catch (error) {
@@ -156,24 +157,40 @@ function ActualOperatorDashboard({ user }) {
     }
   };
 
+  const markAllNotificationsAsRead = async () => {
+    try {
+      console.log('📬 Marking all notifications as read...');
+      await NotificationsAPI.markAllAsRead();
+      console.log('✅ Successfully marked all notifications as read');
+      // Refresh notifications to update the UI
+      await loadNotifications();
+    } catch (error) {
+      console.error('❌ Error marking all notifications as read:', error);
+    }
+  };
+
+  const handleNotificationDropdownToggle = async () => {
+    const willBeOpen = !isNotificationDropdownOpen;
+    setIsNotificationDropdownOpen(willBeOpen);
+    
+    // If opening the dropdown and there are unread notifications, mark them all as read
+    if (willBeOpen && unreadCount > 0) {
+      await markAllNotificationsAsRead();
+    }
+  };
+
   const handleDeleteFlight = (flightId, flightRoute) => {
     setDeleteModal({ isOpen: true, flightId, flightRoute });
   };
 
   const confirmDeleteFlight = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/flights/${deleteModal.flightId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await loadFlights();
-        setDeleteModal({ isOpen: false, flightId: null, flightRoute: '' });
-      } else {
-        console.error('Failed to delete flight');
-      }
+      await flightsAPI.deleteFlight(deleteModal.flightId);
+      await loadFlights();
+      setDeleteModal({ isOpen: false, flightId: null, flightRoute: '' });
     } catch (error) {
-      console.error('Error deleting flight:', error);
+      console.error('Failed to delete flight:', error);
+      alert(`Failed to delete flight: ${error.message}`);
     }
   };
 
@@ -206,7 +223,7 @@ function ActualOperatorDashboard({ user }) {
       {/* Fixed Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
         {/* Sidebar Header with Logo */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4">
           <div className="flex items-center justify-center">
             <img 
               src="/images/logo/logo2.svg" 
@@ -311,7 +328,7 @@ function ActualOperatorDashboard({ user }) {
               {/* Notification Bell */}
               <div className="relative" ref={notificationDropdownRef}>
                 <button 
-                  onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
+                  onClick={handleNotificationDropdownToggle}
                   className="relative flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200"
                 >
                   <BellIcon className="h-5 w-5" />
@@ -325,18 +342,9 @@ function ActualOperatorDashboard({ user }) {
                 
                 {/* Notifications Dropdown */}
                 {isNotificationDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-96 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
+                  <div className="absolute right-0 mt-3 w-[440px] bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          unreadCount > 0 
-                            ? 'bg-red-100 text-red-700' 
-                            : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {unreadCount} new
-                        </span>
-                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notificationsLoading ? (
@@ -361,10 +369,19 @@ function ActualOperatorDashboard({ user }) {
                                 ? 'border-l-gray-200 bg-white' 
                                 : 'border-l-blue-400 bg-blue-50/30'
                             }`}
-                            onClick={() => {
-                              // Mark as read when clicked (implement this function)
+                            onClick={async () => {
+                              // Mark as read when clicked
+                              console.log('🔔 Notification clicked:', notification.id, 'read_at:', notification.read_at);
                               if (!notification.read_at) {
-                                // markNotificationAsRead(notification.id);
+                                try {
+                                  console.log('📤 Calling markAsRead API...');
+                                  await NotificationsAPI.markAsRead(notification.id);
+                                  console.log('✅ Mark as read successful, refreshing...');
+                                  // Refresh notifications to update the UI
+                                  await loadNotifications();
+                                } catch (error) {
+                                  console.error('❌ Error marking notification as read:', error);
+                                }
                               }
                             }}
                           >
@@ -432,7 +449,7 @@ function ActualOperatorDashboard({ user }) {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center justify-center bg-blue-500/10 text-gray-700 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md min-w-[50px]"
+                  className="flex items-center justify-center bg-blue-500/10 text-gray-700 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md min-w-[50px] h-10"
                 >
                   <User className="h-4 w-4 mr-1" />
                   <span className="text-sm font-medium">{user?.firstName}</span>
@@ -606,6 +623,7 @@ function ActualOperatorDashboard({ user }) {
         route={deleteModal.flightRoute}
         type="danger"
         confirmText={t('dashboard.operator.delete.confirm')}
+        noteText="This action is permanent and cannot be undone."
       />
     </div>
   );
@@ -764,13 +782,17 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
           
           {!isPast && (
             <>
-              <button
-                onClick={() => navigate(`/edit-flight/${flight.id}`)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                title="Edit Flight"
-              >
-                <PencilIcon className="h-4 w-4" />
-              </button>
+              {/* Edit button only shows for pending flights */}
+              {flight.status === 'pending' && (
+                <button
+                  onClick={() => navigate(`/edit-flight/${flight.id}`)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                  title="Edit Flight"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+              )}
+              {/* Delete button - same size whether edit is visible or not */}
               <button
                 onClick={() => onDelete && onDelete(flight.id, `${flight.origin_code || 'Unknown'} → ${flight.destination_code || 'Unknown'}`)}
                 className="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"

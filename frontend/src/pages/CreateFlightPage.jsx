@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, CloudArrowUpIcon, XMarkIcon, CameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
@@ -89,6 +89,8 @@ export default function CreateFlightPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { id } = useParams(); // Get flight ID from URL for edit mode
+  const isEditMode = !!id; // Determine if we're in edit or create mode
 
   // Helper function to render flight duration warning
   const renderDurationWarning = () => {
@@ -144,6 +146,7 @@ export default function CreateFlightPage() {
     seatsAvailable: '',
     aircraftImages: [],
     description: '',
+    flightNumber: '', // Will be preserved in edit mode
     // Store selected airport objects - these contain all info we need
     originAirport: null,
     destinationAirport: null
@@ -151,6 +154,84 @@ export default function CreateFlightPage() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode); // Loading state for edit mode
+
+  // Load flight data in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      loadFlightData(id);
+    }
+  }, [id, isEditMode]);
+
+  const loadFlightData = async (flightId) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`http://localhost:4000/api/flights/${flightId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load flight data');
+      }
+
+      const flight = await response.json();
+      
+      // Construct proper airport objects for the autocomplete components
+      const originAirport = flight.origin_code ? {
+        code: flight.origin_code,
+        name: flight.origin_name,
+        city: flight.origin_city,
+        country: flight.origin_country
+      } : null;
+
+      const destinationAirport = flight.destination_code ? {
+        code: flight.destination_code,
+        name: flight.destination_name,
+        city: flight.destination_city,
+        country: flight.destination_country
+      } : null;
+      
+      // Populate form with existing flight data
+      setFormData({
+        departureTime: flight.departure_time || flight.departure_datetime || '',
+        arrivalTime: flight.arrival_time || flight.arrival_datetime || '',
+        aircraftType: flight.aircraft_model || '',
+        price: flight.empty_leg_price ? String(flight.empty_leg_price) : '',
+        originalPrice: flight.market_price ? String(flight.market_price) : '',
+        seatsAvailable: String(flight.available_seats || ''),
+        aircraftImages: [],
+        description: flight.description || '',
+        flightNumber: flight.flight_number || flight.id || '', // Preserve existing flight number
+        originAirport: originAirport,
+        destinationAirport: destinationAirport
+      });
+
+      // Load existing images as previews
+      if (flight.images && Array.isArray(flight.images) && flight.images.length > 0) {
+        // Images are already full URLs from the API
+        const previews = flight.images.map(imgUrl => {
+          // Extract just the filename from the URL for storage
+          const filename = imgUrl.split('/').pop();
+          return {
+            preview: imgUrl,
+            name: filename,
+            isExisting: true
+          };
+        });
+        setImagePreviews(previews);
+        console.log('✅ Loaded existing images:', previews);
+      }
+
+    } catch (error) {
+      console.error('Error loading flight:', error);
+      alert('Failed to load flight data');
+      navigate('/dashboard');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleImageUpload = (files) => {
     const fileArray = Array.from(files);
@@ -240,7 +321,15 @@ export default function CreateFlightPage() {
     try {
       let uploadedImageUrls = [];
       
-      // Upload all selected images
+      // In edit mode, preserve existing images
+      if (isEditMode) {
+        const existingImages = imagePreviews
+          .filter(img => img.isExisting)
+          .map(img => img.name); // Just the filename, not full URL
+        uploadedImageUrls.push(...existingImages);
+      }
+      
+      // Upload new images (those without isExisting flag or from aircraftImages array)
       if (formData.aircraftImages.length > 0) {
         for (const image of formData.aircraftImages) {
           try {
@@ -363,7 +452,7 @@ export default function CreateFlightPage() {
         ...(formData.originalPrice && { originalPrice: parseFloat(formData.originalPrice) }),
         
         // Optional fields with improved airport naming format
-        flightNumber: `CF${Date.now()}`, // Generate flight number
+        flightNumber: isEditMode ? formData.flightNumber : `CF${Date.now()}`, // Keep existing flight number in edit mode
         originName: formData.originAirport ? `${formData.originAirport.name} (${formData.originAirport.code})` : '',
         originCity: formData.originAirport?.city || '',
         originCountry: formData.originAirport?.country || getCountryByAirportCode(formData.originAirport?.code),
@@ -384,23 +473,33 @@ export default function CreateFlightPage() {
       
       // Use real API to save to database, fallback to mock API if needed
       if (shouldUseRealAPI()) {
-        await flightsAPI.createFlight(flightData);
+        if (isEditMode) {
+          // Update existing flight
+          await flightsAPI.updateFlight(id, flightData);
+          console.log('Flight updated successfully:', flightData);
+        } else {
+          // Create new flight
+          await flightsAPI.createFlight(flightData);
+          console.log('Flight created successfully:', flightData);
+        }
        } else {
-        throw new Error('No API available for flight creation');
+        throw new Error(`No API available for flight ${isEditMode ? 'update' : 'creation'}`);
       }
       
-      console.log('Flight created successfully:', flightData);
-      
-      // Navigate back to dashboard
+      // Navigate back to dashboard with appropriate message
       navigate('/dashboard', { 
-        state: { message: 'Flight submitted for review successfully! You will be notified once it is approved.' } 
+        state: { 
+          message: isEditMode 
+            ? 'Flight updated successfully!' 
+            : 'Flight submitted for review successfully! You will be notified once it is approved.' 
+        } 
       });
     } catch (error) {
-      console.error('Error creating flight:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} flight:`, error);
       
       // Show more specific error message
       const errorMessage = error.message || 'Unknown error occurred';
-      alert(`Error creating flight: ${errorMessage}`);
+      alert(`Error ${isEditMode ? 'updating' : 'creating'} flight: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -417,13 +516,15 @@ export default function CreateFlightPage() {
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             {t('createFlight.backToDashboard')}
-          </button>
-          
-          <h1 className="text-3xl font-bold text-gray-900">{t('createFlight.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('createFlight.subtitle')}</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
+        </button>
+        
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isEditMode ? t('editFlight.title') : t('createFlight.title')}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {isEditMode ? t('editFlight.subtitle') : t('createFlight.subtitle')}
+        </p>
+      </div>        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Aircraft Images Upload */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center mb-4">
@@ -510,6 +611,7 @@ export default function CreateFlightPage() {
                 placeholder={t('createFlight.sections.routeInformation.placeholders.originPlaceholder')}
                 value={formData.originAirport}
                 onChange={handleOriginAirportChange}
+                disabledAirport={formData.destinationAirport?.code}
                 required
               />
 
@@ -518,6 +620,7 @@ export default function CreateFlightPage() {
                 placeholder={t('createFlight.sections.routeInformation.placeholders.destinationPlaceholder')}
                 value={formData.destinationAirport}
                 onChange={handleDestinationAirportChange}
+                disabledAirport={formData.originAirport?.code}
                 required
               />
             </div>
@@ -695,16 +798,6 @@ export default function CreateFlightPage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.pricePerSeatHelp')}</p>
-                {formData.price && (
-                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>{t('createFlight.sections.pricing.commission.customerPrice')}</strong> {formatCOP(parseFloat(formData.price) * 1.3)} {t('createFlight.sections.pricing.commission.perSeat')}
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      {t('createFlight.sections.pricing.commission.commissionNote')}
-                    </p>
-                  </div>
-                )}
               </div>
 
               <div className="group">
@@ -718,6 +811,18 @@ export default function CreateFlightPage() {
                 <p className="text-xs text-gray-500 mt-1">{t('createFlight.sections.pricing.fields.marketPricePerSeatHelp')}</p>
               </div>
             </div>
+
+            {/* Commission note - Full width below both price inputs */}
+            {formData.price && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  <strong>{t('createFlight.sections.pricing.commission.customerPrice')}</strong> {formatCOP(parseFloat(formData.price) * 1.3)} {t('createFlight.sections.pricing.commission.perSeat')}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  {t('createFlight.sections.pricing.commission.commissionNote')}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Submit Buttons */}
@@ -738,7 +843,10 @@ export default function CreateFlightPage() {
                   : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
               } ${isSubmitting ? 'opacity-50' : ''}`}
             >
-              {isSubmitting ? t('createFlight.buttons.creatingFlight') : t('createFlight.buttons.createFlight')}
+              {isEditMode 
+                ? (isSubmitting ? t('editFlight.buttons.updatingFlight') : t('editFlight.buttons.updateFlight'))
+                : (isSubmitting ? t('createFlight.buttons.creatingFlight') : t('createFlight.buttons.createFlight'))
+              }
             </button>
           </div>
         </form>

@@ -11,7 +11,7 @@ CREATE TABLE notifications (
   user_id TEXT NOT NULL,
   title TEXT NOT NULL,
   message TEXT NOT NULL,
-  read_status BOOLEAN DEFAULT FALSE,
+  read_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users (id)
 )

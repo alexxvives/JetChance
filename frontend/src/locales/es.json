@@ -172,6 +172,9 @@
     "customer": {
       "title": "Vuelos Empty-Leg Disponibles",
       "subtitle": "Descubre vuelos de lujo a precios increíbles",
+      "welcome": "Bienvenido",
+      "role": "Cliente",
+      "requestCharter": "Solicitar Charter",
       "flightTypeQuestion": "¿Qué tipo de vuelo necesitas?",
       "requestRegularJet": "Solicitar Charter de Jet Regular",
       "tabs": {
@@ -299,49 +302,33 @@
     }
   },
   "regularJetRequest": {
-    "title": "Solicitar Charter de Jet Regular",
-    "subtitle": "Cuéntanos sobre tus requerimientos de vuelo y te contactaremos con una cotización personalizada.",
-    "contactInfo": {
-      "title": "Información de Contacto",
-      "firstName": "Nombre",
-      "firstNamePlaceholder": "Ingresa tu nombre",
-      "lastName": "Apellido",
-      "lastNamePlaceholder": "Ingresa tu apellido",
-      "email": "Correo Electrónico",
-      "emailPlaceholder": "Ingresa tu correo electrónico",
-      "phone": "Número de Teléfono",
-      "phonePlaceholder": "Ingresa tu número de teléfono"
-    },
-    "flightDetails": {
-      "title": "Detalles del Vuelo",
-      "origin": "Ciudad de Salida",
-      "originPlaceholder": "¿Desde dónde partes?",
-      "destination": "Ciudad de Destino",
-      "destinationPlaceholder": "¿A dónde vas?",
-      "departureDateTime": "Fecha y Hora de Salida",
-      "departurePlaceholder": "Selecciona fecha y hora de salida",
-      "roundTrip": "Vuelo de ida y vuelta",
-      "returnDateTime": "Fecha y Hora de Regreso",
-      "returnPlaceholder": "Selecciona fecha y hora de regreso",
-      "passengers": "Número de Pasajeros",
-      "passenger": "pasajero",
-      "passengersPlural": "pasajeros",
-      "notes": "Notas Adicionales",
-      "notesPlaceholder": "¿Algún requerimiento especial o preferencia?"
+    "title": "Solicitar Cotización Personalizada",
+    "subtitle": "Complete el formulario a continuación y nuestro equipo le proporcionará una cotización personalizada en 24 horas.",
+    "sectionTitle": "Solicite Su Cotización",
+    "sectionSubtitle": "Comience su viaje en jet privado. Nuestro equipo le proporcionará una cotización personalizada en 24 horas.",
+    "sanctuaryTitle": "Su Santuario Privado",
+    "sanctuarySubtitle": "Experimente el lujo a 40,000 pies de altura",
+    "labels": {
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "departure": "Salida",
+      "destination": "Destino",
+      "date": "Fecha",
+      "passengers": "Pasajeros",
+      "details": "Detalles Adicionales",
+      "detailsPlaceholder": "Solicitudes especiales, preferencias de catering, etc."
     },
     "buttons": {
-      "cancel": "Cancelar",
-      "submit": "Enviar Solicitud",
+      "submit": "Solicitar Cotización",
       "submitting": "Enviando..."
     },
     "success": {
-      "title": "¡Solicitud Enviada!",
-      "message": "Gracias por tu interés. Nuestro equipo de ventas te contactará en 24 horas para discutir tus requerimientos y proporcionarte una cotización personalizada.",
+      "title": "¡Solicitud Recibida!",
+      "message": "Gracias por su solicitud. Nuestro equipo se pondrá en contacto con usted en breve con una cotización personalizada.",
       "close": "Cerrar"
     },
-    "errors": {
-      "submitError": "Error al enviar la solicitud. Por favor intenta de nuevo."
-    }
+    "privacy": "Su información está segura y solo se utilizará para proporcionarle su cotización."
   },
   "flightTypeSelection": {
     "title": "¿Qué tipo de vuelo estás buscando?",
@@ -372,6 +359,7 @@
     "dashboard": {
       "welcomeBack": "Bienvenido de vuelta",
       "superAdmin": "Super Administrador",
+      "admin": "Administrador",
       "allOperators": "Todos los Operadores",
       "tabs": {
         "catalog": "Catálogo de Vuelos",

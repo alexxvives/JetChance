@@ -11,7 +11,8 @@ const ConfirmationModal = ({
   operatorName,
   confirmText = "Delete",
   cancelText = "Cancel",
-  type = "danger" // danger, warning, info
+  type = "danger", // danger, warning, info
+  noteText = null // Optional custom note text, or null to hide the note
 }) => {
   if (!isOpen) return null;
 
@@ -73,9 +74,11 @@ const ConfirmationModal = ({
               </div>
             )}
 
-            <p className="text-sm text-gray-500 mt-3">
-              <strong>Note:</strong> This action is permanent and the operator will be notified.
-            </p>
+            {noteText && (
+              <p className="text-sm text-gray-500 mt-3">
+                <strong>Note:</strong> {noteText}
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}

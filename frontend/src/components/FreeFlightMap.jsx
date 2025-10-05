@@ -39,7 +39,7 @@ const destinationIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-export default function FreeFlightMap({ flight }) {
+export default function FreeFlightMap({ flight, onCoordinateStatus }) {
   console.log('🗺️ Flight data for map:', flight);
   console.log('🗺️ Flight keys:', Object.keys(flight || {}));
   console.log('🗺️ Origin code:', flight.origin_code);
@@ -107,7 +107,50 @@ export default function FreeFlightMap({ flight }) {
   const getCoordinates = (code, airportObj) => {
     if (!code) return null;
     
-    // First check if we have airport object with coordinates (for custom airports)
+    // Determine if airport is approved (exact coords) or pending (city fallback coords)
+    let airportStatus = null;
+    if (flight.origin_code === code && flight.origin_status) {
+      airportStatus = flight.origin_status;
+    } else if (flight.destination_code === code && flight.destination_status) {
+      airportStatus = flight.destination_status;
+    }
+    
+    // First priority: Check if flight data includes coordinates from database
+    if (flight.origin_code === code && flight.origin_latitude && flight.origin_longitude) {
+      const isApproved = flight.origin_status === 'approved';
+      console.log(`🛫 Using database coordinates for origin ${code}:`, { 
+        lat: flight.origin_latitude, 
+        lng: flight.origin_longitude,
+        status: flight.origin_status,
+        isExact: isApproved
+      });
+      return {
+        lat: flight.origin_latitude,
+        lng: flight.origin_longitude,
+        name: flight.origin_name || `${code} Airport`,
+        isExact: isApproved,
+        cityName: !isApproved ? flight.origin_city : null
+      };
+    }
+    
+    if (flight.destination_code === code && flight.destination_latitude && flight.destination_longitude) {
+      const isApproved = flight.destination_status === 'approved';
+      console.log(`🛫 Using database coordinates for destination ${code}:`, { 
+        lat: flight.destination_latitude, 
+        lng: flight.destination_longitude,
+        status: flight.destination_status,
+        isExact: isApproved
+      });
+      return {
+        lat: flight.destination_latitude,
+        lng: flight.destination_longitude,
+        name: flight.destination_name || `${code} Airport`,
+        isExact: isApproved,
+        cityName: !isApproved ? flight.destination_city : null
+      };
+    }
+    
+    // Second priority: Check if we have airport object with coordinates (for custom airports)
     if (airportObj && airportObj.latitude && airportObj.longitude) {
       console.log(`🛫 Using coordinates from airport object for ${code}:`, { lat: airportObj.latitude, lng: airportObj.longitude });
       return {
@@ -118,14 +161,31 @@ export default function FreeFlightMap({ flight }) {
       };
     }
     
-    // Check hardcoded airport coordinates
+    // Third priority: Check hardcoded airport coordinates (fallback for legacy data)
     const airportCoords = airportCoordinates[code.toUpperCase()];
     if (airportCoords) {
-      console.log(`🛫 Using exact airport coordinates for ${code}:`, airportCoords);
+      console.log(`🛫 Using fallback airport coordinates for ${code}:`, airportCoords);
       return { ...airportCoords, isExact: true };
     }
     
-    // Fallback to city coordinates if airport object has a city
+    // Fourth priority: Use city coordinates from flight data
+    const cityName = (flight.origin_code === code ? flight.origin_city : flight.destination_city);
+    if (cityName) {
+      const cityKey = cityName.toUpperCase().trim();
+      const cityCoords = cityCoordinates[cityKey];
+      if (cityCoords) {
+        console.log(`🏙️ Using city coordinates from flight data for ${cityName}:`, cityCoords);
+        return {
+          lat: cityCoords.lat,
+          lng: cityCoords.lng,
+          name: `${cityName} (City Center)`,
+          isExact: false,
+          cityName: cityName
+        };
+      }
+    }
+    
+    // Fifth priority: Fallback to city coordinates if airport object has a city
     if (airportObj && airportObj.city) {
       const cityKey = airportObj.city.toUpperCase().trim();
       const cityCoords = cityCoordinates[cityKey];
@@ -174,6 +234,22 @@ export default function FreeFlightMap({ flight }) {
 
   // Check if we're using city centers instead of exact airport coordinates
   const usingCityFallback = (!originCoords?.isExact) || (!destinationCoords?.isExact);
+
+  // Notify parent component about coordinate status (only once when coords are loaded)
+  useEffect(() => {
+    if (onCoordinateStatus && originCoords && destinationCoords) {
+      onCoordinateStatus({
+        usingFallback: usingCityFallback,
+        originApproximate: !originCoords.isExact,
+        destinationApproximate: !destinationCoords.isExact,
+        originCode: flight.origin_code,
+        destinationCode: flight.destination_code,
+        originCity: originCoords.cityName || flight.origin_city,
+        destinationCity: destinationCoords.cityName || flight.destination_city
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flight.origin_code, flight.destination_code]);
 
   // Early return or loading state if coordinates are not available
   if (!originCoords || !destinationCoords) {
@@ -226,12 +302,12 @@ export default function FreeFlightMap({ flight }) {
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             <span>
-              Map markers show city centers, not exact airport locations. 
+              Map markers show city centers, not exact airport locations.
               {!originCoords.isExact && !destinationCoords.isExact 
-                ? ' Both locations are approximate.'
+                ? ` ${flight.origin_code} and ${flight.destination_code} locations are approximate.`
                 : !originCoords.isExact 
-                  ? ' Departure location is approximate.'
-                  : ' Arrival location is approximate.'
+                  ? ` ${flight.origin_code} location is approximate.`
+                  : ` ${flight.destination_code} location is approximate.`
               }
             </span>
           </div>

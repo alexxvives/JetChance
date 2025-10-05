@@ -23,6 +23,7 @@ export default function FlightDetailsPage() {
   const [flight, setFlight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedPassengers, setSelectedPassengers] = useState(1);
+  const [coordinateStatus, setCoordinateStatus] = useState(null);
 
   useEffect(() => {
     // Find flight by ID using appropriate API
@@ -93,6 +94,7 @@ export default function FlightDetailsPage() {
   console.log('🛩️ Flight object:', flight);
   console.log('🖼️ Flight images:', flight.images);
   console.log('🖼️ Aircraft image URL:', flight.aircraft_image_url);
+  console.log('🌐 API Base URL:', import.meta.env.VITE_API_URL);
   console.log('⏰ Departure time:', flight.departure_time);
   console.log('⏰ Arrival time:', flight.arrival_time);
   console.log('⏱️ Duration:', flight.duration);
@@ -273,7 +275,7 @@ export default function FlightDetailsPage() {
                 </p>
               </div>
               <div className="relative">
-                <FreeFlightMap flight={flight} />
+                <FreeFlightMap flight={flight} onCoordinateStatus={setCoordinateStatus} />
               </div>
             </div>
           </div>
@@ -389,26 +391,57 @@ export default function FlightDetailsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('flightDetails.aircraftImages')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {flight.images.map((image, index) => (
-                <div key={index} className="group relative overflow-hidden rounded-xl bg-gray-100 aspect-[4/3]">
-                  <img
-                    src={
-                      (image.url || image).startsWith('http') 
-                        ? (image.url || image) 
-                        : `http://localhost:4000${image.url || image}`
-                    }
-                    alt={`Aircraft ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                      </svg>
+              {flight.images.map((image, index) => {
+                // Extract the URL from the image object or use the string directly
+                const imageUrl = image.url || image;
+                
+                // If it's already a full URL (starts with http), use it as-is
+                // Otherwise, it's a relative path that needs to be constructed
+                const fullImageUrl = imageUrl.startsWith('http') 
+                  ? imageUrl 
+                  : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000'}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
+                
+                return (
+                  <div key={index} className="group relative overflow-hidden rounded-xl bg-gray-100 aspect-[4/3]">
+                    <img
+                      src={fullImageUrl}
+                      alt={`Aircraft ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        // Only handle error once to prevent infinite loop
+                        if (!e.target.dataset.errorHandled) {
+                          console.error('Failed to load image:', fullImageUrl);
+                          e.target.dataset.errorHandled = 'true';
+                          // Hide the broken image by making it invisible
+                          e.target.style.display = 'none';
+                          // Show a placeholder icon in the parent div
+                          const parent = e.target.parentElement;
+                          if (parent && !parent.querySelector('.image-error-placeholder')) {
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'image-error-placeholder absolute inset-0 flex items-center justify-center bg-gray-100';
+                            placeholder.innerHTML = `
+                              <div class="text-center text-gray-400">
+                                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="text-xs">Image unavailable</p>
+                              </div>
+                            `;
+                            parent.appendChild(placeholder);
+                          }
+                        }
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             {/* View All Images Button if more than 6 images */}

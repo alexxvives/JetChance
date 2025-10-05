@@ -105,7 +105,7 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <OperatorOnlyRoute>
-                      <EditFlightPage />
+                      <CreateFlightPage />
                     </OperatorOnlyRoute>
                   </ProtectedRoute>
                 } 

@@ -240,6 +240,9 @@
     "customer": {
       "title": "Available Empty-Leg Flights",
       "subtitle": "Discover luxury flights at unbeatable prices",
+      "welcome": "Welcome",
+      "role": "Customer",
+      "requestCharter": "Request Charter",
       "flightTypeQuestion": "What type of flight do you need?",
       "requestRegularJet": "Request Regular Jet Charter",
       "tabs": {
@@ -854,6 +857,7 @@
     "dashboard": {
       "welcomeBack": "Welcome back",
       "superAdmin": "Super Admin",
+      "admin": "Admin",
       "allOperators": "All Operators",
       "tabs": {
         "catalog": "Flight Catalog",
@@ -1045,49 +1049,33 @@
     "requestCustomFlight": "Request Custom Flight"
   },
   "regularJetRequest": {
-    "title": "Request Regular Jet Charter",
-    "subtitle": "Tell us about your flight requirements and we'll contact you with a personalized quote.",
-    "contactInfo": {
-      "title": "Contact Information",
-      "firstName": "First Name",
-      "firstNamePlaceholder": "Enter your first name",
-      "lastName": "Last Name",
-      "lastNamePlaceholder": "Enter your last name",
-      "email": "Email Address",
-      "emailPlaceholder": "Enter your email address",
-      "phone": "Phone Number",
-      "phonePlaceholder": "Enter your phone number"
-    },
-    "flightDetails": {
-      "title": "Flight Details",
-      "origin": "Departure City",
-      "originPlaceholder": "Where are you departing from?",
-      "destination": "Destination City",
-      "destinationPlaceholder": "Where are you going?",
-      "departureDateTime": "Departure Date & Time",
-      "departurePlaceholder": "Select departure date and time",
-      "roundTrip": "Round trip flight",
-      "returnDateTime": "Return Date & Time",
-      "returnPlaceholder": "Select return date and time",
-      "passengers": "Number of Passengers",
-      "passenger": "passenger",
-      "passengersPlural": "passengers",
-      "notes": "Additional Notes",
-      "notesPlaceholder": "Any special requirements or preferences?"
+    "title": "Request Custom Charter Quote",
+    "subtitle": "Fill out the form below and our team will provide you with a personalized quote within 24 hours.",
+    "sectionTitle": "Request Your Quote",
+    "sectionSubtitle": "Get started with your private jet journey. Our team will provide you with a personalized quote within 24 hours.",
+    "sanctuaryTitle": "Your Private Sanctuary",
+    "sanctuarySubtitle": "Experience luxury at 40,000 feet",
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "departure": "Departure",
+      "destination": "Destination",
+      "date": "Date",
+      "passengers": "Passengers",
+      "details": "Additional Details",
+      "detailsPlaceholder": "Special requests, catering preferences, etc."
     },
     "buttons": {
-      "cancel": "Cancel",
-      "submit": "Submit Request",
+      "submit": "Request Quote",
       "submitting": "Submitting..."
     },
     "success": {
-      "title": "Request Submitted!",
-      "message": "Thank you for your interest. Our sales team will contact you within 24 hours to discuss your requirements and provide a personalized quote.",
+      "title": "Request Received!",
+      "message": "Thank you for your request. Our team will contact you shortly with a personalized quote.",
       "close": "Close"
     },
-    "errors": {
-      "submitError": "Failed to submit request. Please try again."
-    }
+    "privacy": "Your information is secure and will only be used to provide your quote."
   },
   "flightTypeSelection": {
     "title": "What type of flight are you looking for?",

@@ -9,7 +9,8 @@ const AirportAutocomplete = ({
   value, 
   onChange, 
   required = false, 
-  className = '' 
+  className = '',
+  disabledAirport = null // Airport code to disable in the dropdown
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -350,16 +351,27 @@ const AirportAutocomplete = ({
           ref={dropdownRef}
           className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto"
         >
-          {filteredOptions.map((option) => (
-            <button
-              key={option.code}
-              type="button"
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100"
-              onClick={() => handleOptionClick(option)}
-            >
-              {renderAirportOption(option)}
-            </button>
-          ))}
+          {filteredOptions.map((option) => {
+            const isDisabled = disabledAirport && option.code === disabledAirport;
+            return (
+              <button
+                key={option.code}
+                type="button"
+                className={`w-full px-4 py-2 text-left border-b border-gray-100 ${
+                  isDisabled 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60' 
+                    : 'hover:bg-gray-50 focus:bg-gray-50 focus:outline-none'
+                }`}
+                onClick={() => !isDisabled && handleOptionClick(option)}
+                disabled={isDisabled}
+              >
+                {renderAirportOption(option)}
+                {isDisabled && (
+                  <span className="text-xs text-gray-500 ml-2">(Already selected)</span>
+                )}
+              </button>
+            );
+          })}
           
           {/* Custom airport option */}
           {inputValue.length > 0 && (

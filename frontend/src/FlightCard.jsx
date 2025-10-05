@@ -112,6 +112,8 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   // Handle field name mapping for both new nested and old flat structures - extract only airport codes
   const origin = extractAirportCode(flight.origin?.code || flight.origin_code || flight.origin || '');
   const destination = extractAirportCode(flight.destination?.code || flight.destination_code || flight.destination || '');
+  const originCity = flight.origin?.city || flight.origin_city || '';
+  const destinationCity = flight.destination?.city || flight.destination_city || '';
   const departureTime = flight.schedule?.departure || flight.departure_time || flight.departure_datetime || '';
   
   // Prioritize aircraft_model from backend, fallback to other aircraft fields or default
@@ -208,11 +210,16 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
               <h3 className="font-bold text-xl text-gray-900 mb-1">
                 {origin} → {destination}
               </h3>
-              <p className="text-sm text-gray-500">{operatorName}</p>
+              <p className="text-xs text-gray-500">
+                {originCity && destinationCity 
+                  ? `${originCity} → ${destinationCity}`
+                  : operatorName
+                }
+              </p>
             </div>
             <div className="text-right">
               <div className="flex items-center gap-2 justify-end mb-1">
-                <div className="text-2xl font-bold text-blue-600 flex items-baseline">
+                <div className="text-xl font-bold text-blue-600 flex items-baseline">
                   <span className="text-xs font-normal text-gray-500 mr-1">
                     {formatCOPWithStyling(price || 0).currency}
                   </span>
@@ -220,8 +227,8 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
                 </div>
               </div>
               {originalPrice && originalPrice > 0 && (
-                <div className="text-sm text-gray-400 line-through flex items-baseline justify-end">
-                  <span className="text-xs text-gray-400 mr-1">
+                <div className="text-xs text-gray-400 line-through flex items-baseline justify-end">
+                  <span className="text-[10px] text-gray-400 mr-1">
                     {formatCOPWithStyling(originalPrice).currency}
                   </span>
                   {formatCOPWithStyling(originalPrice).number}

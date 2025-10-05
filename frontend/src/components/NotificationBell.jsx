@@ -67,8 +67,12 @@ const NotificationBell = () => {
   const markAllAsRead = async () => {
     try {
       const token = getAuthToken();
-      if (!token) return;
+      if (!token) {
+        console.log('⚠️ No auth token available for marking notifications as read');
+        return;
+      }
 
+      console.log('📬 Marking all notifications as read...');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
@@ -78,13 +82,17 @@ const NotificationBell = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Successfully marked notifications as read:', data);
         setNotifications(prev => 
           prev.map(notif => ({ ...notif, read_at: new Date().toISOString() }))
         );
         setUnreadCount(0);
+      } else {
+        console.error('❌ Failed to mark notifications as read:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      console.error('❌ Error marking all notifications as read:', error);
     }
   };
 
@@ -92,10 +100,11 @@ const NotificationBell = () => {
   const toggleDropdown = async () => {
     if (!isOpen) {
       await fetchNotifications();
-      // Mark all notifications as read when opening the dropdown
-      if (unreadCount > 0) {
-        await markAllAsRead();
-      }
+      // Always mark all notifications as read when opening the dropdown
+      // This ensures we catch any unread notifications regardless of state sync
+      await markAllAsRead();
+      // Refresh unread count after marking as read
+      await fetchUnreadCount();
     }
     setIsOpen(!isOpen);
   };
