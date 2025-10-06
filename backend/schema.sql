@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS customers (
   first_name TEXT,
   last_name TEXT,
   phone TEXT,
+  email_notifications INTEGER DEFAULT 0,  -- Opt-in for booking confirmations and flight updates (0=off, 1=on)
+  sms_notifications INTEGER DEFAULT 0,    -- Opt-in for SMS alerts (0=off, 1=on)
+  marketing_emails INTEGER DEFAULT 0,     -- Opt-in for promotional offers and deals (0=off, 1=on)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users (id)
 );

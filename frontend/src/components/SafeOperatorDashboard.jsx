@@ -6,6 +6,7 @@ import OperatorFlightBookings from './OperatorFlightBookings';
 import ConfirmationModal from './ConfirmationModal';
 import NotificationsAPI from '../api/notificationsAPI';
 import { flightsAPI } from '../api/flightsAPI';
+import Profile from './Profile';
 import { 
   PlusIcon, 
   PaperAirplaneIcon, 
@@ -28,7 +29,7 @@ import { User, ChevronDown } from 'lucide-react';
 function ActualOperatorDashboard({ user }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { t } = useTranslation();
+  const { t, changeLanguage, currentLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState('flights');
   const [flights, setFlights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +55,8 @@ function ActualOperatorDashboard({ user }) {
   // Tab configuration
   const tabs = [
     { id: 'flights', name: t('dashboard.operator.tabs.flights'), icon: PaperAirplaneIcon },
-    { id: 'bookings', name: t('dashboard.operator.tabs.bookings'), icon: UserGroupIcon }
+    { id: 'bookings', name: t('dashboard.operator.tabs.bookings'), icon: UserGroupIcon },
+    { id: 'profile', name: t('nav.profile') || 'Profile', icon: User }
   ];
 
   useEffect(() => {
@@ -294,7 +296,7 @@ function ActualOperatorDashboard({ user }) {
                   className="flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200 min-w-[50px]"
                 >
                   <GlobeAltIcon className="h-4 w-4 mr-1" />
-                  <span className="text-sm font-medium">EN</span>
+                  <span className="text-sm font-medium">{currentLanguage === 'es' ? 'ES' : 'EN'}</span>
                   <ChevronDown className={`h-3 w-3 ml-1 transition-transform duration-200 ${isLanguageDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
@@ -304,7 +306,7 @@ function ActualOperatorDashboard({ user }) {
                     <div className="py-1">
                       <button
                         onClick={() => {
-                          // Add language change logic here
+                          changeLanguage('en');
                           setIsLanguageDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -313,7 +315,7 @@ function ActualOperatorDashboard({ user }) {
                       </button>
                       <button
                         onClick={() => {
-                          // Add language change logic here
+                          changeLanguage('es');
                           setIsLanguageDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -344,21 +346,21 @@ function ActualOperatorDashboard({ user }) {
                 {isNotificationDropdownOpen && (
                   <div className="absolute right-0 mt-3 w-[440px] bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden">
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
-                      <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{t('notifications.title')}</h3>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notificationsLoading ? (
                         <div className="px-6 py-8 text-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                          <p className="text-gray-500 text-sm">Loading notifications...</p>
+                          <p className="text-gray-500 text-sm">{t('notifications.loading')}</p>
                         </div>
                       ) : notifications.length === 0 ? (
                         <div className="px-6 py-8 text-center">
                           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                             <BellIcon className="h-6 w-6 text-gray-400" />
                           </div>
-                          <p className="text-gray-500 text-sm">No notifications yet</p>
-                          <p className="text-gray-400 text-xs mt-1">You'll see updates about your flights here</p>
+                          <p className="text-gray-500 text-sm">{t('notifications.noNotifications')}</p>
+                          <p className="text-gray-400 text-xs mt-1">{t('notifications.noNotificationsDescription')}</p>
                         </div>
                       ) : (
                         notifications.map((notification) => (
@@ -433,11 +435,11 @@ function ActualOperatorDashboard({ user }) {
                           }}
                           className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                         >
-                          Refresh notifications
+                          {t('notifications.refresh')}
                         </button>
                       ) : (
                         <button className="text-sm text-gray-400 font-medium cursor-not-allowed">
-                          No notifications to view
+                          {t('notifications.noNotificationsToView')}
                         </button>
                       )}
                     </div>
@@ -469,7 +471,7 @@ function ActualOperatorDashboard({ user }) {
                     <div className="py-1">
                       <button
                         onClick={() => {
-                          navigate('/profile');
+                          setActiveTab('profile');
                           setIsProfileDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -609,6 +611,10 @@ function ActualOperatorDashboard({ user }) {
             <div className="p-6">
               <OperatorFlightBookings user={user} />
             </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <Profile />
           )}
         </div>
       </div>
@@ -787,7 +793,7 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
                 <button
                   onClick={() => navigate(`/edit-flight/${flight.id}`)}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                  title="Edit Flight"
+                  title={t('auth.operator.actions.editFlight')}
                 >
                   <PencilIcon className="h-4 w-4" />
                 </button>
@@ -796,7 +802,7 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
               <button
                 onClick={() => onDelete && onDelete(flight.id, `${flight.origin_code || 'Unknown'} → ${flight.destination_code || 'Unknown'}`)}
                 className="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                title="Delete Flight"
+                title={t('auth.operator.actions.deleteFlight')}
               >
                 <TrashIcon className="h-4 w-4" />
               </button>
@@ -809,12 +815,14 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
 }
 
 export default function SafeOperatorDashboard({ user }) {
+  const { t } = useTranslation();
+  
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You must be logged in as an operator to view this page.</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('auth.operator.accessDenied.title')}</h2>
+          <p className="text-gray-600">{t('auth.operator.accessDenied.message')}</p>
         </div>
       </div>
     );

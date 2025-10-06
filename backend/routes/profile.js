@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 const { query, run } = require('../config/database-sqlite');
 const { authenticate } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
@@ -7,14 +8,21 @@ const db = require('../config/database-sqlite');
 
 const router = express.Router();
 
+// Log database path on module load
+const dbPath = path.join(__dirname, '..', 'jetchance.db');
+console.log('📁 Database path being used:', path.resolve(dbPath));
+
 // GET /api/profile - Get user profile data
 router.get('/', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
 
+    console.log('\n📖 ===== PROFILE GET REQUEST =====');
+    console.log('👤 User ID:', userId);
+
     // Get user data
     const userResult = await query(
-      'SELECT id, email, first_name, last_name, phone, address, date_of_birth, notification_email, notification_sms, notification_marketing, role FROM users WHERE id = ?',
+      'SELECT id, email, role FROM users WHERE id = ?',
       [userId]
     );
 
@@ -23,7 +31,28 @@ router.get('/', authenticate, async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    console.log('👥 User Role:', user.role);
     let operator = null;
+    let customer = null;
+
+    // Get customer data if user is a customer
+    if (user.role === 'customer') {
+      const customerResult = await query(
+        'SELECT id, first_name, last_name, phone, email_notifications, sms_notifications, marketing_emails FROM customers WHERE user_id = ?',
+        [userId]
+      );
+      
+      if (customerResult.rows.length > 0) {
+        customer = customerResult.rows[0];
+        console.log('📊 Customer found:', customer.id);
+        console.log('📧 Notification values from DB:');
+        console.log('   - email_notifications:', customer.email_notifications);
+        console.log('   - sms_notifications:', customer.sms_notifications);
+        console.log('   - marketing_emails:', customer.marketing_emails);
+      } else {
+        console.log('⚠️  No customer record found for user_id:', userId);
+      }
+    }
 
     // Get operator data if user is an operator
     if (user.role === 'operator') {
@@ -37,18 +66,24 @@ router.get('/', authenticate, async (req, res) => {
       }
     }
 
-    // Prepare profile data (combine user and operator data)
+    // Prepare profile data (combine user, customer, and operator data)
     const profile = {
-      firstName: user.first_name,
-      lastName: user.last_name,
+      firstName: customer?.first_name || null,
+      lastName: customer?.last_name || null,
       email: user.email,
-      phone: user.phone,
-      address: user.address,
-      dateOfBirth: user.date_of_birth,
-      emailNotifications: user.notification_email,
-      smsNotifications: user.notification_sms,
-      marketingEmails: user.notification_marketing
+      phone: customer?.phone || null,
+      address: null, // Removed from schema
+      dateOfBirth: null, // Removed from schema
+      emailNotifications: customer?.email_notifications === 1,
+      smsNotifications: customer?.sms_notifications === 1,
+      marketingEmails: customer?.marketing_emails === 1
     };
+
+    console.log('📧 Notification values converted to booleans:');
+    console.log('   - emailNotifications:', profile.emailNotifications);
+    console.log('   - smsNotifications:', profile.smsNotifications);
+    console.log('   - marketingEmails:', profile.marketingEmails);
+    console.log('===== END PROFILE GET =====\n');
 
     if (operator) {
       profile.companyName = operator.company_name;
@@ -58,6 +93,7 @@ router.get('/', authenticate, async (req, res) => {
     res.json({
       user,
       operator,
+      customer,
       profile
     });
 
@@ -76,8 +112,6 @@ router.put('/', authenticate, async (req, res) => {
       lastName,
       email,
       phone,
-      address,
-      dateOfBirth,
       emailNotifications,
       smsNotifications,
       marketingEmails,
@@ -88,6 +122,14 @@ router.put('/', authenticate, async (req, res) => {
       confirmPassword
     } = req.body;
 
+    console.log('\n🔄 ===== PROFILE UPDATE REQUEST =====');
+    console.log('👤 User ID:', userId);
+    console.log('📧 Notification Preferences Received:');
+    console.log('   - emailNotifications:', emailNotifications, '(type:', typeof emailNotifications, ')');
+    console.log('   - smsNotifications:', smsNotifications, '(type:', typeof smsNotifications, ')');
+    console.log('   - marketingEmails:', marketingEmails, '(type:', typeof marketingEmails, ')');
+    console.log('📝 Profile Data:', { firstName, lastName, email, phone });
+
     // Get current user data
     const userResult = await query('SELECT * FROM users WHERE id = ?', [userId]);
     if (userResult.rows.length === 0) {
@@ -95,6 +137,7 @@ router.put('/', authenticate, async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    console.log('👥 User Role:', user.role);
 
     // Validate password change if requested
     if (newPassword) {
@@ -117,32 +160,9 @@ router.put('/', authenticate, async (req, res) => {
       }
     }
 
-    // Update user table
-    let updateUserQuery = `
-      UPDATE users SET 
-        first_name = ?, 
-        last_name = ?, 
-        email = ?, 
-        phone = ?, 
-        address = ?, 
-        date_of_birth = ?,
-        notification_email = ?,
-        notification_sms = ?,
-        notification_marketing = ?,
-        updated_at = CURRENT_TIMESTAMP
-    `;
-    
-    let userParams = [
-      firstName || user.first_name,
-      lastName || user.last_name,
-      email || user.email,
-      phone,
-      address,
-      dateOfBirth,
-      emailNotifications !== undefined ? emailNotifications : user.notification_email,
-      smsNotifications !== undefined ? smsNotifications : user.notification_sms,
-      marketingEmails !== undefined ? marketingEmails : user.notification_marketing
-    ];
+    // Update user table (email and password only)
+    let updateUserQuery = 'UPDATE users SET email = ?';
+    let userParams = [email || user.email];
 
     // Add password update if provided
     if (newPassword) {
@@ -155,13 +175,70 @@ router.put('/', authenticate, async (req, res) => {
     updateUserQuery += ' WHERE id = ?';
     userParams.push(userId);
 
+    console.log('🔐 Updating users table...');
     await run(updateUserQuery, userParams);
+    console.log('✅ Users table updated');
+
+    // Update customer table if user is a customer
+    if (user.role === 'customer') {
+      const customerResult = await query('SELECT * FROM customers WHERE user_id = ?', [userId]);
+      
+      if (customerResult.rows.length > 0) {
+        const customer = customerResult.rows[0];
+        
+        const notificationValues = {
+          emailNotifications: emailNotifications === true ? 1 : 0,
+          smsNotifications: smsNotifications === true ? 1 : 0,
+          marketingEmails: marketingEmails === true ? 1 : 0
+        };
+        
+        console.log('📊 Customer found:', customer.id);
+        console.log('📧 Converting notification booleans to integers:');
+        console.log('   - emailNotifications:', emailNotifications, '→', notificationValues.emailNotifications);
+        console.log('   - smsNotifications:', smsNotifications, '→', notificationValues.smsNotifications);
+        console.log('   - marketingEmails:', marketingEmails, '→', notificationValues.marketingEmails);
+        
+        console.log('💾 Updating customers table...');
+        const updateResult = await run(
+          `UPDATE customers SET 
+            first_name = ?, 
+            last_name = ?, 
+            phone = ?,
+            email_notifications = ?,
+            sms_notifications = ?,
+            marketing_emails = ?
+          WHERE user_id = ?`,
+          [
+            firstName || customer.first_name,
+            lastName || customer.last_name,
+            phone || customer.phone,
+            notificationValues.emailNotifications,
+            notificationValues.smsNotifications,
+            notificationValues.marketingEmails,
+            userId
+          ]
+        );
+        console.log('✅ UPDATE executed - Rows affected:', updateResult.changes);
+        
+        // Verify the update
+        const verifyResult = await query('SELECT email_notifications, sms_notifications, marketing_emails FROM customers WHERE user_id = ?', [userId]);
+        if (verifyResult.rows.length > 0) {
+          console.log('🔍 Verification - Values now in database:');
+          console.log('   - email_notifications:', verifyResult.rows[0].email_notifications);
+          console.log('   - sms_notifications:', verifyResult.rows[0].sms_notifications);
+          console.log('   - marketing_emails:', verifyResult.rows[0].marketing_emails);
+        }
+      } else {
+        console.log('⚠️  No customer record found for user_id:', userId);
+      }
+    }
 
     // Update operator table if user is an operator
     if (user.role === 'operator' && (companyName || companyAddress)) {
       const operatorResult = await query('SELECT id FROM operators WHERE user_id = ?', [userId]);
       
       if (operatorResult.rows.length > 0) {
+        console.log('🏢 Updating operator table...');
         await run(
           'UPDATE operators SET company_name = ?, company_address = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
           [
@@ -170,8 +247,12 @@ router.put('/', authenticate, async (req, res) => {
             userId
           ]
         );
+        console.log('✅ Operator table updated');
       }
     }
+
+    console.log('✨ Profile update completed successfully');
+    console.log('===== END PROFILE UPDATE =====\n');
 
     res.json({ message: 'Profile updated successfully' });
 

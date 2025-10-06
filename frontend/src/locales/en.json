@@ -154,7 +154,9 @@
         "hide": "Hide",
         "viewDetails": "View Details",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "editFlight": "Edit Flight",
+        "deleteFlight": "Delete Flight"
       },
       "flightCard": {
         "availableSeats": "Available Seats",
@@ -167,6 +169,7 @@
         "departure": "Departure",
         "operator": "Operator",
         "aircraft": "Aircraft",
+        "at": "at",
         "viewDetailsBook": "View Details & Book",
         "deleteFlight": "Delete Flight",
         "statuses": {
@@ -196,6 +199,10 @@
       },
       "messages": {
         "allPastFlights": "All your flights have departed. Consider creating new flights for upcoming trips."
+      },
+      "accessDenied": {
+        "title": "Access Denied",
+        "message": "You must be logged in as an operator to view this page."
       },
       "crm": {
         "title": "My Bookings",
@@ -254,16 +261,70 @@
         "badge": "Fixed Routes",
         "description": "Pre-scheduled flights with fixed routes and departure times",
         "disclaimer": "Routes and times cannot be modified • Instant booking • Discounted prices",
-        "savingsLabel": "Up to 75% savings"
+        "savingsLabel": "Up to 90% savings"
       },
       "customFlight": {
         "title": "Need Flexible Dates or Custom Route?",
         "subtitle": "Request a personalized jet charter with complete flexibility on dates, times, and destinations",
         "requestNow": "Get Custom Quote"
       },
+      "filters": {
+        "from": "From",
+        "to": "To",
+        "cities": "cities",
+        "date": "Date",
+        "passengers": "Passengers",
+        "max": "max",
+        "selectDepartureCity": "Select departure city...",
+        "selectDestinationCity": "Select destination city...",
+        "selectDepartureDate": "Select departure date...",
+        "numberOfPassengers": "Number of passengers",
+        "passenger": "passenger",
+        "passengersPlural": "passengers",
+        "clearAll": "Clear all",
+        "activeFilters": {
+          "from": "From",
+          "to": "To",
+          "pax": "pax"
+        }
+      },
       "myBookings": {
         "title": "My Bookings",
-        "subtitle": "View and manage your flight reservations"
+        "subtitle": "View and manage your flight reservations",
+        "loading": "Loading your bookings...",
+        "error": {
+          "title": "Unable to Load Bookings",
+          "tryAgain": "Try Again"
+        },
+        "empty": {
+          "title": "No bookings yet",
+          "message": "Start your journey by booking your first luxury flight."
+        },
+        "stats": {
+          "totalSpent": "Total Spent",
+          "totalFlights": "Total Flights",
+          "totalBookings": "Total Bookings",
+          "totalPassengers": "Total Passengers"
+        },
+        "table": {
+          "title": "Booking History",
+          "columns": {
+            "bookingId": "Booking ID",
+            "departure": "Departure",
+            "route": "Route",
+            "passengers": "Passengers",
+            "operator": "Operator",
+            "aircraft": "Aircraft",
+            "amount": "Amount",
+            "status": "Status"
+          },
+          "status": {
+            "confirmed": "Confirmed",
+            "completed": "Completed",
+            "pending": "Pending",
+            "cancelled": "Cancelled"
+          }
+        }
       }
     }
   },
@@ -756,17 +817,68 @@
     "instantConfirmationDescription": "Immediate booking confirmation",
     "pciCompliantDescription": "PCI DSS compliant processing",
     "support247": "24/7 Support",
-    "support247Description": "Round-the-clock assistance"
+    "support247Description": "Round-the-clock assistance",
+    "steps": {
+      "passengerInfo": "Passenger Info",
+      "contactInfo": "Contact Info",
+      "payment": "Payment"
+    },
+    "passengerStep": {
+      "title": "Passenger Information",
+      "subtitle": "Please provide details for all passengers",
+      "passengerLabel": "Passenger",
+      "complete": "Complete",
+      "informationRequired": "Information required",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter last name",
+      "dateOfBirth": "Date of Birth",
+      "documentType": "Document Type",
+      "selectDocumentType": "Select document type",
+      "documentNumber": "Document Number",
+      "documentNumberPlaceholder": "Enter document number",
+      "continueToContact": "Continue to Contact Information",
+      "documentTypes": {
+        "passport": "Passport",
+        "cc": "Cédula de Ciudadanía",
+        "ce": "Cédula de Extranjería",
+        "ti": "Tarjeta de Identidad"
+      }
+    },
+    "contactStep": {
+      "title": "Contact Information",
+      "subtitle": "We'll use this information to send you booking confirmations",
+      "email": "Email Address",
+      "emailPlaceholder": "your.email@example.com",
+      "emailHelp": "You'll receive booking confirmation and flight updates at this email",
+      "emailPrefilled": "Pre-filled with your account email. You can edit if needed.",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+57 300 123 4567",
+      "phoneHelp": "We'll contact you if there are any changes to your flight",
+      "backToPassengers": "Back to Passengers",
+      "continueToPayment": "Continue to Payment"
+    },
+    "paymentStep": {
+      "bookingSummary": "Booking Summary",
+      "passengersTitle": "Passengers:",
+      "contactTitle": "Contact Information:",
+      "paymentInfo": "Payment Information",
+      "paymentSubtitle": "Secure payment powered by PayU",
+      "backToContact": "Back to Contact Info"
+    }
   },
   "notifications": {
     "title": "Notifications",
     "loading": "Loading notifications...",
     "noNotifications": "No notifications yet",
-    "noNotificationsDescription": "We'll notify you when something happens",
+    "noNotificationsDescription": "You'll see updates about your flights here",
     "timeJustNow": "Just now",
     "timeMinutesAgo": "{minutes}m ago",
     "timeHoursAgo": "{hours}h ago",
     "timeDaysAgo": "{days}d ago",
+    "refresh": "Refresh notifications",
+    "noNotificationsToView": "No notifications to view",
     "types": {
       "flight_approved": {
         "title": "Flight Approved",
@@ -834,14 +946,6 @@
     "notSpecified": "Not specified",
     "Solo pasaporte para vuelos internacionales": "Passport only for international flights",
     "Seleccione": "Select"
-  },
-  "flightCard": {
-    "departure": "Departure",
-    "operator": "Operator",
-    "aircraft": "Aircraft",
-    "availableSeats": "Available Seats",
-    "viewDetailsBook": "View Details & Book",
-    "deleteFlight": "Delete Flight"
   },
   "flightFilters": {
     "from": "From",
@@ -1084,7 +1188,7 @@
       "title": "Empty Leg Flights",
       "description": "Book available empty leg flights at discounted prices with immediate booking and transparent pricing.",
       "benefits": {
-        "savings": "Up to 75% savings",
+        "savings": "Up to 90% savings",
         "immediate": "Instant booking",
         "transparent": "Transparent pricing"
       },

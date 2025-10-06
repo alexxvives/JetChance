@@ -44,6 +44,13 @@ const Profile = () => {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('\n📥 ===== FRONTEND: PROFILE LOADED =====');
+        console.log('📦 API Response:', data);
+        console.log('📧 Notification Preferences from API:');
+        console.log('   - emailNotifications:', data.profile?.emailNotifications);
+        console.log('   - smsNotifications:', data.profile?.smsNotifications);
+        console.log('   - marketingEmails:', data.profile?.marketingEmails);
+        
         setUser(data.user);
         setOperator(data.operator);
         
@@ -57,6 +64,10 @@ const Profile = () => {
           companyName: data.profile?.companyName || data.operator?.company_name || authUser?.companyName || '',
           companyAddress: data.profile?.companyAddress || data.operator?.company_address || authUser?.companyAddress || ''
         };
+        
+        console.log('📦 Final profileData state set to:', initialProfileData);
+        console.log('===== END PROFILE LOAD =====\n');
+        
         setProfileData(initialProfileData);
       } else {
         // If API fails, use authUser data as fallback
@@ -104,15 +115,49 @@ const Profile = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
+    console.log(`🔄 Field changed: ${field} = ${value} (type: ${typeof value})`);
+    
+    // Calculate the new profile data
+    const newData = {
+      ...profileData,
       [field]: value
-    }));
+    };
+    console.log('📦 Updated profileData state:', newData);
+    
+    // Update state
+    setProfileData(newData);
+    
+    // Auto-save based on field type
+    const notificationFields = ['emailNotifications', 'smsNotifications', 'marketingEmails'];
+    
+    if (notificationFields.includes(field)) {
+      // Notification checkboxes: save immediately
+      console.log('💾 Auto-saving notification preference...');
+      handleSaveWithData(newData, true, field);
+    } else {
+      // Text fields: debounce to avoid too many requests
+      console.log('⏱️ Debouncing auto-save for text field...');
+      if (window.profileSaveTimeout) {
+        clearTimeout(window.profileSaveTimeout);
+      }
+      window.profileSaveTimeout = setTimeout(() => {
+        console.log('💾 Auto-saving profile data...');
+        handleSaveWithData(newData, true, field);
+      }, 1000); // Wait 1 second after user stops typing
+    }
   };
 
-  const handleSave = async () => {
+  const handleSaveWithData = async (dataToSave, isAutoSave = false, changedField = null) => {
     setSaving(true);
     setMessage('');
+    
+    console.log('\n🚀 ===== FRONTEND: SAVING PROFILE =====');
+    console.log('🔄 Auto-save:', isAutoSave, '| Changed field:', changedField);
+    console.log('📦 profileData being sent:', dataToSave);
+    console.log('📧 Notification Preferences:');
+    console.log('   - emailNotifications:', dataToSave.emailNotifications, '(type:', typeof dataToSave.emailNotifications, ')');
+    console.log('   - smsNotifications:', dataToSave.smsNotifications, '(type:', typeof dataToSave.smsNotifications, ')');
+    console.log('   - marketingEmails:', dataToSave.marketingEmails, '(type:', typeof dataToSave.marketingEmails, ')');
     
     try {
       const token = localStorage.getItem('accessToken');
@@ -122,21 +167,41 @@ const Profile = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(dataToSave)
       });
       
+      console.log('📡 Response status:', response.status);
+      
       if (response.ok) {
-        setMessage('Profile updated successfully!');
-        setTimeout(() => setMessage(''), 3000);
+        const data = await response.json();
+        console.log('✅ Response data:', data);
+        
+        if (isAutoSave) {
+          // For auto-save, show a brief success indicator
+          setMessage('✓ Saved');
+          setTimeout(() => setMessage(''), 1500);
+        } else {
+          // For manual save, show full message
+          setMessage('Profile updated successfully!');
+          setTimeout(() => setMessage(''), 3000);
+        }
       } else {
+        const errorData = await response.json();
+        console.error('❌ Error response:', errorData);
         setMessage('Failed to update profile');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('❌ Error updating profile:', error);
       setMessage('Failed to update profile');
     } finally {
       setSaving(false);
+      console.log('===== END FRONTEND SAVE =====\n');
     }
+  };
+
+  const handleSave = async (isAutoSave = false, changedField = null) => {
+    // Wrapper for manual saves - uses current state
+    return handleSaveWithData(profileData, isAutoSave, changedField);
   };
 
   const handleDeleteAccount = async () => {
@@ -177,7 +242,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading profile...</p>
@@ -190,29 +255,20 @@ const Profile = () => {
   const currentUser = user || authUser;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg">
-          {/* Header */}
-          <div className="px-6 py-6 border-b border-gray-200">
-            <div className="flex items-center mb-4">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center text-gray-600 hover:text-gray-900"
-                title="Back to Dashboard"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-                <p className="mt-1 text-sm text-gray-600">
-                  Manage your account information and preferences
-                </p>
-              </div>
-            </div>
+    <div className="bg-white shadow rounded-lg">
+      {/* Header */}
+      <div className="px-6 py-6 border-b border-gray-200">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Manage your account information and preferences
+          </p>
+        </div>
             {message && (
               <div className={`mt-4 p-3 rounded-md ${
-                message.includes('successfully') 
+                message === '✓ Saved'
+                  ? 'bg-green-50 text-green-700 border border-green-200 text-sm'
+                  : message.includes('successfully') || message.includes('Saved')
                   ? 'bg-green-50 text-green-800 border border-green-200' 
                   : 'bg-red-50 text-red-800 border border-red-200'
               }`}>
@@ -352,7 +408,7 @@ const Profile = () => {
                       <input
                         type="checkbox"
                         id="emailNotifications"
-                        checked={profileData.emailNotifications !== false}
+                        checked={profileData.emailNotifications === true}
                         onChange={(e) => handleInputChange('emailNotifications', e.target.checked)}
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -368,7 +424,7 @@ const Profile = () => {
                       <input
                         type="checkbox"
                         id="smsNotifications"
-                        checked={profileData.smsNotifications !== false}
+                        checked={profileData.smsNotifications === true}
                         onChange={(e) => handleInputChange('smsNotifications', e.target.checked)}
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -384,7 +440,7 @@ const Profile = () => {
                       <input
                         type="checkbox"
                         id="marketingEmails"
-                        checked={profileData.marketingEmails !== false}
+                        checked={profileData.marketingEmails === true}
                         onChange={(e) => handleInputChange('marketingEmails', e.target.checked)}
                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -406,79 +462,54 @@ const Profile = () => {
                 <Shield className="h-5 w-5 mr-2 text-blue-600" />
                 Security & Account
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Lock className="inline h-4 w-4 mr-1" />
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    value={profileData.currentPassword || ''}
-                    onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                    placeholder="Enter current password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              <form onSubmit={(e) => e.preventDefault()} autoComplete="off">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Lock className="inline h-4 w-4 mr-1" />
+                      Current Password
+                    </label>
+                    <input
+                      type="password"
+                      value={profileData.currentPassword || ''}
+                      onChange={(e) => handleInputChange('currentPassword', e.target.value)}
+                      placeholder="Enter current password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={profileData.newPassword || ''}
+                      onChange={(e) => handleInputChange('newPassword', e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={profileData.confirmPassword || ''}
+                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                      placeholder="Confirm new password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={profileData.newPassword || ''}
-                    onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                    placeholder="Enter new password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={profileData.confirmPassword || ''}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    placeholder="Confirm new password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+              </form>
             </div>
 
-            {/* Save Button */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Danger Zone - Delete Account */}
-            <div className="mt-8 pt-8 border-t border-red-200">
-              <div className="bg-red-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-red-900 mb-2 flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
-                  Danger Zone
-                </h3>
-                <p className="text-sm text-red-700 mb-4">
-                  Once you delete your account, there is no going back. This action cannot be undone.
-                </p>
-                
+            {/* Delete Account */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
                 {!showDeleteConfirm ? (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
@@ -490,7 +521,7 @@ const Profile = () => {
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-red-900 mb-2">
+                      <label className="block text-sm font-medium text-gray-900 mb-2">
                         Type <span className="font-bold">DELETE</span> to confirm:
                       </label>
                       <input
@@ -498,7 +529,7 @@ const Profile = () => {
                         value={deleteConfirmText}
                         onChange={(e) => setDeleteConfirmText(e.target.value)}
                         placeholder="DELETE"
-                        className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                         disabled={deleting}
                       />
                     </div>
@@ -533,13 +564,11 @@ const Profile = () => {
                     </div>
                   </div>
                 )}
-              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
   );
 };
 
 export default Profile;
+

@@ -415,7 +415,7 @@ export default function PaymentPage() {
                       <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                         1
                       </div>
-                      <span className="ml-2 text-sm font-medium">Passenger Info</span>
+                      <span className="ml-2 text-sm font-medium">{t('payment.steps.passengerInfo')}</span>
                     </div>
                     
                     <div className={`w-8 h-0.5 ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
@@ -424,7 +424,7 @@ export default function PaymentPage() {
                       <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                         2
                       </div>
-                      <span className="ml-2 text-sm font-medium">Contact Info</span>
+                      <span className="ml-2 text-sm font-medium">{t('payment.steps.contactInfo')}</span>
                     </div>
                     
                     <div className={`w-8 h-0.5 ${currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
@@ -433,7 +433,7 @@ export default function PaymentPage() {
                       <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                         3
                       </div>
-                      <span className="ml-2 text-sm font-medium">Payment</span>
+                      <span className="ml-2 text-sm font-medium">{t('payment.steps.payment')}</span>
                     </div>
                   </div>
                 </div>
@@ -555,8 +555,8 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
       <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <h2 className="text-xl font-bold">Passenger Information</h2>
-        <p className="text-blue-100 text-sm mt-1">Please provide details for all passengers</p>
+        <h2 className="text-xl font-bold">{t('payment.passengerStep.title')}</h2>
+        <p className="text-blue-100 text-sm mt-1">{t('payment.passengerStep.subtitle')}</p>
       </div>
       
       <div className="p-6">
@@ -585,11 +585,11 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
                     <h3 className="font-medium text-gray-900">
                       {passenger.firstName && passenger.lastName 
                         ? `${passenger.firstName} ${passenger.lastName}` 
-                        : `Passenger ${passenger.id}`
+                        : `${t('payment.passengerStep.passengerLabel')} ${passenger.id}`
                       }
                     </h3>
                     <p className={`text-sm ${isPassengerComplete(passenger) ? 'text-green-600' : 'text-gray-500'}`}>
-                      {isPassengerComplete(passenger) ? 'Complete' : 'Information required'}
+                      {isPassengerComplete(passenger) ? t('payment.passengerStep.complete') : t('payment.passengerStep.informationRequired')}
                     </p>
                   </div>
                 </div>
@@ -601,31 +601,31 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        First Name *
+                        {t('payment.passengerStep.firstName')} *
                       </label>
                       <input
                         type="text"
                         value={passenger.firstName}
                         onChange={(e) => updatePassengerData(passenger.id, 'firstName', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="Enter first name"
+                        placeholder={t('payment.passengerStep.firstNamePlaceholder')}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name *
+                        {t('payment.passengerStep.lastName')} *
                       </label>
                       <input
                         type="text"
                         value={passenger.lastName}
                         onChange={(e) => updatePassengerData(passenger.id, 'lastName', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="Enter last name"
+                        placeholder={t('payment.passengerStep.lastNamePlaceholder')}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date of Birth *
+                        {t('payment.passengerStep.dateOfBirth')} *
                       </label>
                       <input
                         type="date"
@@ -636,14 +636,14 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Document Type *
+                        {t('payment.passengerStep.documentType')} *
                       </label>
                       <select
                         value={passenger.documentType}
                         onChange={(e) => updatePassengerData(passenger.id, 'documentType', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       >
-                        <option value="">Select document type</option>
+                        <option value="">{t('payment.passengerStep.selectDocumentType')}</option>
                         {documentTypes.map(doc => (
                           <option key={doc.value} value={doc.value}>{doc.label}</option>
                         ))}
@@ -651,14 +651,14 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Document Number *
+                        {t('payment.passengerStep.documentNumber')} *
                       </label>
                       <input
                         type="text"
                         value={passenger.documentNumber}
                         onChange={(e) => updatePassengerData(passenger.id, 'documentNumber', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="Enter document number"
+                        placeholder={t('payment.passengerStep.documentNumberPlaceholder')}
                       />
                     </div>
                   </div>
@@ -678,7 +678,7 @@ const PassengerInformationStep = ({ passengerData, updatePassengerData, isPassen
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            Continue to Contact Information
+            {t('payment.passengerStep.continueToContact')}
           </button>
         </div>
       </div>
@@ -691,44 +691,44 @@ const ContactInformationStep = ({ contactInfo, setContactInfo, onBack, onContinu
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
       <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <h2 className="text-xl font-bold">Contact Information</h2>
-        <p className="text-blue-100 text-sm mt-1">We'll use this information to send you booking confirmations</p>
+        <h2 className="text-xl font-bold">{t('payment.contactStep.title')}</h2>
+        <p className="text-blue-100 text-sm mt-1">{t('payment.contactStep.subtitle')}</p>
       </div>
       
       <div className="p-6">
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address *
+              {t('payment.contactStep.email')} *
             </label>
             <input
               type="email"
               value={contactInfo.email}
               onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="your.email@example.com"
+              placeholder={t('payment.contactStep.emailPlaceholder')}
             />
             <p className="text-xs text-gray-500 mt-1">
               {user?.email && contactInfo.email === user.email ? 
-                'Pre-filled with your account email. You can edit if needed.' :
-                'You\'ll receive booking confirmation and flight updates at this email'
+                t('payment.contactStep.emailPrefilled') :
+                t('payment.contactStep.emailHelp')
               }
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number *
+              {t('payment.contactStep.phone')} *
             </label>
             <input
               type="tel"
               value={contactInfo.phone}
               onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="+57 300 123 4567"
+              placeholder={t('payment.contactStep.phonePlaceholder')}
             />
             <p className="text-xs text-gray-500 mt-1">
-              We'll contact you if there are any changes to your flight
+              {t('payment.contactStep.phoneHelp')}
             </p>
           </div>
         </div>
@@ -738,7 +738,7 @@ const ContactInformationStep = ({ contactInfo, setContactInfo, onBack, onContinu
             onClick={onBack}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Back to Passengers
+            {t('payment.contactStep.backToPassengers')}
           </button>
           <button
             onClick={onContinue}
@@ -749,7 +749,7 @@ const ContactInformationStep = ({ contactInfo, setContactInfo, onBack, onContinu
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            Continue to Payment
+            {t('payment.contactStep.continueToPayment')}
           </button>
         </div>
       </div>
@@ -763,10 +763,10 @@ const PaymentStep = ({ amount, currency, flightId, onPaymentSuccess, onPaymentEr
     <div className="space-y-6">
       {/* Summary of provided information */}
       <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('payment.paymentStep.bookingSummary')}</h3>
         <div className="space-y-3">
           <div>
-            <h4 className="font-medium text-gray-700">Passengers:</h4>
+            <h4 className="font-medium text-gray-700">{t('payment.paymentStep.passengersTitle')}</h4>
             <div className="text-sm text-gray-600 space-y-1">
               {passengerData.map(passenger => (
                 <div key={passenger.id}>
@@ -776,7 +776,7 @@ const PaymentStep = ({ amount, currency, flightId, onPaymentSuccess, onPaymentEr
             </div>
           </div>
           <div>
-            <h4 className="font-medium text-gray-700">Contact Information:</h4>
+            <h4 className="font-medium text-gray-700">{t('payment.paymentStep.contactTitle')}</h4>
             <div className="text-sm text-gray-600">
               <div>{contactInfo.email}</div>
               <div>{contactInfo.phone}</div>
@@ -788,8 +788,8 @@ const PaymentStep = ({ amount, currency, flightId, onPaymentSuccess, onPaymentEr
       {/* Payment Form */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-          <h2 className="text-xl font-bold">Payment Information</h2>
-          <p className="text-blue-100 text-sm mt-1">Secure payment powered by PayU</p>
+          <h2 className="text-xl font-bold">{t('payment.paymentStep.paymentInfo')}</h2>
+          <p className="text-blue-100 text-sm mt-1">{t('payment.paymentStep.paymentSubtitle')}</p>
         </div>
         
         <div className="p-6">
@@ -817,58 +817,13 @@ const PaymentStep = ({ amount, currency, flightId, onPaymentSuccess, onPaymentEr
           />
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 flex justify-center">
           <button
             onClick={onBack}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Back to Contact Info
+            {t('payment.paymentStep.backToContact')}
           </button>
-        </div>
-      </div>
-
-      {/* Trust Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-semibold text-gray-900">{t('payment.instantConfirmation')}</h3>
-              <p className="text-xs text-gray-600">{t('payment.instantConfirmationDescription')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-semibold text-gray-900">{t('payment.securePayment')}</h3>
-              <p className="text-xs text-gray-600">{t('payment.pciCompliantDescription')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-semibold text-gray-900">{t('payment.support247')}</h3>
-              <p className="text-xs text-gray-600">{t('payment.support247Description')}</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

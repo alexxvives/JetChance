@@ -154,7 +154,41 @@
         "hide": "Ocultar",
         "viewDetails": "Ver Detalles",
         "edit": "Editar",
-        "delete": "Eliminar"
+        "delete": "Eliminar",
+        "editFlight": "Editar Vuelo",
+        "deleteFlight": "Eliminar Vuelo"
+      },
+      "flightCard": {
+        "availableSeats": "Asientos Disponibles",
+        "totalSeats": "Asientos Totales",
+        "totalPrice": "Precio Total",
+        "flightTime": "Tiempo de Vuelo",
+        "origin": "Origen",
+        "destination": "Destino",
+        "seats": "Asientos",
+        "departure": "Salida",
+        "operator": "Operador",
+        "aircraft": "Aeronave",
+        "at": "a las",
+        "viewDetailsBook": "Ver Detalles y Reservar",
+        "deleteFlight": "Eliminar Vuelo",
+        "statuses": {
+          "available": "Disponible",
+          "partiallyBooked": "Parcialmente Reservado",
+          "fullyBooked": "Completamente Reservado",
+          "pending": "Pendiente de Aprobación",
+          "denied": "Rechazado",
+          "noData": "Sin Datos"
+        }
+      },
+      "flightCatalog": {
+        "loading": "Cargando vuelos disponibles...",
+        "title": "Vuelos Disponibles Ahora Mismo",
+        "subtitle": "Descubre vuelos de lujo a precios increíbles",
+        "noFlights": "Aún No Hay Vuelos Disponibles",
+        "noFlightsDesc": "Los operadores pueden agregar nuevos vuelos a través del panel para comenzar.",
+        "bookNow": "Reservar Ahora",
+        "seatsAvailable": "asientos disponibles"
       },
       "flightList": {
         "loading": "Cargando vuelos...",
@@ -167,6 +201,10 @@
         "title": "Eliminar Vuelo",
         "message": "¿Estás seguro de que quieres eliminar este vuelo?",
         "confirm": "Eliminar Vuelo"
+      },
+      "accessDenied": {
+        "title": "Acceso Denegado",
+        "message": "Debes iniciar sesión como operador para ver esta página."
       }
     },
     "customer": {
@@ -186,16 +224,70 @@
         "badge": "Rutas Fijas",
         "description": "Vuelos pre-programados con rutas y horarios de salida fijos",
         "disclaimer": "Las rutas y horarios no se pueden modificar • Reserva instantánea • Precios con descuento",
-        "savingsLabel": "Hasta 75% de ahorro"
+        "savingsLabel": "Hasta 90% de ahorro"
       },
       "customFlight": {
         "title": "¿Necesitas Fechas Flexibles o Ruta Personalizada?",
         "subtitle": "Solicita un charter de jet personalizado con flexibilidad completa en fechas, horarios y destinos",
         "requestNow": "Obtener Cotización Personalizada"
       },
+      "filters": {
+        "from": "Desde",
+        "to": "Hacia",
+        "cities": "ciudades",
+        "date": "Fecha",
+        "passengers": "Pasajeros",
+        "max": "máx",
+        "selectDepartureCity": "Selecciona ciudad de salida...",
+        "selectDestinationCity": "Selecciona ciudad de destino...",
+        "selectDepartureDate": "Selecciona fecha de salida...",
+        "numberOfPassengers": "Número de pasajeros",
+        "passenger": "pasajero",
+        "passengersPlural": "pasajeros",
+        "clearAll": "Limpiar todo",
+        "activeFilters": {
+          "from": "Desde",
+          "to": "Hacia",
+          "pax": "pax"
+        }
+      },
       "myBookings": {
         "title": "Mis Reservas",
-        "subtitle": "Ve y gestiona tus reservas de vuelos"
+        "subtitle": "Ve y gestiona tus reservas de vuelos",
+        "loading": "Cargando tus reservas...",
+        "error": {
+          "title": "No se Pueden Cargar las Reservas",
+          "tryAgain": "Intentar de Nuevo"
+        },
+        "empty": {
+          "title": "Aún no hay reservas",
+          "message": "Comienza tu viaje reservando tu primer vuelo de lujo."
+        },
+        "stats": {
+          "totalSpent": "Total Gastado",
+          "totalFlights": "Total de Vuelos",
+          "totalBookings": "Total de Reservas",
+          "totalPassengers": "Total de Pasajeros"
+        },
+        "table": {
+          "title": "Historial de Reservas",
+          "columns": {
+            "bookingId": "ID de Reserva",
+            "departure": "Salida",
+            "route": "Ruta",
+            "passengers": "Pasajeros",
+            "operator": "Operador",
+            "aircraft": "Aeronave",
+            "amount": "Monto",
+            "status": "Estado"
+          },
+          "status": {
+            "confirmed": "Confirmado",
+            "completed": "Completado",
+            "pending": "Pendiente",
+            "cancelled": "Cancelado"
+          }
+        }
       }
     }
   },
@@ -337,7 +429,7 @@
       "title": "Vuelos Empty Leg",
       "description": "Reserva vuelos empty leg disponibles a precios con descuento con reserva inmediata y precios transparentes.",
       "benefits": {
-        "savings": "Hasta 75% de ahorro",
+        "savings": "Hasta 90% de ahorro",
         "immediate": "Reserva instantánea",
         "transparent": "Precios transparentes"
       },
@@ -793,6 +885,208 @@
       "title": "Únete a Nuestro Viaje",
       "subtitle": "Ya seas un viajero buscando tu próxima aventura, un operador que busca hacer crecer su negocio, o simplemente alguien que comparte nuestra pasión por la aviación, te invitamos a ser parte de la historia de JetChance.",
       "getStarted": "Comienza Hoy"
+    }
+  },
+  "payment": {
+    "title": "Completar Pago",
+    "backToFlightDetails": "Volver a Detalles del Vuelo",
+    "loadingFlightDetails": "Cargando detalles del vuelo...",
+    "flightNotFound": "Vuelo no encontrado",
+    "failedToLoad": "No se pudieron cargar los detalles del vuelo",
+    "errorLoadingFlight": "Error al Cargar Vuelo",
+    "goBack": "Volver",
+    "bookingReference": "Referencia de Reserva: Procesando...",
+    "flightSummary": "Resumen del Vuelo",
+    "departure": "Salida",
+    "aircraft": "Aeronave",
+    "operator": "Operador",
+    "notSpecified": "No especificado",
+    "flightDetails": "Detalles del Vuelo",
+    "passengers": "Pasajeros",
+    "pricing": "Precios",
+    "emptyLegPricePerSeat": "Precio Empty Leg (por asiento)",
+    "passengersMultiplied": "Pasajeros × {count}",
+    "marketPrice": "Precio de Mercado",
+    "total": "Total",
+    "youAreSaving": "¡Estás ahorrando {amount}!",
+    "percentOffRegularPrice": "{percent}% de descuento del precio regular",
+    "completePayment": "Completar Pago",
+    "securePayment": "Pago Seguro",
+    "securePaymentDescription": "Tu pago está protegido con encriptación SSL de 256 bits y procesado de forma segura por PayU Latam.",
+    "instantConfirmation": "Confirmación Instantánea",
+    "instantConfirmationDescription": "Confirmación inmediata de la reserva",
+    "pciCompliantDescription": "Procesamiento compatible con PCI DSS",
+    "support247": "Soporte 24/7",
+    "support247Description": "Asistencia las 24 horas",
+    "steps": {
+      "passengerInfo": "Info Pasajeros",
+      "contactInfo": "Info Contacto",
+      "payment": "Pago"
+    },
+    "passengerStep": {
+      "title": "Información de Pasajeros",
+      "subtitle": "Por favor proporciona detalles para todos los pasajeros",
+      "passengerLabel": "Pasajero",
+      "complete": "Completo",
+      "informationRequired": "Información requerida",
+      "firstName": "Nombre",
+      "firstNamePlaceholder": "Ingresa el nombre",
+      "lastName": "Apellido",
+      "lastNamePlaceholder": "Ingresa el apellido",
+      "dateOfBirth": "Fecha de Nacimiento",
+      "documentType": "Tipo de Documento",
+      "selectDocumentType": "Selecciona tipo de documento",
+      "documentNumber": "Número de Documento",
+      "documentNumberPlaceholder": "Ingresa el número de documento",
+      "continueToContact": "Continuar a Información de Contacto",
+      "documentTypes": {
+        "passport": "Pasaporte",
+        "cc": "Cédula de Ciudadanía",
+        "ce": "Cédula de Extranjería",
+        "ti": "Tarjeta de Identidad"
+      }
+    },
+    "contactStep": {
+      "title": "Información de Contacto",
+      "subtitle": "Usaremos esta información para enviarte confirmaciones de reserva",
+      "email": "Dirección de Email",
+      "emailPlaceholder": "tu.email@ejemplo.com",
+      "emailHelp": "Recibirás confirmación de reserva y actualizaciones del vuelo en este correo",
+      "emailPrefilled": "Prellenado con el email de tu cuenta. Puedes editarlo si es necesario.",
+      "phone": "Número de Teléfono",
+      "phonePlaceholder": "+57 300 123 4567",
+      "phoneHelp": "Te contactaremos si hay cambios en tu vuelo",
+      "backToPassengers": "Volver a Pasajeros",
+      "continueToPayment": "Continuar a Pago"
+    },
+    "paymentStep": {
+      "bookingSummary": "Resumen de Reserva",
+      "passengersTitle": "Pasajeros:",
+      "contactTitle": "Información de Contacto:",
+      "paymentInfo": "Información de Pago",
+      "paymentSubtitle": "Pago seguro con PayU",
+      "backToContact": "Volver a Info de Contacto"
+    }
+  },
+  "bookingSuccess": {
+    "title": "¡Reserva Confirmada!",
+    "subtitle": "Tu vuelo en jet privado ha sido reservado exitosamente",
+    "bookingReference": "Referencia de Reserva",
+    "keepReference": "Guarda esta referencia para tus registros",
+    "flightDetails": "Detalles del Vuelo",
+    "passengerInfo": "Información del Pasajero",
+    "paymentSummary": "Resumen de Pago",
+    "specialRequests": "Solicitudes Especiales",
+    "whatNext": "¿Qué Sigue?",
+    "confirmationEmail": "Email de Confirmación",
+    "confirmationEmailDesc": "Revisa tu correo electrónico para confirmación detallada de la reserva e información del vuelo.",
+    "flightPreparation": "Preparación del Vuelo",
+    "flightPreparationDesc": "Llega al aeropuerto 30 minutos antes de la salida. Trae identificación válida.",
+    "customerSupport": "Atención al Cliente",
+    "customerSupportDesc": "Nuestro equipo está disponible 24/7 para cualquier pregunta o cambio.",
+    "viewBookings": "Ver Mis Reservas",
+    "bookAnother": "Reservar Otro Vuelo",
+    "needHelp": "¿Necesitas Ayuda?",
+    "supportDesc": "Nuestro equipo de atención al cliente está aquí para asistirte",
+    "departure": "Salida",
+    "time": "Hora",
+    "flightTime": "Tiempo de Vuelo",
+    "aircraft": "Aeronave",
+    "operator": "Operador",
+    "passengers": "Pasajeros",
+    "amountPaid": "Monto Pagado",
+    "transactionId": "ID de Transacción",
+    "paymentStatus": "Estado de Pago",
+    "completed": "✓ Completado",
+    "origin": "Origen",
+    "destination": "Destino",
+    "seats": "Asientos",
+    "paymentMethod": "Método de Pago",
+    "creditCard": "Tarjeta de Crédito",
+    "pse": "Transferencia Bancaria PSE",
+    "cash": "Efectivo",
+    "notSpecified": "No especificado",
+    "Solo pasaporte para vuelos internacionales": "Solo pasaporte para vuelos internacionales",
+    "Seleccione": "Seleccione"
+  },
+  "flightDetails": {
+    "loading": "Cargando detalles del vuelo...",
+    "notFound": "Vuelo no encontrado",
+    "backToDashboard": "Volver al Panel",
+    "backToFlights": "Volver a Vuelos",
+    "availableSeats": "Asientos Disponibles",
+    "totalSeats": "Asientos Totales",
+    "operator": "Operador",
+    "flightTime": "Tiempo de Vuelo",
+    "flightRoute": "Ruta del Vuelo",
+    "routeTo": "a",
+    "pricing": "Precios",
+    "marketRate": "TARIFA DE MERCADO",
+    "marketPrice": "PRECIO DE MERCADO",
+    "standardPricing": "Precio Estándar",
+    "greatValue": "GRAN VALOR",
+    "competitiveRate": "Tarifa Competitiva",
+    "charterPrice": "PRECIO CHARTER",
+    "emptyLegDeal": "Oferta Empty Leg",
+    "passengers": "Pasajeros",
+    "seatsAvailable": "asientos disponibles",
+    "totalPerPerson": "Total por persona",
+    "bookCharter": "Reservar Charter",
+    "aircraftImages": "Imágenes de la Aeronave",
+    "viewAllImages": "Ver Todas las Imágenes",
+    "perPerson": "por persona",
+    "totalCharter": "charter total",
+    "perSeat": "por asiento",
+    "total": "total",
+    "passengerSingle": "pasajero",
+    "passengersPlural": "pasajeros",
+    "sharedFlight": "Vuelo Compartido",
+    "privateFlightWarning": "El vuelo puede ser compartido si otros reservan los asientos restantes. Para garantizar privacidad, reserva todos los {remainingSeats} asientos restantes",
+    "sharedFlightWarning": "Este vuelo es compartido, {bookedSeats} asientos ya han sido reservados. Para garantizar privacidad, reserva todos los asientos en otro vuelo.",
+    "seatsAlreadyBooked": "{bookedSeats} ya reservados",
+    "finalPriceConfirmed": "Precio final confirmado antes del pago",
+    "operatorViewOnly": "Solo Vista - Cuenta de Operador",
+    "operatorCannotBook": "Los operadores no pueden reservar vuelos a través de esta interfaz",
+    "adminCannotBook": "Los administradores no pueden reservar vuelos a través de esta interfaz",
+    "origin": "ORIGEN",
+    "destination": "DESTINO"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "loading": "Cargando notificaciones...",
+    "noNotifications": "Aún no hay notificaciones",
+    "noNotificationsDescription": "Verás actualizaciones sobre tus vuelos aquí",
+    "timeJustNow": "Justo ahora",
+    "timeMinutesAgo": "hace {minutes}m",
+    "timeHoursAgo": "hace {hours}h",
+    "timeDaysAgo": "hace {days}d",
+    "refresh": "Actualizar notificaciones",
+    "noNotificationsToView": "No hay notificaciones para ver",
+    "types": {
+      "flight_approved": {
+        "title": "Vuelo Aprobado",
+        "message": "Tu vuelo ha sido aprobado y está listo para reservas"
+      },
+      "flight_denied": {
+        "title": "Vuelo Rechazado",
+        "message": "Tu vuelo no ha sido aprobado. Por favor revisa los detalles"
+      },
+      "flight_deleted": {
+        "title": "Vuelo Eliminado",
+        "message": "Tu vuelo ha sido eliminado del sistema"
+      },
+      "flight_submitted": {
+        "title": "Vuelo Enviado para Revisión",
+        "message": "Tu vuelo ha sido enviado exitosamente para revisión del administrador"
+      },
+      "booking_confirmed": {
+        "title": "Reserva Confirmada",
+        "message": "Tu reserva ha sido confirmada exitosamente"
+      },
+      "payment_received": {
+        "title": "Pago Recibido",
+        "message": "Hemos recibido tu pago exitosamente"
+      }
     }
   }
 }

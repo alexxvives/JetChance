@@ -82,22 +82,22 @@ export default function CustomerBookings() {
       confirmed: { 
         color: 'bg-green-100 text-green-800', 
         icon: CheckCircle,
-        text: 'Confirmed' 
+        text: t('dashboard.customer.myBookings.table.status.confirmed')
       },
       completed: { 
         color: 'bg-green-100 text-green-800', 
         icon: CheckCircle,
-        text: 'Completed' 
+        text: t('dashboard.customer.myBookings.table.status.completed')
       },
       pending: { 
         color: 'bg-yellow-100 text-yellow-800', 
         icon: Clock,
-        text: 'Pending' 
+        text: t('dashboard.customer.myBookings.table.status.pending')
       },
       cancelled: { 
         color: 'bg-red-100 text-red-800', 
         icon: AlertCircle,
-        text: 'Cancelled' 
+        text: t('dashboard.customer.myBookings.table.status.cancelled')
       }
     };
 
@@ -137,7 +137,7 @@ export default function CustomerBookings() {
       <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
         <div className="flex items-center space-x-3 text-gray-600">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span>Loading your bookings...</span>
+          <span>{t('dashboard.customer.myBookings.loading')}</span>
         </div>
       </div>
     );
@@ -148,13 +148,13 @@ export default function CustomerBookings() {
       <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
         <div className="text-center py-8">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Bookings</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.customer.myBookings.error.title')}</h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={fetchCustomerBookings}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Try Again
+            {t('dashboard.customer.myBookings.error.tryAgain')}
           </button>
         </div>
       </div>
@@ -166,9 +166,9 @@ export default function CustomerBookings() {
       <div className="bg-white rounded-lg shadow-sm p-8">
         <div className="text-center">
           <Plane className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.customer.myBookings.empty.title')}</h3>
           <p className="text-gray-600">
-            Start your journey by booking your first luxury flight.
+            {t('dashboard.customer.myBookings.empty.message')}
           </p>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function CustomerBookings() {
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Spent</p>
+              <p className="text-sm font-medium text-gray-600">{t('dashboard.customer.myBookings.stats.totalSpent')}</p>
               <p className="text-xl font-bold text-gray-900">{formatCurrency(summaryStats.totalAmount)}</p>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function CustomerBookings() {
               <Plane className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Flights</p>
+              <p className="text-sm font-medium text-gray-600">{t('dashboard.customer.myBookings.stats.totalFlights')}</p>
               <p className="text-xl font-bold text-gray-900">{summaryStats.totalFlights}</p>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function CustomerBookings() {
               <BarChart3 className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+              <p className="text-sm font-medium text-gray-600">{t('dashboard.customer.myBookings.stats.totalBookings')}</p>
               <p className="text-xl font-bold text-gray-900">{summaryStats.totalBookings}</p>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function CustomerBookings() {
               <Users className="w-6 h-6 text-orange-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Passengers</p>
+              <p className="text-sm font-medium text-gray-600">{t('dashboard.customer.myBookings.stats.totalPassengers')}</p>
               <p className="text-xl font-bold text-gray-900">{summaryStats.totalPassengers}</p>
             </div>
           </div>
@@ -232,35 +232,35 @@ export default function CustomerBookings() {
       <div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Booking History</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('dashboard.customer.myBookings.table.title')}</h3>
           </div>
           <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Booking ID
+                  {t('dashboard.customer.myBookings.table.columns.bookingId')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Departure
+                  {t('dashboard.customer.myBookings.table.columns.departure')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Route
+                  {t('dashboard.customer.myBookings.table.columns.route')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Passengers
+                  {t('dashboard.customer.myBookings.table.columns.passengers')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Operator
+                  {t('dashboard.customer.myBookings.table.columns.operator')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aircraft
+                  {t('dashboard.customer.myBookings.table.columns.aircraft')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
+                  {t('dashboard.customer.myBookings.table.columns.amount')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('dashboard.customer.myBookings.table.columns.status')}
                 </th>
               </tr>
             </thead>
