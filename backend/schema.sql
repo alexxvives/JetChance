@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   user_id TEXT NOT NULL,
   title TEXT NOT NULL,
   message TEXT NOT NULL,
+  type TEXT DEFAULT 'general',            -- Type of notification: flight_submitted, flight_approved, flight_denied, flight_deleted, booking_confirmed, payment_received, operator_registered
   read_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users (id)

@@ -125,8 +125,7 @@ export default function CustomerDashboard({ user }) {
 
   const tabs = [
     { id: 'flights', name: t('dashboard.customer.tabs.emptyLegFlights') || 'Available Flights', icon: Plane },
-    { id: 'bookings', name: t('dashboard.customer.tabs.myBookings') || 'My Bookings', icon: BookOpen },
-    { id: 'profile', name: t('nav.profile') || 'Profile', icon: User }
+    { id: 'bookings', name: t('dashboard.customer.tabs.myBookings') || 'My Bookings', icon: BookOpen }
   ];
 
   const handleLogout = () => {
@@ -137,7 +136,7 @@ export default function CustomerDashboard({ user }) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Fixed Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
+      <div className="w-[282px] bg-white border-r border-gray-200 flex-shrink-0">
         {/* Sidebar Header with Logo */}
         <div className="p-4">
           <div className="flex items-center justify-center">

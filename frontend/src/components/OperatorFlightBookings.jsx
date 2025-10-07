@@ -23,7 +23,7 @@ const formatCOPWithStyling = (amount) => {
   return { number: formatted, currency: 'COP' };
 };
 
-export default function OperatorFlightBookings({ user }) {
+export default function OperatorFlightBookings({ user, onViewFlight }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [crmData, setCrmData] = useState(null);
@@ -33,29 +33,64 @@ export default function OperatorFlightBookings({ user }) {
   // Function to handle flight view by tracing from booking
   const handleViewFlight = async (bookingId) => {
     try {
+      console.log('🔍 Attempting to view flight for booking:', bookingId);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/bookings/${bookingId}/flight`, {
+      
+      // First, get the flight ID from the booking
+      const bookingResponse = await fetch(`/api/bookings/${bookingId}/flight`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.flightId) {
-          navigate(`/flight/${data.flightId}`);
+      console.log('📡 Booking response status:', bookingResponse.status);
+
+      if (bookingResponse.ok) {
+        const bookingData = await bookingResponse.json();
+        console.log('📦 Booking data received:', bookingData);
+        
+        if (bookingData.flightId) {
+          console.log('✈️ Fetching flight details for ID:', bookingData.flightId);
+          
+          // Now fetch the full flight object
+          const flightResponse = await fetch(`/api/flights/${bookingData.flightId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          console.log('📡 Flight response status:', flightResponse.status);
+
+          if (flightResponse.ok) {
+            const flightData = await flightResponse.json();
+            console.log('✅ Flight data received:', flightData);
+            
+            // Use the callback to trigger inline view
+            if (onViewFlight) {
+              console.log('🎯 Triggering inline view with flight data');
+              onViewFlight(flightData);
+            } else {
+              console.log('⚠️ No callback provided, falling back to navigation');
+              // Fallback to navigation if callback not provided
+              navigate(`/flight/${bookingData.flightId}`);
+            }
+          } else {
+            const errorText = await flightResponse.text();
+            console.error('❌ Failed to fetch flight details:', bookingData.flightId, errorText);
+            alert(`Unable to load flight details. Status: ${flightResponse.status}`);
+          }
         } else {
-          console.error('Flight ID not found for booking:', bookingId);
-          // Fallback: try to navigate using booking ID or show error
+          console.error('❌ Flight ID not found in booking data:', bookingData);
           alert('Flight details not available for this booking.');
         }
       } else {
-        console.error('Failed to fetch flight for booking:', bookingId);
-        alert('Unable to load flight details.');
+        const errorText = await bookingResponse.text();
+        console.error('❌ Failed to fetch flight for booking:', bookingId, errorText);
+        alert(`Unable to load flight details. Status: ${bookingResponse.status}`);
       }
     } catch (error) {
-      console.error('Error fetching flight for booking:', bookingId, error);
-      alert('Error loading flight details.');
+      console.error('💥 Error fetching flight for booking:', bookingId, error);
+      alert(`Error loading flight details: ${error.message}`);
     }
   };
 

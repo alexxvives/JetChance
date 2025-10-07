@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import { 
   User, 
   Phone, 
@@ -19,6 +20,7 @@ import {
 const Profile = () => {
   const navigate = useNavigate();
   const { user: authUser, logout } = useAuth();
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [operator, setOperator] = useState(null);
   const [profileData, setProfileData] = useState({});
@@ -182,13 +184,13 @@ const Profile = () => {
           setTimeout(() => setMessage(''), 1500);
         } else {
           // For manual save, show full message
-          setMessage('Profile updated successfully!');
+          setMessage(t('profile.messages.updateSuccess'));
           setTimeout(() => setMessage(''), 3000);
         }
       } else {
         const errorData = await response.json();
         console.error('❌ Error response:', errorData);
-        setMessage('Failed to update profile');
+        setMessage(t('profile.messages.updateFailed'));
       }
     } catch (error) {
       console.error('❌ Error updating profile:', error);
@@ -206,7 +208,7 @@ const Profile = () => {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
-      setMessage('Please type DELETE to confirm account deletion');
+      setMessage(t('profile.messages.deleteConfirmation'));
       return;
     }
 
@@ -223,19 +225,19 @@ const Profile = () => {
       });
 
       if (response.ok) {
-        setMessage('Account deleted successfully. Redirecting...');
+        setMessage(t('profile.messages.deleteSuccess'));
         setTimeout(() => {
           logout();
           navigate('/');
         }, 2000);
       } else {
         const data = await response.json();
-        setMessage(data.error || 'Failed to delete account');
+        setMessage(data.error || t('profile.messages.deleteFailed'));
         setDeleting(false);
       }
     } catch (error) {
       console.error('Error deleting account:', error);
-      setMessage('Failed to delete account. Please try again.');
+      setMessage(t('profile.messages.deleteError'));
       setDeleting(false);
     }
   };
@@ -282,12 +284,12 @@ const Profile = () => {
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <User className="h-5 w-5 mr-2 text-blue-600" />
-                Personal Information
+                {t('profile.personalInfo.title')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name
+                    {t('profile.personalInfo.firstName')}
                   </label>
                   <input
                     type="text"
@@ -298,7 +300,7 @@ const Profile = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name
+                    {t('profile.personalInfo.lastName')}
                   </label>
                   <input
                     type="text"
@@ -310,7 +312,7 @@ const Profile = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Mail className="inline h-4 w-4 mr-1" />
-                    Email
+                    {t('profile.personalInfo.email')}
                   </label>
                   <input
                     type="email"
@@ -322,7 +324,7 @@ const Profile = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Phone className="inline h-4 w-4 mr-1" />
-                    Phone Number
+                    {t('profile.personalInfo.phone')}
                   </label>
                   <input
                     type="tel"
@@ -335,14 +337,14 @@ const Profile = () => {
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <MapPin className="inline h-4 w-4 mr-1" />
-                    Address
+                    {t('profile.personalInfo.address')}
                   </label>
                   <input
                     type="text"
                     value={profileData.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your address"
+                    placeholder={t('profile.personalInfo.addressPlaceholder')}
                   />
                 </div>
               </div>
@@ -353,12 +355,12 @@ const Profile = () => {
               <div>
                 <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                   <Building2 className="h-5 w-5 mr-2 text-blue-600" />
-                  Company Information
+                  {t('profile.companyInfo.title')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Name
+                      {t('profile.companyInfo.companyName')}
                     </label>
                     <input
                       type="text"
@@ -369,7 +371,7 @@ const Profile = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Operator ID
+                      {t('profile.companyInfo.operatorId')}
                     </label>
                     <input
                       type="text"
@@ -380,14 +382,14 @@ const Profile = () => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Address
+                      {t('profile.companyInfo.companyAddress')}
                     </label>
                     <input
                       type="text"
                       value={profileData.companyAddress || ''}
                       onChange={(e) => handleInputChange('companyAddress', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter company address"
+                      placeholder={t('profile.companyInfo.companyAddressPlaceholder')}
                     />
                   </div>
                 </div>
@@ -399,10 +401,10 @@ const Profile = () => {
               <div>
                 <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                   <Bell className="h-5 w-5 mr-2 text-blue-600" />
-                  Notification Preferences
+                  {t('profile.notifications.title')}
                 </h2>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-4">Choose how you'd like to receive updates about your bookings and account.</p>
+                  <p className="text-sm text-gray-600 mb-4">{t('profile.notifications.subtitle')}</p>
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3 p-3 bg-white rounded-md border border-gray-200">
                       <input
@@ -414,9 +416,9 @@ const Profile = () => {
                       />
                       <div className="flex-1">
                         <label htmlFor="emailNotifications" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          Email Notifications
+                          {t('profile.notifications.email.label')}
                         </label>
-                        <p className="text-xs text-gray-500 mt-1">Receive booking confirmations, flight updates, and important account information</p>
+                        <p className="text-xs text-gray-500 mt-1">{t('profile.notifications.email.description')}</p>
                       </div>
                     </div>
                     
@@ -430,9 +432,9 @@ const Profile = () => {
                       />
                       <div className="flex-1">
                         <label htmlFor="smsNotifications" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          SMS Notifications
+                          {t('profile.notifications.sms.label')}
                         </label>
-                        <p className="text-xs text-gray-500 mt-1">Get text message alerts for time-sensitive flight changes and reminders</p>
+                        <p className="text-xs text-gray-500 mt-1">{t('profile.notifications.sms.description')}</p>
                       </div>
                     </div>
                     
@@ -446,9 +448,9 @@ const Profile = () => {
                       />
                       <div className="flex-1">
                         <label htmlFor="marketingEmails" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          Marketing Communications
+                          {t('profile.notifications.marketing.label')}
                         </label>
-                        <p className="text-xs text-gray-500 mt-1">Receive promotional offers, flight deals, and news about our services</p>
+                        <p className="text-xs text-gray-500 mt-1">{t('profile.notifications.marketing.description')}</p>
                       </div>
                     </div>
                   </div>
@@ -460,46 +462,46 @@ const Profile = () => {
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <Shield className="h-5 w-5 mr-2 text-blue-600" />
-                Security & Account
+                {t('profile.security.title')}
               </h2>
               <form onSubmit={(e) => e.preventDefault()} autoComplete="off">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Lock className="inline h-4 w-4 mr-1" />
-                      Current Password
+                      {t('profile.security.currentPassword')}
                     </label>
                     <input
                       type="password"
                       value={profileData.currentPassword || ''}
                       onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                      placeholder="Enter current password"
+                      placeholder={t('profile.security.currentPasswordPlaceholder')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       autoComplete="current-password"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      New Password
+                      {t('profile.security.newPassword')}
                     </label>
                     <input
                       type="password"
                       value={profileData.newPassword || ''}
                       onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                      placeholder="Enter new password"
+                      placeholder={t('profile.security.newPasswordPlaceholder')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       autoComplete="new-password"
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Confirm New Password
+                      {t('profile.security.confirmPassword')}
                     </label>
                     <input
                       type="password"
                       value={profileData.confirmPassword || ''}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      placeholder="Confirm new password"
+                      placeholder={t('profile.security.confirmPasswordPlaceholder')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       autoComplete="new-password"
                     />
@@ -516,19 +518,19 @@ const Profile = () => {
                     className="inline-flex items-center px-4 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
+                    {t('profile.deleteAccount.button')}
                   </button>
                 ) : (
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Type <span className="font-bold">DELETE</span> to confirm:
+                        {t('profile.deleteAccount.confirmPrompt')} <span className="font-bold">{t('profile.deleteAccount.confirmWord')}</span> {t('profile.deleteAccount.confirmLabel')}
                       </label>
                       <input
                         type="text"
                         value={deleteConfirmText}
                         onChange={(e) => setDeleteConfirmText(e.target.value)}
-                        placeholder="DELETE"
+                        placeholder={t('profile.deleteAccount.confirmPlaceholder')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                         disabled={deleting}
                       />
@@ -542,12 +544,12 @@ const Profile = () => {
                         {deleting ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Deleting...
+                            {t('profile.deleteAccount.deleting')}
                           </>
                         ) : (
                           <>
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Permanently Delete Account
+                            {t('profile.deleteAccount.confirmButton')}
                           </>
                         )}
                       </button>
@@ -559,7 +561,7 @@ const Profile = () => {
                         disabled={deleting}
                         className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel
+                        {t('profile.deleteAccount.cancel')}
                       </button>
                     </div>
                   </div>

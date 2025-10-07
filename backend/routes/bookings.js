@@ -289,7 +289,8 @@ router.post('/', authenticate, [
           await createNotification(
             operatorUserId,
             'New Booking Received! 🎉',
-            `You have a new booking for your flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+            `You have a new booking for your flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`,
+            'booking_confirmed'
           );
           console.log(`✅ Created booking notification for operator ${operatorUserId}`);
         }
@@ -304,7 +305,8 @@ router.post('/', authenticate, [
           await createNotification(
             admin.id,
             'New Booking Created 🎉',
-            `New booking received for flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`
+            `New booking received for flight ${originCode} → ${destCode}. Booking ID: ${bookingId}. Passengers: ${passengers.length}`,
+            'booking_confirmed'
           );
         }
         console.log(`✅ Notified ${admins.length} admins about new booking`);

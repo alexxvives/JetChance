@@ -26,7 +26,7 @@ const formatCOPWithStyling = (amount) => {
 };
 
 export default function AdminDashboard({ user }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage, changeLanguage } = useTranslation();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('catalog');
@@ -972,7 +972,7 @@ export default function AdminDashboard({ user }) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Fixed Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
+      <div className="w-[282px] bg-white border-r border-gray-200 flex-shrink-0">
         {/* Sidebar Header with Logo */}
         <div className="p-4">
           <div className="flex items-center justify-center">
@@ -1041,7 +1041,7 @@ export default function AdminDashboard({ user }) {
                   className="flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all duration-200 min-w-[50px]"
                 >
                   <GlobeAltIcon className="h-4 w-4 mr-1" />
-                  <span className="text-sm font-medium">EN</span>
+                  <span className="text-sm font-medium">{currentLanguage === 'es' ? 'ES' : 'EN'}</span>
                   <ChevronDown className={`h-3 w-3 ml-1 transition-transform duration-200 ${isLanguageDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
@@ -1051,7 +1051,7 @@ export default function AdminDashboard({ user }) {
                     <div className="py-1">
                       <button
                         onClick={() => {
-                          // Add language change logic here
+                          changeLanguage('en');
                           setIsLanguageDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -1060,7 +1060,7 @@ export default function AdminDashboard({ user }) {
                       </button>
                       <button
                         onClick={() => {
-                          // Add language change logic here
+                          changeLanguage('es');
                           setIsLanguageDropdownOpen(false);
                         }}
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -1170,7 +1170,7 @@ export default function AdminDashboard({ user }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span>From ({availableCities.origins.length} cities)</span>
+                        <span>{t('admin.dashboard.catalog.filters.from')} ({availableCities.origins.length} {t('admin.dashboard.catalog.filters.cities')})</span>
                       </label>
                       <select
                         value={filters.origin}
@@ -1183,7 +1183,7 @@ export default function AdminDashboard({ user }) {
                           backgroundSize: '1.5em 1.5em'
                         }}
                       >
-                        <option value="">Select departure city...</option>
+                        <option value="">{t('admin.dashboard.catalog.filters.selectDepartureCity')}</option>
                         {availableCities.origins.map(city => (
                           <option key={city} value={city}>{city}</option>
                         ))}
@@ -1197,7 +1197,7 @@ export default function AdminDashboard({ user }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span>To ({availableCities.destinations.length} cities)</span>
+                        <span>{t('admin.dashboard.catalog.filters.to')} ({availableCities.destinations.length} {t('admin.dashboard.catalog.filters.cities')})</span>
                       </label>
                       <select
                         value={filters.destination}
@@ -1210,7 +1210,7 @@ export default function AdminDashboard({ user }) {
                           backgroundSize: '1.5em 1.5em'
                         }}
                       >
-                        <option value="">Select destination city...</option>
+                        <option value="">{t('admin.dashboard.catalog.filters.selectDestinationCity')}</option>
                         {availableCities.destinations.map(city => (
                           <option key={city} value={city}>{city}</option>
                         ))}
@@ -1223,13 +1223,13 @@ export default function AdminDashboard({ user }) {
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <span>Date</span>
+                        <span>{t('admin.dashboard.catalog.filters.date')}</span>
                       </label>
                       <CustomCalendar
                         value={filters.date}
                         onChange={(date) => setFilters({...filters, date})}
                         minDate={new Date().toISOString().split('T')[0]}
-                        placeholder="Select departure date..."
+                        placeholder={t('admin.dashboard.catalog.filters.selectDepartureDate')}
                         theme="departure"
                       />
                     </div>
@@ -1238,7 +1238,7 @@ export default function AdminDashboard({ user }) {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700 flex items-center space-x-1">
                         <UserIcon className="w-4 h-4 text-gray-500" />
-                        <span>Passengers (max {maxAvailableSeats})</span>
+                        <span>{t('admin.dashboard.catalog.filters.passengers')} ({t('admin.dashboard.catalog.filters.max')} {maxAvailableSeats})</span>
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1254,11 +1254,11 @@ export default function AdminDashboard({ user }) {
                             setFilters({...filters, passengers: value});
                           }}
                           className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="Number of passengers"
+                          placeholder={t('admin.dashboard.catalog.filters.numberOfPassengers')}
                         />
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                           <span className="text-gray-400 text-sm">
-                            {filters.passengers === 1 ? 'passenger' : 'passengers'}
+                            {filters.passengers === 1 ? t('admin.dashboard.catalog.filters.passenger') : t('admin.dashboard.catalog.filters.passengersPlural')}
                           </span>
                         </div>
                       </div>
@@ -1276,7 +1276,7 @@ export default function AdminDashboard({ user }) {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        <span>Clear all</span>
+                        <span>{t('admin.dashboard.catalog.filters.clearAll')}</span>
                       </button>
                       
                       {/* Active Filter Tags */}
@@ -1286,12 +1286,12 @@ export default function AdminDashboard({ user }) {
                           <div className="flex flex-wrap gap-1">
                             {filters.origin && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                From: {filters.origin}
+                                {t('admin.dashboard.catalog.filters.activeFilters.from')}: {filters.origin}
                               </span>
                             )}
                             {filters.destination && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                To: {filters.destination}
+                                {t('admin.dashboard.catalog.filters.activeFilters.to')}: {filters.destination}
                               </span>
                             )}
                             {filters.date && (
@@ -1311,12 +1311,12 @@ export default function AdminDashboard({ user }) {
 
                     {/* Right side - Sort Options */}
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Sort by:</span>
+                      <span className="text-sm text-gray-500">{t('admin.dashboard.catalog.filters.sort.label')}:</span>
                       <select className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="departure">Departure Time</option>
-                        <option value="duration">Flight Duration</option>
+                        <option value="price-low">{t('admin.dashboard.catalog.filters.sort.priceLow')}</option>
+                        <option value="price-high">{t('admin.dashboard.catalog.filters.sort.priceHigh')}</option>
+                        <option value="departure">{t('admin.dashboard.catalog.filters.sort.departure')}</option>
+                        <option value="duration">{t('admin.dashboard.catalog.filters.sort.duration')}</option>
                       </select>
                     </div>
                   </div>

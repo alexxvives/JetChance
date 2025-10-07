@@ -7,6 +7,7 @@ import ConfirmationModal from './ConfirmationModal';
 import NotificationsAPI from '../api/notificationsAPI';
 import { flightsAPI } from '../api/flightsAPI';
 import Profile from './Profile';
+import FreeFlightMap from './FreeFlightMap';
 import { 
   PlusIcon, 
   PaperAirplaneIcon, 
@@ -26,6 +27,15 @@ import {
 } from '@heroicons/react/24/outline';
 import { User, ChevronDown } from 'lucide-react';
 
+// Helper function to format Colombian Peso currency
+const formatCOP = (amount) => {
+  const formatted = new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+  return `COP ${formatted}`;
+};
+
 function ActualOperatorDashboard({ user }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -36,6 +46,19 @@ function ActualOperatorDashboard({ user }) {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, flightId: null, flightRoute: '' });
   const [isUpcomingFlightsCollapsed, setIsUpcomingFlightsCollapsed] = useState(false);
   const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState(null); // For inline flight detail view
+  const [selectedPassengers, setSelectedPassengers] = useState(1); // For passenger selector in flight details
+  
+  // Wrapper for setSelectedFlight with logging
+  const handleSelectFlight = (flight) => {
+    console.log('🎯 handleSelectFlight called with:', flight);
+    if (flight) {
+      console.log('✅ Setting selectedFlight to:', flight.id, flight);
+    } else {
+      console.log('🔄 Clearing selectedFlight');
+    }
+    setSelectedFlight(flight);
+  };
   
   // Notifications state
   const [notifications, setNotifications] = useState([]);
@@ -55,14 +78,27 @@ function ActualOperatorDashboard({ user }) {
   // Tab configuration
   const tabs = [
     { id: 'flights', name: t('dashboard.operator.tabs.flights'), icon: PaperAirplaneIcon },
-    { id: 'bookings', name: t('dashboard.operator.tabs.bookings'), icon: UserGroupIcon },
-    { id: 'profile', name: t('nav.profile') || 'Profile', icon: User }
+    { id: 'bookings', name: t('dashboard.operator.tabs.bookings'), icon: UserGroupIcon }
   ];
 
   useEffect(() => {
     loadFlights();
     loadNotifications(); // Load notifications when component mounts
   }, [user]);
+
+  // Set selectedPassengers to available seats when flight is selected
+  useEffect(() => {
+    if (!selectedFlight) {
+      return;
+    }
+
+    const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+    const initialSeats = selectedFlight.available_seats ?? selectedFlight.seats_available ?? selectedFlight.capacity?.availableSeats ?? maxPassengers;
+
+    if (initialSeats !== undefined && initialSeats !== null) {
+      setSelectedPassengers(initialSeats > 0 ? initialSeats : 0);
+    }
+  }, [selectedFlight]);
 
   // Set up periodic notification refresh
   useEffect(() => {
@@ -223,7 +259,7 @@ function ActualOperatorDashboard({ user }) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Fixed Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
+      <div className="w-[282px] bg-white border-r border-gray-200 flex-shrink-0">
         {/* Sidebar Header with Logo */}
         <div className="p-4">
           <div className="flex items-center justify-center">
@@ -243,7 +279,10 @@ function ActualOperatorDashboard({ user }) {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    handleSelectFlight(null); // Clear flight view when switching tabs
+                  }}
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === tab.id
                       ? 'bg-blue-100 text-blue-700 border border-blue-200'
@@ -406,14 +445,18 @@ function ActualOperatorDashboard({ user }) {
                               </div>
                               <div className="flex-1">
                                 <div className="text-sm font-medium text-gray-900">
-                                  {notification.title}
+                                  {notification.type && notification.type !== 'general' 
+                                    ? t(`notifications.types.${notification.type}.title`) 
+                                    : notification.title}
                                 </div>
                                 <div className="text-sm text-gray-600 mt-1">
-                                  {notification.message}
+                                  {notification.type && notification.type !== 'general' 
+                                    ? t(`notifications.types.${notification.type}.message`) 
+                                    : notification.message}
                                 </div>
                                 <div className="text-xs text-gray-400 mt-2 flex items-center">
                                   <span>
-                                    {new Date(notification.created_at).toLocaleDateString()} {' '}
+                                    {new Date(notification.created_at).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US')} {' '}
                                     {new Date(notification.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                   </span>
                                   {!notification.read_at && (
@@ -502,10 +545,302 @@ function ActualOperatorDashboard({ user }) {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
-          {/* Tab Content */}
-          {activeTab === 'flights' && (
+          {/* Show inline flight details if a flight is selected (works from any tab) */}
+          {selectedFlight ? (
             <div className="p-6">
-              {isLoading ? (
+              {/* Back button */}
+              <button
+                onClick={() => handleSelectFlight(null)}
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {t('flightDetails.backToFlights') || 'Back to Flights'}
+              </button>
+
+              {/* Wrapper for all flight details content */}
+              <div>
+                  {/* Flight Details - Complete FlightDetailsPage design */}
+                  <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+                    {/* Aircraft Header */}
+                    <div className="flex items-start space-x-4 mb-6">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 truncate">
+                              {selectedFlight.aircraft_model || selectedFlight.aircraft_name || 'Private Jet'}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {selectedFlight.departure_time ? (() => {
+                                const dateStr = new Date(selectedFlight.departure_time).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', { 
+                                  weekday: 'long',
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric'
+                                });
+                                return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+                              })() : 'TBD'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Route Section */}
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1">
+                            {selectedFlight.originCode || selectedFlight.origin_code || 'N/A'}
+                          </div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            {t('flightDetails.origin')}
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 px-4">
+                          <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t-2 border-dashed border-gray-300"></div>
+                            </div>
+                            <div className="relative flex items-center">
+                              <div style={{marginLeft: '10%'}}>
+                                <svg className="w-10 h-10 text-blue-500 transform rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1">
+                            {selectedFlight.destinationCode || selectedFlight.destination_code || 'N/A'}
+                          </div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            {t('flightDetails.destination')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Info Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-lg font-bold text-gray-900">
+                          {selectedFlight.available_seats ?? selectedFlight.capacity?.availableSeats ?? selectedFlight.seats_available ?? 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.availableSeats')}</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-lg font-bold text-gray-900">
+                          {selectedFlight.max_passengers || selectedFlight.total_seats || 0}
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.totalSeats')}</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-lg font-bold text-gray-900">
+                          {selectedFlight.operator || user?.companyName || user?.company_name || 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.operator')}</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-lg font-bold text-gray-900">
+                          {selectedFlight.flight_time || 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">{t('flightDetails.flightTime')}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main Content - Two Column Layout */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left Panel - Flight Route with Map */}
+                    <div className="space-y-6">
+                      <div className="bg-white rounded-2xl shadow-sm overflow-hidden h-full">
+                        <div className="p-6 border-b">
+                          <h2 className="text-xl font-bold text-gray-900">{t('flightDetails.flightRoute')}</h2>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {selectedFlight.originCode || selectedFlight.origin_code || 'TBD'} {t('flightDetails.routeTo')} {selectedFlight.destinationCode || selectedFlight.destination_code || 'TBD'} • {selectedFlight.flight_time || 'TBD'}
+                          </p>
+                        </div>
+                        <div className="relative">
+                          <FreeFlightMap flight={selectedFlight} onCoordinateStatus={() => {}} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Panel - Pricing */}
+                    <div className="space-y-6">
+                      <div className="bg-white rounded-2xl shadow-sm p-6 h-full relative">
+                        <div className="flex items-center justify-between mb-6">
+                          <h2 className="text-xl font-bold text-gray-900">{t('flightDetails.pricing')}</h2>
+                        </div>
+
+                        {/* Price Comparison Cards */}
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                          {/* Market Price Card - Left */}
+                          {(() => {
+                            const pricePerSeat = selectedFlight.price || selectedFlight.seat_leg_price || selectedFlight.empty_leg_price || 0;
+                            const originalPricePerSeat = selectedFlight.original_price || selectedFlight.seat_market_price || pricePerSeat;
+                            const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+                            const charterPrice = pricePerSeat * maxPassengers;
+                            const marketPrice = originalPricePerSeat * maxPassengers;
+                            
+                            return marketPrice > charterPrice ? (
+                              <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg">
+                                <div className="text-xs text-red-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
+                                <div className="text-xl font-bold text-red-400 line-through">{formatCOP(marketPrice)}</div>
+                                <div className="text-xs text-red-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
+                              </div>
+                            ) : (
+                              <div className="text-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
+                                <div className="text-xs text-gray-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
+                                <div className="text-xl font-bold text-gray-700">{formatCOP(marketPrice)}</div>
+                                <div className="text-xs text-gray-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Charter Price Card - Right */}
+                          {(() => {
+                            const pricePerSeat = selectedFlight.price || selectedFlight.seat_leg_price || selectedFlight.empty_leg_price || 0;
+                            const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+                            const charterPrice = pricePerSeat * maxPassengers;
+                            
+                            return (
+                              <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg relative">
+                                <div className="text-xs text-blue-600 font-medium mb-1">{t('flightDetails.charterPrice')}</div>
+                                <div className="text-xl font-bold text-blue-700">{formatCOP(charterPrice)}</div>
+                                <div className="text-xs text-blue-600 mt-1">{formatCOP(pricePerSeat)} {t('flightDetails.perSeat')}</div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Passenger Selection - Positioned above button, shifts up when warning appears */}
+                        {(() => {
+                          const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+                          const availableSeats = selectedFlight.available_seats ?? selectedFlight.seats_available ?? selectedFlight.capacity?.availableSeats ?? maxPassengers;
+                          const hasExistingBookings = availableSeats < maxPassengers;
+                          const remainingSeatsForPrivacy = Math.max(availableSeats - selectedPassengers, 0);
+                          const bookedSeats = maxPassengers - availableSeats;
+                          const showPrivacyWarning = !hasExistingBookings && selectedPassengers < maxPassengers;
+                          const showSharedFlightWarning = hasExistingBookings;
+                          
+                          return (
+                            <>
+                              <div className={`absolute left-6 right-6 p-4 bg-gray-50 rounded-xl transition-all duration-200 ${
+                                (showPrivacyWarning || showSharedFlightWarning) ? 'bottom-40' : 'bottom-28'
+                              }`}>
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900">{t('flightDetails.passengers')}</h3>
+                                    <p className="text-sm text-gray-600">{availableSeats} {t('flightDetails.seatsAvailable')}</p>
+                                  </div>
+                                  <div className="flex items-center space-x-3">
+                                    <button
+                                      onClick={() => setSelectedPassengers(Math.max(availableSeats > 0 ? 1 : 0, selectedPassengers - 1))}
+                                      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                                    >
+                                      <span className="text-lg">−</span>
+                                    </button>
+                                    <span className="font-semibold text-lg w-8 text-center">{selectedPassengers}</span>
+                                    <button
+                                      onClick={() => setSelectedPassengers(Math.min(availableSeats, selectedPassengers + 1))}
+                                      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                                    >
+                                      <span className="text-lg">+</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Privacy Warning - Appears between passenger selector and button when needed */}
+                              {showPrivacyWarning && (
+                                <div className="absolute left-6 right-6 bottom-28">
+                                  <p className="text-xs text-gray-500 flex items-center justify-center transition-all duration-200">
+                                    <span className="mr-1">⚠</span>
+                                    {t('flightDetails.privateFlightWarning')?.replace('{remainingSeats}', remainingSeatsForPrivacy) || `${remainingSeatsForPrivacy} seats will remain empty for privacy`}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Shared Flight Warning - Appears when flight already has bookings */}
+                              {showSharedFlightWarning && (
+                                <div className="absolute left-6 right-6 bottom-28">
+                                  <p className="text-xs text-gray-500 flex items-center justify-center transition-all duration-200">
+                                    <span className="mr-1">⚠</span>
+                                    {t('flightDetails.sharedFlightWarning')?.replace('{bookedSeats}', bookedSeats) || `This flight already has ${bookedSeats} booked seats`}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+
+                        {/* Action Button - Fixed position at bottom - DISABLED for operators */}
+                        {(() => {
+                          const pricePerSeat = selectedFlight.price || selectedFlight.seat_leg_price || selectedFlight.empty_leg_price || 0;
+                          const price = pricePerSeat * selectedPassengers;
+                          
+                          return (
+                            <div className="absolute bottom-6 left-6 right-6">
+                              <button 
+                                disabled={true}
+                                className="w-full py-3 px-4 rounded-xl font-semibold bg-blue-600 text-white cursor-not-allowed opacity-60 transition-colors"
+                              >
+                                {t('flightDetails.bookCharter')} - {formatCOP(price)} {t('flightDetails.total')}
+                              </button>
+                              
+                              <p className="text-xs text-gray-500 text-center mt-3">
+                                {t('flightDetails.operatorCannotBook') || 'Operators cannot book their own flights'}
+                              </p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Aircraft Images Gallery */}
+                  {selectedFlight.images && selectedFlight.images.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm p-8 mt-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('flightDetails.aircraftImages')}</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {selectedFlight.images.map((image, index) => {
+                          const imageUrl = image.startsWith('http') ? image : `${import.meta.env.VITE_API_URL}${image}`;
+                          return (
+                            <div key={index} className="aspect-video rounded-xl overflow-hidden bg-gray-100">
+                              <img
+                                src={imageUrl}
+                                alt={`Aircraft ${index + 1}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  e.target.src = '/images/aircraft/default-aircraft.jpg';
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+            // Show tab content when no flight is selected
+            <>
+              {/* Tab Content */}
+              {activeTab === 'flights' && (
+                <div className="p-6">
+                  {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-600">{t('dashboard.operator.loading.flights')}</p>
@@ -526,7 +861,7 @@ function ActualOperatorDashboard({ user }) {
                 <div className="space-y-8">
                   {/* Upcoming Flights Section */}
                   {currentFlights.length > 0 && (
-                    <div>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                       <div 
                         className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200"
                         onClick={() => setIsUpcomingFlightsCollapsed(!isUpcomingFlightsCollapsed)}
@@ -552,7 +887,7 @@ function ActualOperatorDashboard({ user }) {
                       {!isUpcomingFlightsCollapsed && (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 transition-all duration-300 ease-in-out">
                           {currentFlights.map((flight) => (
-                            <FlightCard key={flight.id} flight={flight} navigate={navigate} onDelete={handleDeleteFlight} />
+                            <FlightCard key={flight.id} flight={flight} navigate={navigate} onDelete={handleDeleteFlight} onViewDetails={handleSelectFlight} />
                           ))}
                         </div>
                       )}
@@ -560,39 +895,45 @@ function ActualOperatorDashboard({ user }) {
                   )}
 
                   {/* Past Flights Section */}
-                  {pastFlights.length > 0 && (
-                    <div>
-                      <div 
-                        className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200"
-                        onClick={() => setIsPastFlightsCollapsed(!isPastFlightsCollapsed)}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {t('dashboard.operator.sections.past.title')} ({pastFlights.length})
-                          </h3>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-gray-500">
-                            {isPastFlightsCollapsed ? t('dashboard.operator.actions.show') : t('dashboard.operator.actions.hide')}
-                          </span>
-                          {isPastFlightsCollapsed ? (
-                            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-                          ) : (
-                            <ChevronUpIcon className="h-5 w-5 text-gray-400" />
-                          )}
-                        </div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div 
+                      className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200"
+                      onClick={() => setIsPastFlightsCollapsed(!isPastFlightsCollapsed)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {t('dashboard.operator.sections.past.title')} ({pastFlights.length})
+                        </h3>
                       </div>
-                      
-                      {/* Collapsible content */}
-                      {!isPastFlightsCollapsed && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 transition-all duration-300 ease-in-out">
-                          {pastFlights.map((flight) => (
-                            <FlightCard key={flight.id} flight={flight} navigate={navigate} isPast={true} onDelete={handleDeleteFlight} />
-                          ))}
-                        </div>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">
+                          {isPastFlightsCollapsed ? t('dashboard.operator.actions.show') : t('dashboard.operator.actions.hide')}
+                        </span>
+                        {isPastFlightsCollapsed ? (
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+                        )}
+                      </div>
                     </div>
-                  )}
+                    
+                    {/* Collapsible content */}
+                    {!isPastFlightsCollapsed && (
+                      <>
+                        {pastFlights.length > 0 ? (
+                          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 transition-all duration-300 ease-in-out">
+                            {pastFlights.map((flight) => (
+                              <FlightCard key={flight.id} flight={flight} navigate={navigate} isPast={true} onDelete={handleDeleteFlight} onViewDetails={handleSelectFlight} />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">{t('dashboard.operator.noPastFlights') || 'No past flights yet'}</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
 
                   {/* Show message if only one category exists */}
                   {currentFlights.length === 0 && pastFlights.length > 0 && (
@@ -604,17 +945,23 @@ function ActualOperatorDashboard({ user }) {
                   )}
                 </div>
               )}
-            </div>
-          )}
+                </div>
+              )}
 
-          {activeTab === 'bookings' && (
-            <div className="p-6">
-              <OperatorFlightBookings user={user} />
-            </div>
-          )}
+              {activeTab === 'bookings' && (
+                <div className="p-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <OperatorFlightBookings user={user} onViewFlight={handleSelectFlight} />
+                  </div>
+                </div>
+              )}
 
-          {activeTab === 'profile' && (
-            <Profile />
+              {activeTab === 'profile' && (
+                <div className="p-6">
+                  <Profile />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -636,8 +983,23 @@ function ActualOperatorDashboard({ user }) {
 }
 
 // Flight Card Component - Modern Design
-function FlightCard({ flight, navigate, isPast = false, onDelete }) {
+function FlightCard({ flight, navigate, isPast = false, onDelete, onViewDetails }) {
   const { t, currentLanguage } = useTranslation();
+  
+  console.log('🎴 FlightCard rendered with onViewDetails:', typeof onViewDetails, 'flight:', flight?.id);
+
+  const handleViewClick = () => {
+    console.log('🔘 View Details clicked for flight:', flight?.id);
+    console.log('📝 Flight object:', flight);
+    console.log('🎯 onViewDetails callback:', typeof onViewDetails);
+    
+    if (onViewDetails) {
+      console.log('✅ Calling onViewDetails with flight data');
+      onViewDetails(flight);
+    } else {
+      console.error('❌ onViewDetails callback is not defined!');
+    }
+  };
   
   const cardOpacity = isPast ? 'opacity-75' : '';
   
@@ -780,7 +1142,7 @@ function FlightCard({ flight, navigate, isPast = false, onDelete }) {
         {/* Actions */}
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`/flight/${flight.id}`)}
+            onClick={handleViewClick}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
           >
             <span>{t('dashboard.operator.actions.viewDetails')}</span>

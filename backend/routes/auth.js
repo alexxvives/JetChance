@@ -149,7 +149,8 @@ router.post('/register', registerValidation, async (req, res) => {
           await createNotification(
             admin.id,
             'New Operator Registration',
-            `New operator account registered: ${companyName.trim()} (${email})`
+            `New operator account registered: ${companyName.trim()} (${email})`,
+            'operator_registered'
           );
         }
         console.log(`✅ Notified ${adminQuery.rows.length} admins about new operator registration`);

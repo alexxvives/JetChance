@@ -703,7 +703,8 @@ router.post('/', authenticate, authorize(['operator', 'admin', 'super-admin']), 
       await createNotification(
         req.user.id, // The operator's user ID
         'Flight Submitted for Review',
-        `Your flight ${originCode} → ${destCode} has been successfully submitted for admin review.`
+        `Your flight ${originCode} → ${destCode} has been successfully submitted for admin review.`,
+        'flight_submitted'
       );
       console.log(`✅ Created submission notification for user ${req.user.id} and flight ${newFlight.id}`);
     } catch (notificationError) {
@@ -950,7 +951,8 @@ router.put('/:id/approve', authenticate, authorize(['admin', 'super-admin']), as
         await createNotification(
           operator.user_id,
           notificationTitle,
-          notificationMessage
+          notificationMessage,
+          status === 'approved' ? 'flight_approved' : 'flight_denied'
         );
         
         console.log(`✅ Created ${status} notification for operator ${operator.email}`);
@@ -1046,7 +1048,8 @@ router.delete('/:id', authenticate, authorize(['operator', 'super-admin']), asyn
         await createNotification(
           flight.user_id,  // Use user_id instead of operator_id
           'Flight Deleted by Administration',
-          `Your flight ${originCode} → ${destCode} (${flight.id}) has been deleted by administration.`
+          `Your flight ${originCode} → ${destCode} (${flight.id}) has been deleted by administration.`,
+          'flight_deleted'
         );
         console.log('✅ Admin deletion notification sent to operator:', flight.operator_email);
       } else {

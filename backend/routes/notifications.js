@@ -5,17 +5,17 @@ const { authenticate } = require('../middleware/auth');
 const { db } = require('../config/database-sqlite');
 
 // Helper function to create notification
-const createNotification = async (userId, title, message) => {
+const createNotification = async (userId, title, message, type = 'general') => {
   try {
     const notificationId = SimpleIDGenerator.generateNotificationId();
     const sql = `
-      INSERT INTO notifications (id, user_id, title, message, created_at)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO notifications (id, user_id, title, message, type, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
     
     const stmt = db.prepare(sql);
-    stmt.run(notificationId, userId, title, message, new Date().toISOString());
-    console.log('✅ Notification created:', notificationId);
+    stmt.run(notificationId, userId, title, message, type, new Date().toISOString());
+    console.log('✅ Notification created:', notificationId, 'type:', type);
     return notificationId;
   } catch (err) {
     console.error('❌ Error creating notification:', err);

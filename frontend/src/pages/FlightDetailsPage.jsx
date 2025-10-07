@@ -299,13 +299,13 @@ export default function FlightDetailsPage() {
                 {marketPrice > charterPrice ? (
                   <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg">
                     <div className="text-xs text-red-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
-                    <div className="text-2xl font-bold text-red-400 line-through">{formatCOP(marketPrice)}</div>
+                    <div className="text-xl font-bold text-red-400 line-through">{formatCOP(marketPrice)}</div>
                     <div className="text-xs text-red-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
                   </div>
                 ) : (
                   <div className="text-center p-6 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="text-xs text-gray-600 font-medium mb-1">{t('flightDetails.marketPrice')}</div>
-                    <div className="text-2xl font-bold text-gray-700">{formatCOP(marketPrice)}</div>
+                    <div className="text-xl font-bold text-gray-700">{formatCOP(marketPrice)}</div>
                     <div className="text-xs text-gray-600 mt-1">{formatCOP(originalPricePerSeat)} {t('flightDetails.perSeat')}</div>
                   </div>
                 )}
@@ -313,7 +313,7 @@ export default function FlightDetailsPage() {
                 {/* Charter Price Card - Now on the RIGHT */}
                 <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg relative">
                   <div className="text-xs text-blue-600 font-medium mb-1">{t('flightDetails.charterPrice')}</div>
-                  <div className="text-2xl font-bold text-blue-700">{formatCOP(charterPrice)}</div>
+                  <div className="text-xl font-bold text-blue-700">{formatCOP(charterPrice)}</div>
                   <div className="text-xs text-blue-600 mt-1">{formatCOP(pricePerSeat)} {t('flightDetails.perSeat')}</div>
                 </div>
               </div>

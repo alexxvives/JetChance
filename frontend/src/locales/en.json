@@ -137,7 +137,7 @@
       },
       "tabs": {
         "flights": "My Flights",
-        "bookings": "Bookings CRM"
+        "bookings": "Bookings"
       },
       "sections": {
         "upcoming": {
@@ -880,6 +880,10 @@
     "refresh": "Refresh notifications",
     "noNotificationsToView": "No notifications to view",
     "types": {
+      "general": {
+        "title": "Notification",
+        "message": "You have a new notification"
+      },
       "flight_approved": {
         "title": "Flight Approved",
         "message": "Your flight has been approved and is ready for bookings"
@@ -903,6 +907,10 @@
       "payment_received": {
         "title": "Payment Received",
         "message": "We have received your payment successfully"
+      },
+      "operator_registered": {
+        "title": "New Operator Registration",
+        "message": "A new operator has registered on the platform"
       }
     }
   },
@@ -972,7 +980,33 @@
       },
       "catalog": {
         "title": "Flight Catalog",
-        "subtitle": "Browse and manage all flights in the system"
+        "subtitle": "Browse and manage all flights in the system",
+        "filters": {
+          "from": "From",
+          "to": "To",
+          "date": "Date",
+          "passengers": "Passengers",
+          "max": "max",
+          "cities": "cities",
+          "selectDepartureCity": "Select departure city...",
+          "selectDestinationCity": "Select destination city...",
+          "selectDepartureDate": "Select departure date...",
+          "numberOfPassengers": "Number of passengers",
+          "passenger": "passenger",
+          "passengersPlural": "passengers",
+          "clearAll": "Clear all",
+          "activeFilters": {
+            "from": "From",
+            "to": "To"
+          },
+          "sort": {
+            "label": "Sort by",
+            "priceLow": "Price: Low to High",
+            "priceHigh": "Price: High to Low",
+            "departure": "Departure Time",
+            "duration": "Flight Duration"
+          }
+        }
       },
       "approvals": {
         "title": "Flight Approvals",
@@ -1205,5 +1239,70 @@
       "action": "Get Quote"
     },
     "browseBoth": "I'll browse both options"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "subtitle": "Manage your account information and preferences",
+    "loading": "Loading profile...",
+    "messages": {
+      "saved": "✓ Saved",
+      "updateSuccess": "Profile updated successfully!",
+      "updateFailed": "Failed to update profile",
+      "deleteConfirmation": "Please type DELETE to confirm account deletion",
+      "deleteSuccess": "Account deleted successfully. Redirecting...",
+      "deleteFailed": "Failed to delete account",
+      "deleteError": "Failed to delete account. Please try again."
+    },
+    "personalInfo": {
+      "title": "Personal Information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "address": "Address",
+      "addressPlaceholder": "Enter your address"
+    },
+    "companyInfo": {
+      "title": "Company Information",
+      "companyName": "Company Name",
+      "operatorId": "Operator ID",
+      "companyAddress": "Company Address",
+      "companyAddressPlaceholder": "Enter company address"
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "subtitle": "Choose how you'd like to receive updates about your bookings and account.",
+      "email": {
+        "label": "Email Notifications",
+        "description": "Receive booking confirmations, flight updates, and important account information"
+      },
+      "sms": {
+        "label": "SMS Notifications",
+        "description": "Get text message alerts for time-sensitive flight changes and reminders"
+      },
+      "marketing": {
+        "label": "Marketing Communications",
+        "description": "Receive promotional offers, flight deals, and news about our services"
+      }
+    },
+    "security": {
+      "title": "Security & Account",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Confirm new password"
+    },
+    "deleteAccount": {
+      "button": "Delete Account",
+      "confirmPrompt": "Type",
+      "confirmWord": "DELETE",
+      "confirmLabel": "to confirm:",
+      "confirmPlaceholder": "DELETE",
+      "confirmButton": "Permanently Delete Account",
+      "deleting": "Deleting...",
+      "cancel": "Cancel"
+    }
   }
 }

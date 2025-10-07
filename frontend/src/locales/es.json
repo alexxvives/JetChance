@@ -137,7 +137,7 @@
       },
       "tabs": {
         "flights": "Mis Vuelos",
-        "bookings": "CRM de Reservas"
+        "bookings": "Reservas"
       },
       "sections": {
         "upcoming": {
@@ -205,6 +205,40 @@
       "accessDenied": {
         "title": "Acceso Denegado",
         "message": "Debes iniciar sesión como operador para ver esta página."
+      },
+      "crm": {
+        "title": "Mis Reservas",
+        "subtitle": "Ver y gestionar tus reservas de vuelos",
+        "stats": {
+          "yourRevenue": "Tus Ingresos",
+          "totalFlights": "Vuelos Totales",
+          "totalBookings": "Reservas Totales",
+          "totalPassengers": "Pasajeros Totales"
+        },
+        "table": {
+          "header": "Historial de Reservas",
+          "columns": {
+            "booking": "Reserva",
+            "customer": "Cliente",
+            "operator": "Operador",
+            "route": "Ruta",
+            "flight": "Vuelo",
+            "reservedSeats": "Asientos Reservados",
+            "amount": "Monto",
+            "status": "Estado",
+            "details": "Detalles"
+          },
+          "actions": {
+            "viewFlight": "Ver Vuelo",
+            "show": "Mostrar",
+            "hide": "Ocultar"
+          },
+          "passengers": "Pasajeros"
+        },
+        "noData": {
+          "title": "Sin Datos de CRM",
+          "message": "No se pueden cargar los datos de CRM en este momento."
+        }
       }
     },
     "customer": {
@@ -462,7 +496,33 @@
       },
       "catalog": {
         "title": "Catálogo de Vuelos",
-        "subtitle": "Explora y gestiona todos los vuelos en el sistema"
+        "subtitle": "Explora y gestiona todos los vuelos en el sistema",
+        "filters": {
+          "from": "Desde",
+          "to": "Hasta",
+          "date": "Fecha",
+          "passengers": "Pasajeros",
+          "max": "máx",
+          "cities": "ciudades",
+          "selectDepartureCity": "Seleccionar ciudad de salida...",
+          "selectDestinationCity": "Seleccionar ciudad de destino...",
+          "selectDepartureDate": "Seleccionar fecha de salida...",
+          "numberOfPassengers": "Número de pasajeros",
+          "passenger": "pasajero",
+          "passengersPlural": "pasajeros",
+          "clearAll": "Limpiar todo",
+          "activeFilters": {
+            "from": "Desde",
+            "to": "Hasta"
+          },
+          "sort": {
+            "label": "Ordenar por",
+            "priceLow": "Precio: Menor a Mayor",
+            "priceHigh": "Precio: Mayor a Menor",
+            "departure": "Hora de Salida",
+            "duration": "Duración del Vuelo"
+          }
+        }
       },
       "approvals": {
         "title": "Aprobaciones de Vuelos",
@@ -1063,6 +1123,10 @@
     "refresh": "Actualizar notificaciones",
     "noNotificationsToView": "No hay notificaciones para ver",
     "types": {
+      "general": {
+        "title": "Notificación",
+        "message": "Tienes una nueva notificación"
+      },
       "flight_approved": {
         "title": "Vuelo Aprobado",
         "message": "Tu vuelo ha sido aprobado y está listo para reservas"
@@ -1086,7 +1150,76 @@
       "payment_received": {
         "title": "Pago Recibido",
         "message": "Hemos recibido tu pago exitosamente"
+      },
+      "operator_registered": {
+        "title": "Nuevo Registro de Operador",
+        "message": "Un nuevo operador se ha registrado en la plataforma"
       }
+    }
+  },
+  "profile": {
+    "title": "Configuración de Perfil",
+    "subtitle": "Administra la información y preferencias de tu cuenta",
+    "loading": "Cargando perfil...",
+    "messages": {
+      "saved": "✓ Guardado",
+      "updateSuccess": "¡Perfil actualizado exitosamente!",
+      "updateFailed": "Error al actualizar el perfil",
+      "deleteConfirmation": "Por favor escribe DELETE para confirmar la eliminación de la cuenta",
+      "deleteSuccess": "Cuenta eliminada exitosamente. Redirigiendo...",
+      "deleteFailed": "Error al eliminar la cuenta",
+      "deleteError": "Error al eliminar la cuenta. Por favor intenta nuevamente."
+    },
+    "personalInfo": {
+      "title": "Información Personal",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo Electrónico",
+      "phone": "Número de Teléfono",
+      "address": "Dirección",
+      "addressPlaceholder": "Ingresa tu dirección"
+    },
+    "companyInfo": {
+      "title": "Información de la Empresa",
+      "companyName": "Nombre de la Empresa",
+      "operatorId": "ID del Operador",
+      "companyAddress": "Dirección de la Empresa",
+      "companyAddressPlaceholder": "Ingresa la dirección de la empresa"
+    },
+    "notifications": {
+      "title": "Preferencias de Notificaciones",
+      "subtitle": "Elige cómo te gustaría recibir actualizaciones sobre tus reservas y cuenta.",
+      "email": {
+        "label": "Notificaciones por Correo",
+        "description": "Recibe confirmaciones de reservas, actualizaciones de vuelos e información importante de la cuenta"
+      },
+      "sms": {
+        "label": "Notificaciones por SMS",
+        "description": "Recibe alertas de texto para cambios de vuelo urgentes y recordatorios"
+      },
+      "marketing": {
+        "label": "Comunicaciones de Marketing",
+        "description": "Recibe ofertas promocionales, ofertas de vuelos y noticias sobre nuestros servicios"
+      }
+    },
+    "security": {
+      "title": "Seguridad y Cuenta",
+      "currentPassword": "Contraseña Actual",
+      "currentPasswordPlaceholder": "Ingresa la contraseña actual",
+      "newPassword": "Nueva Contraseña",
+      "newPasswordPlaceholder": "Ingresa la nueva contraseña",
+      "confirmPassword": "Confirmar Nueva Contraseña",
+      "confirmPasswordPlaceholder": "Confirma la nueva contraseña"
+    },
+    "deleteAccount": {
+      "button": "Eliminar Cuenta",
+      "confirmPrompt": "Escribe",
+      "confirmWord": "DELETE",
+      "confirmLabel": "para confirmar:",
+      "confirmPlaceholder": "DELETE",
+      "confirmButton": "Eliminar Cuenta Permanentemente",
+      "deleting": "Eliminando...",
+      "cancel": "Cancelar"
     }
   }
 }
