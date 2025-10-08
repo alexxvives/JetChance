@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FreeFlightMap from './FreeFlightMap';
 import { useTranslation } from '../contexts/TranslationContext';
@@ -21,12 +21,26 @@ const formatCOP = (amount) => {
   return `$${formatted}`;
 };
 
-export default function FlightDetailsOption1({ flight, onBack, selectedPassengers, setSelectedPassengers }) {
+export default function FlightDetailsOption1({ flight, onBack, selectedPassengers: propSelectedPassengers, setSelectedPassengers: propSetSelectedPassengers }) {
   const { t, currentLanguage } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Use internal state if props are not provided
+  const [internalSelectedPassengers, setInternalSelectedPassengers] = useState(1);
+  const selectedPassengers = propSelectedPassengers !== undefined ? propSelectedPassengers : internalSelectedPassengers;
+  const setSelectedPassengers = propSetSelectedPassengers || setInternalSelectedPassengers;
+  
+  // Update selectedPassengers when flight changes (only if using internal state)
+  useEffect(() => {
+    if (flight && propSelectedPassengers === undefined) {
+      const maxPass = flight.max_passengers || flight.capacity?.maxPassengers || 8;
+      const availSeats = flight.available_seats ?? flight.seats_available ?? flight.capacity?.availableSeats ?? maxPass;
+      setInternalSelectedPassengers(Math.min(availSeats, maxPass) || 1);
+    }
+  }, [flight, propSelectedPassengers]);
 
   if (!flight) {
     return (
