@@ -46,7 +46,7 @@ function ActualOperatorDashboard({ user }) {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, flightId: null, flightRoute: '' });
   const [isUpcomingFlightsCollapsed, setIsUpcomingFlightsCollapsed] = useState(false);
-  const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(false);
+  const [isPastFlightsCollapsed, setIsPastFlightsCollapsed] = useState(true);
   const [selectedFlight, setSelectedFlight] = useState(null); // For inline flight detail view
   const [selectedPassengers, setSelectedPassengers] = useState(1); // For passenger selector in flight details
   

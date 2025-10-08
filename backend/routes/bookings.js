@@ -450,8 +450,10 @@ router.get('/crm', authenticate, authorize(['super-admin']), async (req, res) =>
       return sum + (booking.status === 'confirmed' ? booking.totalPrice : 0);
     }, 0);
 
-    const platformCommission = totalRevenue * 0.10; // 10% commission
-    const operatorRevenue = totalRevenue - platformCommission;
+    // Calculate platform commission (30% already included in prices)
+    // Total price = Base price * 1.3, so commission = Total - (Total / 1.3)
+    const platformCommission = totalRevenue - (totalRevenue / 1.3);
+    const operatorRevenue = totalRevenue / 1.3;
 
     console.log(`✅ CRM: Found ${bookingsWithPassengers.length} bookings`);
 
@@ -513,8 +515,11 @@ router.get('/:id/flight', authenticate, async (req, res) => {
 
     const booking = result.rows[0];
 
-    // Check if the current user is the operator for this flight
-    if (booking.operator_user_id !== req.user.id) {
+    // Check if the current user is the operator for this flight or a super admin
+    const isSuperAdmin = req.user.role === 'super-admin';
+    const isOperator = booking.operator_user_id === req.user.id;
+    
+    if (!isSuperAdmin && !isOperator) {
       return res.status(403).json({
         error: 'Access denied. You can only view flights for your own bookings.'
       });

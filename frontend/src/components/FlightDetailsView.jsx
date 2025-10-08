@@ -21,7 +21,13 @@ const formatCOP = (amount) => {
   return `$${formatted}`;
 };
 
-export default function FlightDetailsOption1({ flight, onBack, selectedPassengers: propSelectedPassengers, setSelectedPassengers: propSetSelectedPassengers }) {
+export default function FlightDetailsOption1({ 
+  flight, 
+  onBack, 
+  selectedPassengers: propSelectedPassengers, 
+  setSelectedPassengers: propSetSelectedPassengers,
+  backButtonText // Optional custom text for back button
+}) {
   const { t, currentLanguage } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -139,7 +145,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Flights
+          {backButtonText || t('flightDetails.backToFlights')}
         </button>
       </div>
 
@@ -159,7 +165,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
         {/* Savings Badge */}
         {savingsPercent > 0 && (
           <div className="absolute top-6 left-6 bg-green-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg">
-            Save {savingsPercent}% on this flight
+            {currentLanguage === 'es' ? `Ahorra ${savingsPercent}% en este vuelo` : `Save ${savingsPercent}% on this flight`}
           </div>
         )}
         
@@ -180,16 +186,11 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              <span>
-                {flight.departure_time ? new Date(flight.departure_time).toLocaleTimeString(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                }) : '12:15 PM'}
-              </span>
+              <span>{flight.flight_time || '15 minutos'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              <span>{availableSeats} seats available</span>
+              <span>{availableSeats} {t('flightDetails.seatsAvailable')}</span>
             </div>
           </div>
         </div>
@@ -257,7 +258,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
             {/* Duration badge */}
             <div className="flex items-center gap-2 text-blue-600 bg-white px-4 py-2 rounded-full whitespace-nowrap shadow-sm border border-blue-200 mb-1">
               <Clock className="w-4 h-4" />
-              <span className="text-sm font-medium">{flight.flight_time || '336h 15m'} flight time</span>
+              <span className="text-sm font-medium">{flight.flight_time || '15 minutos'}</span>
             </div>
             {/* Long horizontal dashed line with plane icon positioned closer to departure */}
             <div className="relative w-full flex items-center">
@@ -313,32 +314,32 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
 
           {/* What's Included */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">What's Included</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('flightDetails.whatsIncluded')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Spacious cabin with luxury seating</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.spaciousCabin')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">In-flight entertainment system</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.entertainment')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Gourmet catering available</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.gourmetCatering')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">High-speed WiFi</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.highSpeedWifi')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Private cabin attendant</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.privateCabinAttendant')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Complimentary beverages</span>
+                <span className="text-sm text-gray-700">{t('flightDetails.complimentaryBeverages')}</span>
               </div>
             </div>
           </div>
@@ -351,8 +352,8 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-1">Secure Booking</h3>
-              <p className="text-xs text-gray-600">SSL encrypted</p>
+              <h3 className="font-semibold text-sm text-gray-900 mb-1">{t('flightDetails.secureBooking')}</h3>
+              <p className="text-xs text-gray-600">{t('flightDetails.sslEncrypted')}</p>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -360,8 +361,8 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-1">Certified Operators</h3>
-              <p className="text-xs text-gray-600">Fully licensed</p>
+              <h3 className="font-semibold text-sm text-gray-900 mb-1">{t('flightDetails.certifiedOperators')}</h3>
+              <p className="text-xs text-gray-600">{t('flightDetails.fullyLicensed')}</p>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -369,8 +370,8 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-1">24/7 Support</h3>
-              <p className="text-xs text-gray-600">Always available</p>
+              <h3 className="font-semibold text-sm text-gray-900 mb-1">{t('flightDetails.customerSupport')}</h3>
+              <p className="text-xs text-gray-600">{t('flightDetails.alwaysAvailable')}</p>
             </div>
           </div>
 
@@ -384,21 +385,21 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <div className="mb-6">
-              <div className="text-sm text-gray-600 mb-2">Price per seat</div>
+              <div className="text-sm text-gray-600 mb-2">{t('flightDetails.pricePerSeat')}</div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-gray-900">{formatCOP(pricePerSeat)}</span>
                 <span className="text-lg text-gray-500">COP</span>
               </div>
               {savingsPercent > 0 && (
                 <div className="mt-2 inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                  <span>💰 Save {savingsPercent}%</span>
+                  <span>{t('flightDetails.save')} {savingsPercent}%</span>
                 </div>
               )}
             </div>
 
             <div className="border-t border-gray-200 pt-6 mb-6">
               <label className="block text-sm font-semibold text-gray-900 mb-3">
-                Number of seats
+                {t('flightDetails.numberOfSeats')}
               </label>
               <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-2">
                 <button
@@ -410,7 +411,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                 </button>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-gray-900">{selectedPassengers}</div>
-                  <div className="text-xs text-gray-500">of {availableSeats} available</div>
+                  <div className="text-xs text-gray-500">{t('flightDetails.of')} {availableSeats} {t('flightDetails.available')}</div>
                 </div>
                 <button
                   onClick={() => setSelectedPassengers(Math.min(availableSeats, selectedPassengers + 1))}
@@ -428,7 +429,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
                   <p className="text-xs text-blue-800">
-                    <span className="font-semibold">Shared Flight:</span> This jet already has bookings. You'll likely be sharing the flight with other passengers.
+                    <span className="font-semibold">{t('flightDetails.sharedFlightInfo')}</span> {t('flightDetails.sharedFlightDescription')}
                   </p>
                 </div>
               )}
@@ -440,7 +441,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                   <p className="text-xs text-amber-800">
-                    <span className="font-semibold">Note:</span> You may share the jet with other passengers if you don't book all {availableSeats} seats.
+                    <span className="font-semibold">{t('flightDetails.noteLabel')}</span> {currentLanguage === 'es' ? `Puedes compartir el jet con otros pasajeros si no reservas todos los ${availableSeats} asientos.` : `You may share the jet with other passengers if you don't book all ${availableSeats} seats.`}
                   </p>
                 </div>
               )}
@@ -452,7 +453,7 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <p className="text-xs text-green-800">
-                    <span className="font-semibold">Fully Private:</span> By booking all {availableSeats} seats this jet will be exclusively yours!
+                    <span className="font-semibold">{t('flightDetails.fullyPrivateLabel')}</span> {currentLanguage === 'es' ? `¡Al reservar todos los ${availableSeats} asientos, este jet será exclusivamente tuyo!` : `By booking all ${availableSeats} seats this jet will be exclusively yours!`}
                   </p>
                 </div>
               )}
@@ -460,12 +461,12 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
 
             {/* Flight Information Summary */}
             <div className="bg-blue-50 rounded-xl p-4 mb-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Flight Information</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">{t('flightDetails.flightInformation')}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    Date
+                    {t('flightDetails.date')}
                   </span>
                   <span className="font-medium text-gray-900">
                     {flight.departure_time ? new Date(flight.departure_time).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US', {
@@ -478,14 +479,14 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    Duration
+                    {t('flightDetails.duration')}
                   </span>
                   <span className="font-medium text-gray-900">{flight.flight_time || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 flex items-center gap-2">
                     <Plane className="w-4 h-4" />
-                    Aircraft
+                    {t('flightDetails.aircraft')}
                   </span>
                   <span className="font-medium text-gray-900">{flight.aircraft_model || flight.aircraft_name || 'Private Jet'}</span>
                 </div>
@@ -494,15 +495,15 @@ export default function FlightDetailsOption1({ flight, onBack, selectedPassenger
 
             <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Subtotal</span>
+                <span className="text-gray-600">{t('flightDetails.subtotal')}</span>
                 <span className="font-semibold text-gray-900">{formatCOP(totalPrice)} COP</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Service fee</span>
-                <span className="font-semibold text-gray-900">Included</span>
+                <span className="text-gray-600">{t('flightDetails.serviceFee')}</span>
+                <span className="font-semibold text-gray-900">{t('flightDetails.included')}</span>
               </div>
               <div className="border-t border-gray-200 pt-3 flex items-center justify-between">
-                <span className="font-semibold text-gray-900">Total</span>
+                <span className="font-semibold text-gray-900">{t('flightDetails.total')}</span>
                 <span className="text-2xl font-bold text-gray-900">{formatCOP(totalPrice)} COP</span>
               </div>
             </div>

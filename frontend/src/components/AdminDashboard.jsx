@@ -86,18 +86,20 @@ export default function AdminDashboard({ user }) {
   // Flight details view state
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedPassengers, setSelectedPassengers] = useState(1);
+  const [previousTab, setPreviousTab] = useState('catalog'); // Track where we came from
 
   // Handler for when a flight card is clicked
   const handleFlightClick = (flight) => {
     console.log('🎯 Admin handleFlightClick called with:', flight);
+    setPreviousTab(activeTab); // Remember current tab before switching
     setSelectedFlight(flight);
     setActiveTab('flight-details');
   };
 
-  // Handler for returning to catalog
+  // Handler for returning to previous view
   const handleBackToFlights = () => {
     setSelectedFlight(null);
-    setActiveTab('catalog');
+    setActiveTab(previousTab); // Go back to where we came from
   };
 
   // Set selectedPassengers to available seats when flight is selected
@@ -877,7 +879,22 @@ export default function AdminDashboard({ user }) {
       if (response.ok) {
         const data = await response.json();
         if (data.flightId) {
-          navigate(`/flight/${data.flightId}`);
+          // Fetch the full flight details
+          const flightResponse = await fetch(`/api/flights/${data.flightId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (flightResponse.ok) {
+            const flightData = await flightResponse.json();
+            setPreviousTab(activeTab); // Remember current tab (crm) before switching
+            setSelectedFlight(flightData);
+            setActiveTab('flight-details');
+          } else {
+            console.error('Failed to fetch full flight details');
+            alert('Unable to load flight details.');
+          }
         } else {
           console.error('Flight ID not found for booking:', bookingId);
           alert('Flight details not available for this booking.');
@@ -1374,6 +1391,7 @@ export default function AdminDashboard({ user }) {
                 onBack={handleBackToFlights}
                 selectedPassengers={selectedPassengers}
                 setSelectedPassengers={setSelectedPassengers}
+                backButtonText={previousTab === 'crm' ? t('flightDetails.backToCRM') : t('flightDetails.backToFlights')}
               />
             </div>
           )}
@@ -1967,7 +1985,7 @@ export default function AdminDashboard({ user }) {
                   <div>
                     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                       <div className="px-6 py-4 border-b border-gray-200">
-                        <h3 className="text-lg font-medium text-gray-900">All Reservations ({crmData.bookings.length})</h3>
+                        <h3 className="text-lg font-medium text-gray-900">{t('dashboard.customer.myBookings.allReservations')} ({crmData.bookings.length})</h3>
                       </div>
                       <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
@@ -2040,7 +2058,7 @@ export default function AdminDashboard({ user }) {
                                     {((booking.flight?.totalSeats || 0) - (booking.flight?.availableSeats || 0))}/{booking.flight?.totalSeats || 0}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
                                   <div className="text-sm font-bold text-green-600">
                                     {formatCOPWithStyling(booking.totalPrice).number}
                                   </div>
