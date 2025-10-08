@@ -3,7 +3,7 @@ import FlightCard from './FlightCard';
 import { flightsAPI, shouldUseRealAPI } from './api/flightsAPI';
 import { useTranslation } from './contexts/TranslationContext';
 
-export default function FlightList({ filters = {}, isAdminView = false, onDeleteFlight }) {
+export default function FlightList({ filters = {}, isAdminView = false, onDeleteFlight, onFlightClick }) {
   const { t } = useTranslation();
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +118,7 @@ export default function FlightList({ filters = {}, isAdminView = false, onDelete
           flight={flight} 
           isAdminView={isAdminView}
           onDelete={onDeleteFlight}
+          onViewDetails={onFlightClick}
         />
       ))}
       {filteredFlights.length === 0 && flightsArray.length === 0 && (

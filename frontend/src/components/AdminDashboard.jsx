@@ -11,6 +11,7 @@ import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
 import CustomCalendar from './CustomCalendar';
 import AirportService from '../services/AirportService';
+import FlightDetailsView from './FlightDetailsView';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { extractAirportCode } from '../utils/airportUtils';
@@ -81,6 +82,37 @@ export default function AdminDashboard({ user }) {
   const [crmData, setCrmData] = useState(null);
   const [crmLoading, setCrmLoading] = useState(false);
   const [expandedBookings, setExpandedBookings] = useState(new Set());
+
+  // Flight details view state
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [selectedPassengers, setSelectedPassengers] = useState(1);
+
+  // Handler for when a flight card is clicked
+  const handleFlightClick = (flight) => {
+    console.log('🎯 Admin handleFlightClick called with:', flight);
+    setSelectedFlight(flight);
+    setActiveTab('flight-details');
+  };
+
+  // Handler for returning to catalog
+  const handleBackToFlights = () => {
+    setSelectedFlight(null);
+    setActiveTab('catalog');
+  };
+
+  // Set selectedPassengers to available seats when flight is selected
+  useEffect(() => {
+    if (!selectedFlight) {
+      return;
+    }
+
+    const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+    const initialSeats = selectedFlight.available_seats ?? selectedFlight.seats_available ?? selectedFlight.capacity?.availableSeats ?? maxPassengers;
+
+    if (initialSeats !== undefined && initialSeats !== null) {
+      setSelectedPassengers(initialSeats > 0 ? initialSeats : 0);
+    }
+  }, [selectedFlight]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -1329,9 +1361,21 @@ export default function AdminDashboard({ user }) {
                   filters={filters} 
                   isAdminView={true} 
                   onDeleteFlight={handleDeleteFlight}
+                  onFlightClick={handleFlightClick}
                 />
               </div>
             </ErrorBoundary>
+          )}
+
+          {activeTab === 'flight-details' && selectedFlight && (
+            <div className="p-6">
+              <FlightDetailsView 
+                flight={selectedFlight} 
+                onBack={handleBackToFlights}
+                selectedPassengers={selectedPassengers}
+                setSelectedPassengers={setSelectedPassengers}
+              />
+            </div>
           )}
 
           {activeTab === 'approvals' && (

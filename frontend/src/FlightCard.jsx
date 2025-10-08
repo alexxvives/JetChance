@@ -90,7 +90,7 @@ const getDefaultAircraftImage = (aircraftType) => {
   return 'https://img.icons8.com/ios-filled/400/airplane-mode-on.png';
 };
 
-export default function FlightCard({ flight, isAdminView = false, onDelete }) {
+export default function FlightCard({ flight, isAdminView = false, onDelete, onViewDetails }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -127,7 +127,13 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
   const seatsAvailable = flight.capacity?.availableSeats || flight.seats_available || flight.available_seats || 0;
 
   const handleViewDetails = () => {
-    navigate(`/flight/${flight.id}`);
+    if (onViewDetails) {
+      // Use callback if provided (for dashboard view) - pass full flight object
+      onViewDetails(flight);
+    } else {
+      // Otherwise navigate to separate page
+      navigate(`/flight/${flight.id}`);
+    }
   };
 
   const handleDeleteFlight = async () => {
@@ -141,26 +147,47 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
       <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-100">
         {/* Aircraft Image */}
         <div className="relative h-48 overflow-hidden">
-          {(flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image) ? (
-            // Use provided aircraft image
-            <>
-              <img 
-                src={flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image}
-                alt={fullAircraftName}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // If custom image fails, fall back to animated plane scene
-                  e.target.style.display = 'none';
-                  const fallbackDiv = e.target.parentElement.querySelector('.fallback-scene');
-                  if (fallbackDiv) {
-                    fallbackDiv.style.display = 'flex';
-                  }
-                }}
-              />
-              {/* Hidden fallback scene */}
-              <div className="fallback-scene hidden w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 items-center justify-center relative overflow-hidden">
+            {(flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image) ? (
+              // Use provided aircraft image
+              <>
+                <img 
+                  src={flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image}
+                  alt={fullAircraftName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // If custom image fails, fall back to animated plane scene
+                    e.target.style.display = 'none';
+                    const fallbackDiv = e.target.parentElement.querySelector('.fallback-scene');
+                    if (fallbackDiv) {
+                      fallbackDiv.style.display = 'flex';
+                    }
+                  }}
+                />
+                {/* Hidden fallback scene */}
+                <div className="fallback-scene hidden w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 items-center justify-center relative overflow-hidden">
+                  <div className="animate-bounce" style={{animationDuration: '3s'}}>
+                    <svg className="w-24 h-24 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                  </div>
+                  {/* Animated clouds */}
+                  <div className="absolute top-4 left-0 animate-pulse opacity-30" style={{animationDuration: '4s'}}>
+                    <svg className="w-16 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                  </div>
+                  <div className="absolute top-8 right-4 animate-pulse opacity-20" style={{animationDelay: '2s', animationDuration: '5s'}}>
+                    <svg className="w-12 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                  </div>
+                </div>
+              </>
+            ) : (
+              // No custom image provided - use animated plane scene with SVG
+              <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center relative overflow-hidden">
                 <div className="animate-bounce" style={{animationDuration: '3s'}}>
-                  <svg className="w-24 h-24 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-24 h-24 text-blue-600 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
                   </svg>
                 </div>
@@ -176,28 +203,7 @@ export default function FlightCard({ flight, isAdminView = false, onDelete }) {
                   </svg>
                 </div>
               </div>
-            </>
-          ) : (
-            // No custom image provided - use animated plane scene with SVG
-            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center relative overflow-hidden">
-              <div className="animate-bounce" style={{animationDuration: '3s'}}>
-                <svg className="w-24 h-24 text-blue-600 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                </svg>
-              </div>
-              {/* Animated clouds */}
-              <div className="absolute top-4 left-0 animate-pulse opacity-30" style={{animationDuration: '4s'}}>
-                <svg className="w-16 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-                </svg>
-              </div>
-              <div className="absolute top-8 right-4 animate-pulse opacity-20" style={{animationDelay: '2s', animationDuration: '5s'}}>
-                <svg className="w-12 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-                </svg>
-              </div>
-            </div>
-          )}
+            )}
 
           <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm z-10">
             {fullAircraftName}

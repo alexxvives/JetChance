@@ -8,6 +8,8 @@ import FlightList from '../FlightList';
 import CustomerBookings from './CustomerBookings';
 import RegularJetRequestModal from './RegularJetRequestModal';
 import Profile from './Profile';
+import FlightDetailsView from './FlightDetailsView';
+
 import { 
   Plane, 
   BookOpen, 
@@ -27,6 +29,8 @@ export default function CustomerDashboard({ user }) {
   const [showRegularJetModal, setShowRegularJetModal] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState(null); // Store full flight object
+  const [selectedPassengers, setSelectedPassengers] = useState(1); // For passenger selector
   const [filters, setFilters] = useState({
     origin: '',
     destination: '',
@@ -132,6 +136,29 @@ export default function CustomerDashboard({ user }) {
     logout();
     navigate('/login');
   };
+
+  const handleFlightClick = (flight) => {
+    console.log('🎯 handleFlightClick called with:', flight);
+    setSelectedFlight(flight);
+  };
+
+  const handleBackToFlights = () => {
+    setSelectedFlight(null);
+  };
+
+  // Set selectedPassengers to available seats when flight is selected
+  useEffect(() => {
+    if (!selectedFlight) {
+      return;
+    }
+
+    const maxPassengers = selectedFlight.max_passengers || selectedFlight.total_seats || 8;
+    const initialSeats = selectedFlight.available_seats ?? selectedFlight.seats_available ?? selectedFlight.capacity?.availableSeats ?? maxPassengers;
+
+    if (initialSeats !== undefined && initialSeats !== null) {
+      setSelectedPassengers(initialSeats > 0 ? initialSeats : 0);
+    }
+  }, [selectedFlight]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -273,11 +300,24 @@ export default function CustomerDashboard({ user }) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto p-6">
-          {activeTab === 'flights' && (
-            <div>
-              {/* Custom Flight Request Banner */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 mb-6 text-white">
+        <div className="flex-1 overflow-y-auto">
+          {/* Show inline flight details if a flight is selected */}
+          {selectedFlight ? (
+            <div className="p-6">
+              <FlightDetailsView 
+                flight={selectedFlight} 
+                onBack={handleBackToFlights}
+                selectedPassengers={selectedPassengers}
+                setSelectedPassengers={setSelectedPassengers}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Show tab content when no flight is selected */}
+              {activeTab === 'flights' && (
+                <div className="p-6">
+                  {/* Custom Flight Request Banner */}
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 mb-6 text-white">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold mb-2">
@@ -470,25 +510,31 @@ export default function CustomerDashboard({ user }) {
                 
                 {/* Flight List Section */}
                 <div className="px-6 py-6">
-                  <FlightList filters={filters} />
+                  <FlightList filters={filters} onFlightClick={handleFlightClick} />
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'bookings' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.customer.myBookings.title') || 'My Bookings'}</h2>
-                <p className="text-gray-600">{t('dashboard.customer.myBookings.subtitle') || 'Manage your flight reservations'}</p>
+            <div className="p-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.customer.myBookings.title') || 'My Bookings'}</h2>
+                  <p className="text-gray-600">{t('dashboard.customer.myBookings.subtitle') || 'Manage your flight reservations'}</p>
+                </div>
+                
+                <CustomerBookings />
               </div>
-              
-              <CustomerBookings />
             </div>
           )}
 
           {activeTab === 'profile' && (
-            <Profile />
+            <div className="p-6">
+              <Profile />
+            </div>
+          )}
+            </>
           )}
         </div>
       </div>

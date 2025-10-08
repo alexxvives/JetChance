@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -40,10 +40,36 @@ const destinationIcon = new L.Icon({
 });
 
 export default function FreeFlightMap({ flight, onCoordinateStatus }) {
+  const [airportsData, setAirportsData] = useState({});
+  
+  // Fetch airport data from API
+  useEffect(() => {
+    const fetchAirportData = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+        const response = await fetch(`${apiUrl}/airports`);
+        const airports = await response.json();
+        
+        // Create a map of airport code -> airport data
+        const airportsMap = {};
+        airports.forEach(airport => {
+          airportsMap[airport.code] = airport;
+        });
+        
+        setAirportsData(airportsMap);
+      } catch (error) {
+        console.error('Failed to fetch airport data:', error);
+      }
+    };
+    
+    fetchAirportData();
+  }, []);
+  
   console.log('🗺️ Flight data for map:', flight);
   console.log('🗺️ Flight keys:', Object.keys(flight || {}));
   console.log('🗺️ Origin code:', flight.origin_code);
   console.log('🗺️ Destination code:', flight.destination_code);
+  console.log('🗺️ Airports data:', airportsData);
   
   // Airport coordinates lookup (we'll expand this with more airports)
   const airportCoordinates = {
@@ -59,7 +85,11 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
     'SEA': { lat: 47.4502, lng: -122.3088, name: 'Seattle-Tacoma International' },
     'BOG': { lat: 4.7016, lng: -74.1469, name: 'El Dorado International Airport' },
     'MEX': { lat: 19.4363, lng: -99.0721, name: 'Mexico City International Airport' },
-    'BAQ': { lat: 10.8896, lng: -74.7808, name: 'Ernesto Cortissoz International Airport' }
+    'BAQ': { lat: 10.8896, lng: -74.7808, name: 'Ernesto Cortissoz International Airport' },
+    'EYP': { lat: -3.6206, lng: -80.3819, name: 'Coronel E Carvajal Airport' },
+    'ACA': { lat: 16.7571, lng: -99.7540, name: 'General Juan N. Álvarez International Airport' },
+    'AGU': { lat: 21.7056, lng: -102.3178, name: 'Aguascalientes International Airport' },
+    'TES9': { lat: 18.4397, lng: -97.4086, name: 'Córdoba Airport' }
   };
 
   // City coordinates for fallback when airport coordinates aren't available
@@ -103,122 +133,46 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
     // Add more cities as needed
   };
 
-  // Get coordinates from airport codes or airport objects with city fallback
+  // Get coordinates from airport codes with database lookup first
   const getCoordinates = (code, airportObj) => {
     if (!code) return null;
     
-    // Determine if airport is approved (exact coords) or pending (city fallback coords)
-    let airportStatus = null;
-    if (flight.origin_code === code && flight.origin_status) {
-      airportStatus = flight.origin_status;
-    } else if (flight.destination_code === code && flight.destination_status) {
-      airportStatus = flight.destination_status;
-    }
+    const upperCode = code.toUpperCase();
     
-    // First priority: Check if flight data includes coordinates from database
-    if (flight.origin_code === code && flight.origin_latitude && flight.origin_longitude) {
-      const isApproved = flight.origin_status === 'approved';
-      console.log(`🛫 Using database coordinates for origin ${code}:`, { 
-        lat: flight.origin_latitude, 
-        lng: flight.origin_longitude,
-        status: flight.origin_status,
+    // FIRST PRIORITY: Check fetched airport data from database
+    // This includes all approved airports from the API
+    if (airportsData[upperCode]) {
+      const airport = airportsData[upperCode];
+      const isApproved = airport.status === 'approved';
+      console.log(`✅ Using database coordinates for ${upperCode}:`, { 
+        lat: airport.latitude, 
+        lng: airport.longitude,
+        status: airport.status,
         isExact: isApproved
       });
       return {
-        lat: flight.origin_latitude,
-        lng: flight.origin_longitude,
-        name: flight.origin_name || `${code} Airport`,
-        isExact: isApproved,
-        cityName: !isApproved ? flight.origin_city : null
+        lat: parseFloat(airport.latitude),
+        lng: parseFloat(airport.longitude),
+        name: airport.name || `${upperCode} Airport`,
+        isExact: isApproved, // Only exact if approved
+        cityName: !isApproved ? (flight.origin_code === code ? flight.origin_city : flight.destination_city) : null
       };
     }
     
-    if (flight.destination_code === code && flight.destination_latitude && flight.destination_longitude) {
-      const isApproved = flight.destination_status === 'approved';
-      console.log(`🛫 Using database coordinates for destination ${code}:`, { 
-        lat: flight.destination_latitude, 
-        lng: flight.destination_longitude,
-        status: flight.destination_status,
-        isExact: isApproved
-      });
-      return {
-        lat: flight.destination_latitude,
-        lng: flight.destination_longitude,
-        name: flight.destination_name || `${code} Airport`,
-        isExact: isApproved,
-        cityName: !isApproved ? flight.destination_city : null
-      };
-    }
-    
-    // Second priority: Check if we have airport object with coordinates (for custom airports)
-    if (airportObj && airportObj.latitude && airportObj.longitude) {
-      console.log(`🛫 Using coordinates from airport object for ${code}:`, { lat: airportObj.latitude, lng: airportObj.longitude });
-      return {
-        lat: airportObj.latitude,
-        lng: airportObj.longitude,
-        name: airportObj.name || `${code} Airport`,
-        isExact: true
-      };
-    }
-    
-    // Third priority: Check hardcoded airport coordinates (fallback for legacy data)
-    const airportCoords = airportCoordinates[code.toUpperCase()];
-    if (airportCoords) {
-      console.log(`🛫 Using fallback airport coordinates for ${code}:`, airportCoords);
-      return { ...airportCoords, isExact: true };
-    }
-    
-    // Fourth priority: Use city coordinates from flight data
+    // SECOND PRIORITY: Fallback to hardcoded city coordinates (always approximate)
     const cityName = (flight.origin_code === code ? flight.origin_city : flight.destination_city);
     if (cityName) {
       const cityKey = cityName.toUpperCase().trim();
       const cityCoords = cityCoordinates[cityKey];
       if (cityCoords) {
-        console.log(`🏙️ Using city coordinates from flight data for ${cityName}:`, cityCoords);
+        console.log(`🏙️ Using hardcoded city coordinates for ${cityName}:`, cityCoords);
         return {
           lat: cityCoords.lat,
           lng: cityCoords.lng,
           name: `${cityName} (City Center)`,
-          isExact: false,
+          isExact: false, // City coordinates are never exact
           cityName: cityName
         };
-      }
-    }
-    
-    // Fifth priority: Fallback to city coordinates if airport object has a city
-    if (airportObj && airportObj.city) {
-      const cityKey = airportObj.city.toUpperCase().trim();
-      const cityCoords = cityCoordinates[cityKey];
-      if (cityCoords) {
-        console.log(`🏙️ Using city coordinates for ${airportObj.city}:`, cityCoords);
-        return {
-          lat: cityCoords.lat,
-          lng: cityCoords.lng,
-          name: `${airportObj.city} (City Center)`,
-          isExact: false,
-          cityName: airportObj.city
-        };
-      }
-    }
-    
-    // Last resort: try to match city name from the code or name
-    const searchTerms = [code.toUpperCase()];
-    if (airportObj?.name) {
-      searchTerms.push(airportObj.name.toUpperCase());
-    }
-    
-    for (const term of searchTerms) {
-      for (const [cityName, coords] of Object.entries(cityCoordinates)) {
-        if (term.includes(cityName) || cityName.includes(term)) {
-          console.log(`🏙️ Using city coordinates from search match ${cityName}:`, coords);
-          return {
-            lat: coords.lat,
-            lng: coords.lng,
-            name: `${cityName} (City Center)`,
-            isExact: false,
-            cityName: cityName
-          };
-        }
       }
     }
     
@@ -314,7 +268,7 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
         </div>
       )}
       
-      <div className="h-96 w-full rounded-lg overflow-hidden">
+      <div className="w-full rounded-lg overflow-hidden" style={{ height: '450px' }}>
       <MapContainer
         center={center}
         zoom={4}

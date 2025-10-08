@@ -25,6 +25,9 @@ export default function FlightDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPassengers, setSelectedPassengers] = useState(1);
   const [coordinateStatus, setCoordinateStatus] = useState(null);
+  
+  // Check if we're inside a dashboard (has user context already)
+  const isInsideDashboard = !!user;
 
   useEffect(() => {
     // Find flight by ID using appropriate API
@@ -65,32 +68,40 @@ export default function FlightDetailsPage() {
   }, [flight]);
 
   if (loading) {
-    return (
-      <DashboardLayout user={user} activeTab="flights">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">{t('flightDetails.loading')}</p>
-          </div>
+    const loadingContent = (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">{t('flightDetails.loading')}</p>
         </div>
+      </div>
+    );
+    
+    return isInsideDashboard ? loadingContent : (
+      <DashboardLayout user={user} activeTab="flights">
+        {loadingContent}
       </DashboardLayout>
     );
   }
 
   if (!flight) {
-    return (
-      <DashboardLayout user={user} activeTab="flights">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xl text-gray-600">{t('flightDetails.notFound')}</p>
-            <button 
-              onClick={() => navigate('/dashboard')}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {t('flightDetails.backToDashboard')}
-            </button>
-          </div>
+    const notFoundContent = (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600">{t('flightDetails.notFound')}</p>
+          <button 
+            onClick={() => navigate(-1)}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            {t('flightDetails.backToDashboard')}
+          </button>
         </div>
+      </div>
+    );
+    
+    return isInsideDashboard ? notFoundContent : (
+      <DashboardLayout user={user} activeTab="flights">
+        {notFoundContent}
       </DashboardLayout>
     );
   }
@@ -156,18 +167,18 @@ export default function FlightDetailsPage() {
   // Check if user is an operator or admin (cannot book flights)
   const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin';
 
-  return (
-    <DashboardLayout user={user} activeTab="flights">
-      <div className="min-h-screen bg-gray-50 py-6">
-        <div className="max-w-6xl mx-auto px-6">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            {t('flightDetails.backToFlights')}
-          </button>
+  // Content component (can be rendered with or without DashboardLayout)
+  const content = (
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="w-full px-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeftIcon className="h-5 w-5 mr-2" />
+          {t('flightDetails.backToFlights')}
+        </button>
 
         {/* Flight Details */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
@@ -465,9 +476,24 @@ export default function FlightDetailsPage() {
         )}
       </div>
     </div>
+  );
+  
+  // If accessed from dashboard (user exists), render content only
+  // Otherwise wrap in DashboardLayout for standalone access
+  if (isInsideDashboard) {
+    return content;
+  }
+  
+  return (
+    <DashboardLayout user={user} activeTab="flights">
+      {content}
     </DashboardLayout>
   );
 }
+
+
+
+
 
 
 
