@@ -22,9 +22,18 @@
 		{
 			"binding": "jetchance_db",
 			"database_name": "jetchance-db",
-			"database_id": "bd813b42-7b4f-4040-9beb-6b5194e96081"
+			"database_id": "0a29738e-da3f-4970-8d96-e3224099ea50"
 		}
-	]
+	],
+	"r2_buckets": [
+		{
+			"binding": "AIRCRAFT_IMAGES",
+			"bucket_name": "jetchance-storage"
+		}
+	],
+	"triggers": {
+		"crons": ["0 2 * * *"]
+	}
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
