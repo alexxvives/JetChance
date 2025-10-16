@@ -236,7 +236,7 @@ const LuxuryLandingPage = () => {
       )}
 
       {/* 1. Hero Section */}
-      <section className="relative min-h-screen flex items-start justify-center pt-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-start justify-center pt-8 sm:pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -273,7 +273,7 @@ const LuxuryLandingPage = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-center min-h-[calc(100vh-4rem)]">
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-start sm:justify-center pt-16 sm:pt-0">
           {/* Headline */}
           <div className="mb-6 sm:mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
@@ -293,7 +293,7 @@ const LuxuryLandingPage = () => {
           </div>
 
           {/* Dual CTAs */}
-          <div className="mb-12 sm:mb-16 flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+          <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <button 
               onClick={navigateToSignup}
               className="w-full sm:max-w-xs md:w-auto px-8 py-4 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl text-base sm:text-lg font-semibold hover:bg-white/20 hover:border-white/50 transition-all duration-300 hover:scale-105 shadow-xl"
@@ -307,8 +307,9 @@ const LuxuryLandingPage = () => {
               {t('home.hero.cta.fullCharter')}
             </button>
           </div>
+
           {/* Scroll Indicator */}
-          <div className="animate-bounce absolute bottom-20 sm:bottom-16 left-1/2 transform -translate-x-1/2">
+          <div className="animate-bounce flex justify-center mt-8 sm:mt-12">
             <div className="w-6 h-10 border-2 border-white/50 rounded-full">
               <div className="w-1 h-3 bg-white/70 rounded-full mx-auto mt-2 animate-pulse"></div>
             </div>
