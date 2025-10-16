@@ -71,7 +71,7 @@ Object.keys(byCountry).sort().forEach(country => {
 sql += `-- ========================================================================\n`;
 
 // Save to workers directory
-const outputPath = path.join(__dirname, '..', 'workers', 'chancefly-api', 'airports-export.sql');
+const outputPath = path.join(__dirname, '..', 'workers', 'jetchance-api', 'airports-export.sql');
 fs.writeFileSync(outputPath, sql);
 
 console.log('✅ Export completed successfully!\n');
@@ -82,7 +82,7 @@ Object.keys(byCountry).sort().forEach(country => {
 });
 
 console.log('\n🚀 To import to Cloudflare D1, run:');
-console.log('   cd workers/chancefly-api');
+console.log('   cd workers/jetchance-api');
 console.log('   wrangler d1 execute jetchance_db --file=./airports-export.sql\n');
 
 // Show some sample airports

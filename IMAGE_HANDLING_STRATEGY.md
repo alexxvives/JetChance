@@ -24,7 +24,7 @@ return `${req.protocol}://${req.get('host')}/uploads/${cleanPath}`;
 
 ### Backend Cloudflare Workers
 ```typescript
-// workers/chancefly-api/src/handlers/flights.ts
+// workers/jetchance-api/src/handlers/flights.ts
 // Devuelve URLs de R2 directamente
 aircraft_image: 'https://pub-xxx.r2.dev/aircraft/image.webp'
 ```

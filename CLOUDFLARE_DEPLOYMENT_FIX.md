@@ -59,7 +59,7 @@ After setting the environment variable in Cloudflare Pages:
 
 ## CORS Configuration
 
-Make sure your Cloudflare Worker (`workers/chancefly-api/wrangler.jsonc`) has the correct CORS origin:
+Make sure your Cloudflare Worker (`workers/jetchance-api/wrangler.jsonc`) has the correct CORS origin:
 
 ```json
 "vars": {
