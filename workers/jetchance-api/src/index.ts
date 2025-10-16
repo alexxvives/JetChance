@@ -11,6 +11,7 @@ import { handleBookings } from './handlers/bookings';
 import { handleUsers } from './handlers/users';
 import { handleOperators } from './handlers/operators';
 import { handlePayments } from './handlers/payments';
+import { handleAirports } from './handlers/airports';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -82,6 +83,22 @@ export default {
 					});
 				}
 				return handlePayments(request, env, path.replace('/api/payments', ''), authResult.user);
+			}
+
+			if (path.startsWith('/api/airports/')) {
+				// Admin routes require authentication
+				if (path.startsWith('/api/airports/admin/')) {
+					const authResult = await authenticate(request, env);
+					if (authResult.error) {
+						return new Response(JSON.stringify({ error: authResult.error }), {
+							status: 401,
+							headers: { 'Content-Type': 'application/json', ...corsHeaders }
+						});
+					}
+					return handleAirports(request, env, path.replace('/api/airports', ''), authResult.user);
+				}
+				// Public routes (GET approved airports, POST new airport)
+				return handleAirports(request, env, path.replace('/api/airports', ''));
 			}
 
 			// 404 handler
