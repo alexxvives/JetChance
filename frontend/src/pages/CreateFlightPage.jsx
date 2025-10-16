@@ -166,7 +166,8 @@ export default function CreateFlightPage() {
   const loadFlightData = async (flightId) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:4000/api/flights/${flightId}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE_URL}/flights/${flightId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -331,12 +332,13 @@ export default function CreateFlightPage() {
       
       // Upload new images (those without isExisting flag or from aircraftImages array)
       if (formData.aircraftImages.length > 0) {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
         for (const image of formData.aircraftImages) {
           try {
             const formDataForUpload = new FormData();
             formDataForUpload.append('aircraftImage', image);
             
-            const uploadResponse = await fetch('http://localhost:4000/api/upload/aircraft-image', {
+            const uploadResponse = await fetch(`${API_BASE_URL}/upload/aircraft-image`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -349,7 +351,7 @@ export default function CreateFlightPage() {
               // Handle both relative and absolute URLs
               const imageUrl = uploadResult.imageUrl.startsWith('http') 
                 ? uploadResult.imageUrl 
-                : `http://localhost:4000${uploadResult.imageUrl}`;
+                : `${API_BASE_URL.replace('/api', '')}${uploadResult.imageUrl}`;
               uploadedImageUrls.push(imageUrl);
               console.log('✅ Image uploaded successfully:', imageUrl);
             } else {

@@ -142,7 +142,8 @@ function ActualOperatorDashboard({ user }) {
       setIsLoading(true);
       console.log('🔄 Loading flights for operator:', user.id);
       
-      const response = await fetch(`http://localhost:4000/api/flights?user_id=${user.id}`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE_URL}/flights?user_id=${user.id}`);
       
       if (!response.ok) {
         if (response.status === 404) {

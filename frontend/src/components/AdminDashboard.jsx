@@ -592,7 +592,8 @@ export default function AdminDashboard({ user }) {
         throw new Error('No authentication token found. Please log in again.');
       }
 
-      const response = await fetch('http://localhost:4000/api/bookings/crm', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE_URL}/bookings/crm`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
