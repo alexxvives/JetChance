@@ -236,7 +236,7 @@ const LuxuryLandingPage = () => {
       )}
 
       {/* 1. Hero Section */}
-      <section className="relative min-h-[125vh] flex items-start justify-center pt-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-start justify-center pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -273,72 +273,62 @@ const LuxuryLandingPage = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-8">
-          {/* Logo */}
-          <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <img 
-              src="/images/logo/logo3.svg" 
-              alt="JetChance Logo" 
-              className="w-[403px] h-auto mx-auto block"
-            />
-          </div>
-
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-center min-h-[calc(100vh-4rem)]">
           {/* Headline */}
-          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight m-0">
-              <span className="text-white">{t('home.hero.headline.whatIf')}</span>
-              <span className="text-amber-500">{t('home.hero.headline.private')}</span>
-              <br />
-              <span className="text-white">{t('home.hero.headline.wasAccessible')}</span>
-              <span className="text-amber-500">{t('home.hero.headline.commercial')}</span>
+          <div className="mb-6 sm:mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+              <span className="text-white">{t('home.hero.headline.whatIf')}</span>{' '}
+              <span className="text-amber-400">{t('home.hero.headline.private')}</span>{' '}
+              <span className="text-white">{t('home.hero.headline.wasAccessible')}</span>{' '}
+              <span className="text-amber-400">{t('home.hero.headline.commercial')}</span>{' '}
               <span className="text-white">{t('home.hero.headline.ticket')}</span>
             </h1>
           </div>
 
           {/* Subheadline */}
-          <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <div className="mb-10 sm:mb-12 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed font-light">
               {t('home.hero.subtitle')}
             </p>
           </div>
 
           {/* Dual CTAs */}
-          <div className="mb-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+          <div className="mb-12 sm:mb-16 flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <button 
               onClick={navigateToSignup}
-              className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg text-lg font-semibold hover:bg-white/20 transition-all duration-300 hover:scale-105"
+              className="w-full sm:max-w-xs md:w-auto px-8 py-4 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl text-base sm:text-lg font-semibold hover:bg-white/20 hover:border-white/50 transition-all duration-300 hover:scale-105 shadow-xl"
             >
               {t('home.hero.cta.emptyLeg')}
             </button>
             <button 
               onClick={scrollToForm}
-              className="px-8 py-4 bg-amber-500 text-black rounded-lg text-lg font-semibold hover:bg-amber-600 transition-all duration-300 hover:scale-105 shadow-lg"
+              className="w-full sm:max-w-xs md:w-auto px-8 py-4 bg-amber-500 text-slate-900 rounded-xl text-base sm:text-lg font-semibold hover:bg-amber-400 transition-all duration-300 hover:scale-105 shadow-2xl shadow-amber-500/50"
             >
               {t('home.hero.cta.fullCharter')}
             </button>
           </div>
 
           {/* Trust Indicators */}
-          <div className="mb-16 animate-fade-in-up" style={{ animationDelay: '1s' }}>
-            <div className="flex items-center justify-center gap-4 sm:gap-8 text-gray-300">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span className="text-sm sm:text-base">{t('home.hero.trust.safety')}</span>
+          <div className="mb-12 sm:mb-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 md:gap-8 text-gray-200">
+              <div className="flex items-center gap-2 text-center sm:text-left">
+                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.safety')}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span className="text-sm sm:text-base">{t('home.hero.trust.concierge')}</span>
+              <div className="flex items-center gap-2 text-center sm:text-left">
+                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.concierge')}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                <span className="text-sm sm:text-base">{t('home.hero.trust.booking')}</span>
+              <div className="flex items-center gap-2 text-center sm:text-left">
+                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.booking')}</span>
               </div>
             </div>
           </div>
 
           {/* Scroll Indicator */}
-          <div className="animate-bounce">
-            <div className="w-6 h-10 border-2 border-white/50 rounded-full mx-auto">
+          <div className="animate-bounce absolute bottom-20 sm:bottom-16 left-1/2 transform -translate-x-1/2">
+            <div className="w-6 h-10 border-2 border-white/50 rounded-full">
               <div className="w-1 h-3 bg-white/70 rounded-full mx-auto mt-2 animate-pulse"></div>
             </div>
           </div>
@@ -359,54 +349,62 @@ const LuxuryLandingPage = () => {
           </div>
 
           {/* Two Card Layout */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
             {/* Empty Leg Card */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-green-200" style={{minHeight: 'clamp(200px, 50vw, 400px)'}}>
-              <div className="relative flex flex-col justify-between h-full" style={{padding: 'clamp(0.5rem, 3vw, 2rem)'}}>
+            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-green-200">
+              <div className="relative flex flex-col h-full p-6 sm:p-8">
                 {/* Badge - Top Right */}
-                <div className="absolute" style={{top: 'clamp(0.25rem, 2vw, 1rem)', right: 'clamp(0.25rem, 2vw, 1rem)'}}>
-                  <div className="bg-green-500 text-white rounded-full font-semibold flex items-center" style={{padding: 'clamp(0.125rem, 1vw, 0.25rem) clamp(0.25rem, 2vw, 0.75rem)', fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', gap: 'clamp(0.125rem, 1vw, 0.25rem)'}}>
-                    <ArrowTrendingDownIcon style={{width: 'clamp(0.5rem, 2vw, 1rem)', height: 'clamp(0.5rem, 2vw, 1rem)'}} />
+                <div className="absolute top-4 right-4">
+                  <div className="bg-green-500 text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                    <ArrowTrendingDownIcon className="w-4 h-4" />
                     <span className="hidden xs:inline">{t('home.services.emptyLeg.badge')}</span>
                     <span className="xs:hidden">-90%</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="font-bold text-gray-900 flex items-center" style={{fontSize: 'clamp(0.875rem, 4vw, 1.5rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)', marginTop: 'clamp(1.5rem, 6vw, 0.5rem)', gap: 'clamp(0.25rem, 2vw, 0.75rem)'}}>
-                  <PaperAirplaneIcon className="text-amber-500" style={{width: 'clamp(1rem, 4vw, 2rem)', height: 'clamp(1rem, 4vw, 2rem)'}} />
-                  <span style={{fontSize: 'clamp(0.75rem, 4vw, 1.5rem)'}}>{t('home.services.emptyLeg.title')}</span>
-                </h3>
-                <p className="text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', marginBottom: 'clamp(0.5rem, 2vw, 1.5rem)', lineHeight: '1.3'}}>
+                <div className="mt-8 mb-4">
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <PaperAirplaneIcon className="w-7 h-7 sm:w-8 sm:h-8 text-amber-500 flex-shrink-0" />
+                    <span>{t('home.services.emptyLeg.title')}</span>
+                  </h3>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed">
                   {t('home.services.emptyLeg.description')}
                 </p>
 
                 {/* Perfect for */}
-                <div className="mb-2 sm:mb-6 h-28 sm:h-auto">
-                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.emptyLeg.perfectFor')}</h4>
-                  <ul style={{marginTop: 'clamp(0.25rem, 1vw, 0.5rem)'}}>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.emptyLeg.benefits.0')}
+                <div className="mb-6">
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">
+                    {t('home.services.emptyLeg.perfectFor')}
+                  </h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.emptyLeg.benefits.0')}</span>
                     </li>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.emptyLeg.benefits.1')}
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.emptyLeg.benefits.1')}</span>
                     </li>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.emptyLeg.benefits.2')}
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.emptyLeg.benefits.2')}</span>
                     </li>
                   </ul>
                 </div>
 
                 {/* Divisor */}
-                <div className="border-t border-gray-200 mb-2 sm:mb-6 hidden md:block"></div>
+                <div className="border-t border-gray-200 my-4 md:my-6"></div>
 
-                {/* What you get */}
-                <div className="mb-2 sm:mb-6 h-16 sm:h-auto hidden md:block">
-                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.emptyLeg.whatYouGet')}</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-none sm:leading-normal">
+                {/* What you get - Always visible, smaller on mobile */}
+                <div>
+                  <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">
+                    {t('home.services.emptyLeg.whatYouGet')}
+                  </h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
                     {t('home.services.emptyLeg.details')}
                   </p>
                 </div>
@@ -414,51 +412,58 @@ const LuxuryLandingPage = () => {
             </div>
 
             {/* Full Charter Card */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-black" style={{minHeight: 'clamp(200px, 50vw, 400px)'}}>
-              <div className="relative flex flex-col justify-between h-full" style={{padding: 'clamp(0.5rem, 3vw, 2rem)'}}>
+            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden border-2 border-black">
+              <div className="relative flex flex-col h-full p-6 sm:p-8">
                 {/* Badge - Top Right */}
-                <div className="absolute" style={{top: 'clamp(0.25rem, 2vw, 1rem)', right: 'clamp(0.25rem, 2vw, 1rem)'}}>
-                  <div className="bg-black text-white rounded-full font-semibold flex items-center" style={{padding: 'clamp(0.125rem, 1vw, 0.25rem) clamp(0.25rem, 2vw, 0.75rem)', fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', gap: 'clamp(0.125rem, 1vw, 0.25rem)'}}>
-                    <span className="hidden sm:inline">{t('home.services.fullCharter.badge')}</span>
-                    <span className="sm:hidden">{t('home.services.fullCharter.badge')}</span>
+                <div className="absolute top-4 right-4">
+                  <div className="bg-black text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold">
+                    {t('home.services.fullCharter.badge')}
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="font-bold text-gray-900 flex items-center" style={{fontSize: 'clamp(0.875rem, 4vw, 1.5rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)', marginTop: 'clamp(1.5rem, 6vw, 0.5rem)', gap: 'clamp(0.25rem, 2vw, 0.75rem)'}}>
-                  <CalendarIcon className="text-amber-500" style={{width: 'clamp(1rem, 4vw, 2rem)', height: 'clamp(1rem, 4vw, 2rem)'}} />
-                  <span style={{fontSize: 'clamp(0.75rem, 4vw, 1.5rem)'}}>{t('home.services.fullCharter.title')}</span>
-                </h3>
-                <p className="text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', marginBottom: 'clamp(0.5rem, 2vw, 1.5rem)', lineHeight: '1.3'}}>
+                <div className="mt-8 mb-4">
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <CalendarIcon className="w-7 h-7 sm:w-8 sm:h-8 text-amber-500 flex-shrink-0" />
+                    <span>{t('home.services.fullCharter.title')}</span>
+                  </h3>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed">
                   {t('home.services.fullCharter.description')}
                 </p>
 
                 {/* Perfect for */}
-                <div className="mb-2 sm:mb-6 h-28 sm:h-auto">
-                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.fullCharter.perfectFor')}</h4>
-                  <ul style={{marginTop: 'clamp(0.25rem, 1vw, 0.5rem)'}}>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.fullCharter.benefits.0')}
+                <div className="mb-6">
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">
+                    {t('home.services.fullCharter.perfectFor')}
+                  </h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.fullCharter.benefits.0')}</span>
                     </li>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', marginBottom: 'clamp(0.125rem, 0.5vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.fullCharter.benefits.1')}
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.fullCharter.benefits.1')}</span>
                     </li>
-                    <li className="flex items-center text-gray-600" style={{fontSize: 'clamp(0.75rem, 3vw, 1rem)', gap: 'clamp(0.25rem, 1vw, 0.5rem)', lineHeight: '1.2'}}>
-                      <CheckIcon className="text-green-500" style={{width: 'clamp(0.75rem, 3vw, 1.25rem)', height: 'clamp(0.75rem, 3vw, 1.25rem)', flexShrink: 0}} />
-                      {t('home.services.fullCharter.benefits.2')}
+                    <li className="flex items-start gap-2 text-gray-600 text-sm sm:text-base">
+                      <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{t('home.services.fullCharter.benefits.2')}</span>
                     </li>
                   </ul>
                 </div>
 
                 {/* Divisor */}
-                <div className="border-t border-gray-200 mb-2 sm:mb-6 hidden md:block"></div>
+                <div className="border-t border-gray-200 my-4 md:my-6"></div>
 
-                {/* What you get */}
-                <div className="mb-2 sm:mb-6 h-16 sm:h-auto hidden md:block">
-                  <h4 className="text-xs sm:text-base lg:text-lg font-semibold text-gray-800 mb-0.5 sm:mb-3">{t('home.services.fullCharter.whatYouGet')}</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-none sm:leading-normal">
+                {/* What you get - Always visible, smaller on mobile */}
+                <div>
+                  <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">
+                    {t('home.services.fullCharter.whatYouGet')}
+                  </h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
                     {t('home.services.fullCharter.details')}
                   </p>
                 </div>
@@ -469,66 +474,66 @@ const LuxuryLandingPage = () => {
       </section>
 
       {/* 3. Benefits Section */}
-      <section className="py-24 bg-gradient-to-b from-slate-800 to-slate-900">
+      <section className="py-16 bg-gradient-to-b from-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              The Private Jet Advantage
+              {t('home.benefits.title')}
             </h2>
           </div>
 
           {/* 4-Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Safety First */}
-            <div className="text-center group hover:scale-105 transition-all duration-300 p-6 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
-              <div className="mb-6 flex justify-center">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
-                  <ShieldCheckIcon className="w-8 h-8 text-amber-400 group-hover:text-white" />
+            <div className="text-center group hover:scale-105 transition-all duration-300 p-5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
+              <div className="mb-4 flex justify-center">
+                <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
+                  <ShieldCheckIcon className="w-7 h-7 text-amber-400 group-hover:text-white" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 group-hover:text-amber-100 transition-colors">Safety First</h3>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                Rigorous safety standards with certified operators and maintained aircraft
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-100 transition-colors">{t('home.benefits.safetyFirst.title')}</h3>
+              <p className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors leading-relaxed">
+                {t('home.benefits.safetyFirst.description')}
               </p>
             </div>
 
             {/* Time Efficient */}
-            <div className="text-center group hover:scale-105 transition-all duration-300 p-6 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
-              <div className="mb-6 flex justify-center">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
-                  <ClockIcon className="w-8 h-8 text-amber-400 group-hover:text-white" />
+            <div className="text-center group hover:scale-105 transition-all duration-300 p-5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
+              <div className="mb-4 flex justify-center">
+                <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
+                  <ClockIcon className="w-7 h-7 text-amber-400 group-hover:text-white" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 group-hover:text-amber-100 transition-colors">Time Efficient</h3>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                Skip the airport hassles, arrive 15 minutes before departure
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-100 transition-colors">{t('home.benefits.timeEfficient.title')}</h3>
+              <p className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors leading-relaxed">
+                {t('home.benefits.timeEfficient.description')}
               </p>
             </div>
 
             {/* Premium Comfort */}
-            <div className="text-center group hover:scale-105 transition-all duration-300 p-6 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
-              <div className="mb-6 flex justify-center">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
-                  <StarIcon className="w-8 h-8 text-amber-400 group-hover:text-white" />
+            <div className="text-center group hover:scale-105 transition-all duration-300 p-5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
+              <div className="mb-4 flex justify-center">
+                <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
+                  <StarIcon className="w-7 h-7 text-amber-400 group-hover:text-white" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 group-hover:text-amber-100 transition-colors">Premium Comfort</h3>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                Luxury amenities, spacious cabins, and personalized service
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-100 transition-colors">{t('home.benefits.premiumComfort.title')}</h3>
+              <p className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors leading-relaxed">
+                {t('home.benefits.premiumComfort.description')}
               </p>
             </div>
 
             {/* Global Access */}
-            <div className="text-center group hover:scale-105 transition-all duration-300 p-6 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
-              <div className="mb-6 flex justify-center">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
-                  <MapPinIcon className="w-8 h-8 text-amber-400 group-hover:text-white" />
+            <div className="text-center group hover:scale-105 transition-all duration-300 p-5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20">
+              <div className="mb-4 flex justify-center">
+                <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
+                  <MapPinIcon className="w-7 h-7 text-amber-400 group-hover:text-white" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 group-hover:text-amber-100 transition-colors">Global Access</h3>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                Access to thousands of airports worldwide, reaching destinations airlines can't
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-100 transition-colors">{t('home.benefits.globalAccess.title')}</h3>
+              <p className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors leading-relaxed">
+                {t('home.benefits.globalAccess.description')}
               </p>
             </div>
           </div>
@@ -548,28 +553,28 @@ const LuxuryLandingPage = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Image */}
-            <div className="relative h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            {/* Image - Show on mobile at top, side by side on desktop */}
+            <div className="relative h-64 sm:h-80 lg:h-full order-first">
               <img 
                 src="/images/home/jet-interior.jpg" 
                 alt="Luxury Jet Interior"
                 className="w-full h-full object-cover rounded-2xl"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl"></div>
-              <div className="absolute bottom-8 left-8 text-white">
-                <h3 className="text-3xl font-bold mb-2">{t('regularJetRequest.sanctuaryTitle')}</h3>
-                <p className="text-lg text-gray-200">{t('regularJetRequest.sanctuarySubtitle')}</p>
+              <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 text-white">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">{t('regularJetRequest.sanctuaryTitle')}</h3>
+                <p className="text-sm sm:text-base lg:text-lg text-gray-200">{t('regularJetRequest.sanctuarySubtitle')}</p>
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <form onSubmit={handleFormSubmit} className="space-y-6">
+            {/* Form */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+              <form onSubmit={handleFormSubmit} className="space-y-5 sm:space-y-6">
                 {/* Personal Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.name')}
                     </label>
                     <input
@@ -577,12 +582,12 @@ const LuxuryLandingPage = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.email')}
                     </label>
                     <input
@@ -590,14 +595,14 @@ const LuxuryLandingPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     {t('regularJetRequest.labels.phone')}
                   </label>
                   <input
@@ -605,15 +610,15 @@ const LuxuryLandingPage = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                     required
                   />
                 </div>
 
                 {/* Flight Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.departure')}
                     </label>
                     <input
@@ -621,12 +626,12 @@ const LuxuryLandingPage = () => {
                       name="departure"
                       value={formData.departure}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.destination')}
                     </label>
                     <input
@@ -634,15 +639,15 @@ const LuxuryLandingPage = () => {
                       name="destination"
                       value={formData.destination}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.date')}
                     </label>
                     <input
@@ -650,12 +655,12 @@ const LuxuryLandingPage = () => {
                       name="date"
                       value={formData.date}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       {t('regularJetRequest.labels.passengers')}
                     </label>
                     <input
@@ -665,7 +670,7 @@ const LuxuryLandingPage = () => {
                       onChange={handleInputChange}
                       min="1"
                       max="20"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -710,9 +715,9 @@ const LuxuryLandingPage = () => {
 
       {/* Signup Modal */}
       {showSignupModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center px-6 z-50">
-          <div className="max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 backdrop-blur-2xl rounded-2xl shadow-2xl p-8 border border-amber-500/30 relative ring-1 ring-black/20">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center px-4 sm:px-6 z-50 overflow-y-auto py-6">
+          <div className="max-w-md w-full my-auto">
+            <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 sm:p-8 border border-amber-500/30 relative ring-1 ring-black/20">
               <button
                 onClick={() => setShowSignupModal(false)}
                 className="absolute top-4 right-4 p-2 text-gray-300 hover:text-white transition-colors"
@@ -889,9 +894,9 @@ const LuxuryLandingPage = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center px-6 z-50">
-          <div className="max-w-md w-full">
-            <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 backdrop-blur-2xl rounded-2xl shadow-2xl p-8 border border-amber-500/30 relative ring-1 ring-black/20">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center px-4 sm:px-6 z-50 overflow-y-auto py-6">
+          <div className="max-w-md w-full my-auto">
+            <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 sm:p-8 border border-amber-500/30 relative ring-1 ring-black/20">
               <button
                 onClick={() => setShowLoginModal(false)}
                 className="absolute top-4 right-4 p-2 text-gray-300 hover:text-white transition-colors"

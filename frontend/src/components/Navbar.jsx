@@ -47,29 +47,14 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 relative">
           
-          {/* Mobile: Hamburger menu (left) */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMenuOpen ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-
-          {/* Logo (left on desktop, center on mobile) */}
+          {/* Mobile & Desktop: Logo (always on left) */}
           <div className="flex-shrink-0">
-            <Link to="/" className="text-2xl font-bold text-amber-300">
-              
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/images/logo/logo_white2.svg" 
+                alt="JetChance" 
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 
@@ -136,7 +121,7 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
             </div>
           </div>
             
-          {/* Desktop: Authentication & User Actions (right) / Mobile: Language selector */}
+          {/* Right side: Desktop Auth / Mobile Language + Hamburger */}
           <div className="flex items-center space-x-3">
             {/* Desktop authentication section */}
             <div className="hidden md:flex items-center space-x-3">
@@ -202,16 +187,34 @@ export default function Navbar({ useSimpleBackground, setUseSimpleBackground, is
               )}
             </div>
 
-            {/* Mobile: Language selector */}
-            <div className="md:hidden">
+            {/* Mobile: Language selector + Hamburger */}
+            <div className="md:hidden flex items-center space-x-2">
               <LanguageSelector />
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white relative w-10 h-10 flex items-center justify-center"
+              >
+                <span className="sr-only">Open main menu</span>
+                <div className="w-6 h-5 relative flex flex-col justify-between">
+                  {/* Hamburger to X animation */}
+                  <span className={`block h-0.5 w-full bg-white rounded-full transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? 'rotate-45 translate-y-2' : 'rotate-0 translate-y-0'
+                  }`}></span>
+                  <span className={`block h-0.5 w-full bg-white rounded-full transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}></span>
+                  <span className={`block h-0.5 w-full bg-white rounded-full transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? '-rotate-45 -translate-y-2' : 'rotate-0 translate-y-0'
+                  }`}></span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu - Overlay style */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-amber-300/20 backdrop-blur-md">
+          <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-900/95 backdrop-blur-lg border-t border-amber-300/20 shadow-2xl z-40">
             <div className="px-4 py-4 space-y-1">
               {/* Navigation Links */}
               <div className="space-y-1">

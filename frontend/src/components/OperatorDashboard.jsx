@@ -219,22 +219,22 @@ export default function OperatorDashboard({ user }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           {/* Success message */}
           {location.state?.message && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4">
+            <div className="bg-green-50 border border-green-200 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl mb-4 text-sm sm:text-base">
               {location.state.message}
             </div>
           )}
           
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {user?.role === 'super-admin' ? 'Super Admin Dashboard' : 'Operator Dashboard'}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
                 Welcome back, {user?.firstName} {user?.lastName}
                 {user?.role === 'super-admin' && (
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
@@ -243,11 +243,11 @@ export default function OperatorDashboard({ user }) {
                 )}
               </p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={fetchOperatorFlights}
                 disabled={isLoading}
-                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
                 title="Refresh flights list"
               >
                 <svg className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +257,7 @@ export default function OperatorDashboard({ user }) {
               </button>
               <button
                 onClick={() => navigate('/create-flight')}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Create Flight
@@ -265,10 +265,11 @@ export default function OperatorDashboard({ user }) {
               {user?.role === 'super-admin' && (
                 <button
                   onClick={() => navigate('/admin/pending-flights')}
-                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <EyeIcon className="h-4 w-4 mr-2" />
-                  Review Pending Flights
+                  <span className="hidden sm:inline">Review Pending Flights</span>
+                  <span className="sm:hidden">Pending</span>
                 </button>
               )}
             </div>
@@ -276,64 +277,64 @@ export default function OperatorDashboard({ user }) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="text-2xl font-bold text-gray-900">{flights.length}</div>
-            <div className="text-sm text-gray-600">Active Flights</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{flights.length}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Active Flights</div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="text-2xl font-bold text-green-600">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {flights.reduce((sum, f) => sum + f.bookings, 0)}
             </div>
-            <div className="text-sm text-gray-600">Total Bookings</div>
+            <div className="text-xs sm:text-sm text-gray-600">Total Bookings</div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="text-2xl font-bold text-blue-600">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">
               {formatCOP(flights.reduce((sum, f) => sum + ((f.price || 0) * (f.bookings || 0)), 0))}
             </div>
-            <div className="text-sm text-gray-600">Revenue</div>
+            <div className="text-xs sm:text-sm text-gray-600">Revenue</div>
           </div>
         </div>
 
         {/* Flights Table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Your Flights</h2>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Your Flights</h2>
           </div>
 
           {isLoading ? (
-            <div className="p-8 text-center">
+            <div className="p-6 sm:p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading flights...</p>
+              <p className="mt-4 text-sm sm:text-base text-gray-600">Loading flights...</p>
             </div>
           ) : flights.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-gray-600">No flights found. Create your first flight!</p>
+            <div className="p-6 sm:p-8 text-center">
+              <p className="text-sm sm:text-base text-gray-600">No flights found. Create your first flight!</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Route
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Departure
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Seats
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Bookings
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -341,28 +342,28 @@ export default function OperatorDashboard({ user }) {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {flights.map((flight) => (
                     <tr key={flight.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-sm sm:text-base font-medium text-gray-900">
                           {flight.origin} → {flight.destination}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600">
                         {new Date(flight.departureTime).toLocaleDateString()} at{' '}
                         {new Date(flight.departureTime).toLocaleTimeString([], { 
                           hour: '2-digit', 
                           minute: '2-digit' 
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-semibold">
                         {formatCOP(flight.price)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                      <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {flight.seatsAvailable}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                      <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {flight.bookings}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         {(() => {
                           const status = (flight.status || '').toLowerCase();
                           const isApproved = ['approved', 'available'].includes(status);
@@ -386,34 +387,34 @@ export default function OperatorDashboard({ user }) {
                             : (flight.status || 'Unknown');
 
                           return (
-                            <span className={`inline-flex px-3 py-2 text-sm font-semibold rounded-full ${badgeClass}`}>
+                            <span className={`inline-flex px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-semibold rounded-full ${badgeClass}`}>
                               {badgeLabel}
                             </span>
                           );
                         })()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex space-x-2">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="flex space-x-1 sm:space-x-2">
                           <button 
                             onClick={() => navigate(`/flight/${flight.id}`)}
                             className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50"
                             title="View Flight Details"
                           >
-                            <EyeIcon className="h-5 w-5" />
+                            <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                           <button 
                             onClick={() => handleEditFlight(flight.id)}
                             className="text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-50"
                             title="Edit Flight"
                           >
-                            <PencilIcon className="h-5 w-5" />
+                            <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                           <button 
                             onClick={() => handleDeleteFlight(flight.id, `${flight.origin_code} → ${flight.destination_code}`)}
                             className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
                             title="Delete Flight"
                           >
-                            <TrashIcon className="h-5 w-5" />
+                            <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                         </div>
                       </td>

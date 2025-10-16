@@ -5,16 +5,32 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 export default function Footer() {
   const { t } = useTranslation();
 
+  const scrollToForm = () => {
+    const formSection = document.getElementById('inquiry-form');
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const openLoginModal = () => {
+    // Trigger login modal by navigating to /login
+    window.location.href = '/login';
+  };
+
   return (
     <footer className="bg-black text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
-        {/* 4-Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        {/* 3-Column Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {/* Brand Column */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <PaperAirplaneIcon className="w-8 h-8 text-amber-500" />
-              <span className="text-xl font-bold">JetChance</span>
+          <div className="text-center sm:text-left">
+            <div className="flex items-center gap-3 mb-4 justify-center sm:justify-start">
+              <img 
+                src="/images/logo/logo_white.svg" 
+                alt="JetChance" 
+                className="h-12 w-auto"
+              />
+              <span className="text-2xl font-bold text-white">JetChance</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
               {t('footer.brand.description')}
@@ -22,41 +38,41 @@ export default function Footer() {
           </div>
 
           {/* Services */}
-          <div>
+          <div className="text-center sm:text-left">
             <h4 className="text-lg font-semibold mb-4">{t('footer.services.title')}</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">{t('footer.services.emptyLeg')}</a></li>
-              <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">{t('footer.services.fullCharter')}</a></li>
-              <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">{t('footer.services.groupTravel')}</a></li>
-              <li><a href="#inquiry" className="hover:text-amber-500 transition-colors">{t('footer.services.cargoCharter')}</a></li>
+              <li>
+                <button 
+                  onClick={openLoginModal}
+                  className="text-amber-500 hover:text-amber-400 transition-colors"
+                >
+                  {t('footer.services.emptyLeg')}
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={scrollToForm}
+                  className="text-amber-500 hover:text-amber-400 transition-colors"
+                >
+                  {t('footer.services.fullCharter')}
+                </button>
+              </li>
             </ul>
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="text-center sm:text-left">
             <h4 className="text-lg font-semibold mb-4">{t('footer.contact.title')}</h4>
             <ul className="space-y-2 text-gray-400">
-              <li>{t('footer.contact.available')}</li>
+              <li><a href="/about" className="hover:text-amber-500 transition-colors">{t('footer.company.aboutUs')}</a></li>
               <li>{t('footer.contact.phone')}</li>
               <li>{t('footer.contact.email')}</li>
-              <li><a href="#inquiry" className="text-amber-500 hover:text-amber-400">{t('footer.contact.getQuote')}</a></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">{t('footer.company.title')}</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">{t('footer.company.aboutUs')}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t('footer.company.safety')}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t('footer.company.fleet')}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t('footer.company.careers')}</a></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
           <p className="text-gray-400 text-sm">
             {t('footer.copyright')}
           </p>

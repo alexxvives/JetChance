@@ -67,7 +67,7 @@ export default function DashboardLayout({ children, activeTab = 'flights', user 
         <div className="p-4">
           <div className="flex items-center justify-center">
             <img 
-              src="/images/logo/logo2.svg" 
+              src="/images/logo/logo_black.svg" 
               alt="JetChance" 
               className="h-16 w-auto"
             />

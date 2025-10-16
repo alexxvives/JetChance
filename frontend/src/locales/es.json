@@ -65,6 +65,25 @@
         "whatYouGet": "Lo que obtienes:",
         "details": "Control completo sobre tu experiencia de vuelo. Elige tu aeronave, horario y cada detalle de tu viaje."
       }
+    },
+    "benefits": {
+      "title": "La Ventaja del Jet Privado",
+      "safetyFirst": {
+        "title": "Seguridad Primero",
+        "description": "Estándares de seguridad rigurosos con operadores certificados y aeronaves mantenidas"
+      },
+      "timeEfficient": {
+        "title": "Eficiencia en Tiempo",
+        "description": "Evita las molestias del aeropuerto, llega 15 minutos antes de la salida"
+      },
+      "premiumComfort": {
+        "title": "Confort Premium",
+        "description": "Amenidades de lujo, cabinas espaciosas y servicio personalizado"
+      },
+      "globalAccess": {
+        "title": "Acceso Global",
+        "description": "Acceso a miles de aeropuertos en todo el mundo, alcanzando destinos que las aerolíneas no pueden"
+      }
     }
   },
   "auth": {

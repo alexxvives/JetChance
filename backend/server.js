@@ -16,6 +16,7 @@ const { router: notificationRoutes } = require('./routes/notifications');
 const emailRoutes = require('./routes/email');
 const quotesRoutes = require('./routes/quotes');
 const airportsRoutes = require('./routes/airports');
+const adminStatsRoutes = require('./routes/admin-stats');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api', emailRoutes);
 app.use('/api/quotes', quotesRoutes);
 app.use('/api/airports', airportsRoutes);
+app.use('/api/admin', adminStatsRoutes);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

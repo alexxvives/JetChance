@@ -1,6 +1,6 @@
 const express = require('express');
 const Database = require('better-sqlite3');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const SimpleIDGenerator = require('../utils/idGenerator');
 const path = require('path');
 

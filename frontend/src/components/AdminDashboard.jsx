@@ -12,6 +12,7 @@ import NotificationBell from './NotificationBell';
 import CustomCalendar from './CustomCalendar';
 import AirportService from '../services/AirportService';
 import FlightDetailsView from './FlightDetailsView';
+import SystemDashboard from './SystemDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { extractAirportCode } from '../utils/airportUtils';
@@ -1014,7 +1015,8 @@ export default function AdminDashboard({ user }) {
     { id: 'quotes', name: 'Submitted Quotes', icon: DocumentTextIcon, badge: notContactedQuotesCount },
     ...(user?.role === 'super-admin' ? [
       { id: 'airports', name: 'Airport Requests', icon: ClipboardDocumentListIcon, badge: pendingAirports.length },
-      { id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon }
+      { id: 'crm', name: t('admin.dashboard.tabs.crm'), icon: ChartBarIcon },
+      { id: 'system', name: 'System', icon: ShieldCheckIcon }
     ] : [])
   ];
 
@@ -1026,7 +1028,7 @@ export default function AdminDashboard({ user }) {
         <div className="p-4">
           <div className="flex items-center justify-center">
             <img 
-              src="/images/logo/logo2.svg" 
+              src="/images/logo/logo_black.svg" 
               alt="JetChance" 
               className="h-16 w-auto"
             />
@@ -2137,6 +2139,10 @@ export default function AdminDashboard({ user }) {
                 </div>
               )}
             </div>
+          )}
+
+          {activeTab === 'system' && user?.role === 'super-admin' && (
+            <SystemDashboard />
           )}
           </div>
         </div>

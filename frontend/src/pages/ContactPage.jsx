@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "../contexts/TranslationContext";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Wave from 'react-wavify';
 
 export default function ContactPage() {
   const { t } = useTranslation();
@@ -19,6 +20,30 @@ export default function ContactPage() {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-800/85 to-slate-950/95"></div>
+        </div>
+
+        {/* Wave Overlay */}
+        <div className="absolute inset-0 z-5 pointer-events-none">
+          <Wave 
+            fill='#334155'
+            paused={false}
+            style={{ 
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              height: '150px',
+              border: 'none',
+              outline: 'none',
+              background: 'transparent'
+            }}
+            options={{
+              height: 60,
+              amplitude: 50,
+              speed: 0.1,
+              points: 5
+            }}
+          />
         </div>
         
         <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -126,7 +151,7 @@ export default function ContactPage() {
                     
                     <div>
                       <label className="block text-white text-sm font-medium mb-2">{t('contact.form.subject')}</label>
-                      <select className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400">
+                      <select className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 [&>option]:text-black [&>option]:bg-white">
                         <option value="">{t('contact.form.placeholders.subject')}</option>
                         <option value="booking">{t('contact.form.subjects.booking')}</option>
                         <option value="support">{t('contact.form.subjects.support')}</option>

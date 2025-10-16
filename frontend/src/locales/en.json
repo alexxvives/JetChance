@@ -65,6 +65,25 @@
         "whatYouGet": "What you get:",
         "details": "Complete control over your flight experience. Choose your aircraft, schedule, and every detail of your journey."
       }
+    },
+    "benefits": {
+      "title": "The Private Jet Advantage",
+      "safetyFirst": {
+        "title": "Safety First",
+        "description": "Rigorous safety standards with certified operators and maintained aircraft"
+      },
+      "timeEfficient": {
+        "title": "Time Efficient",
+        "description": "Skip the airport hassles, arrive 15 minutes before departure"
+      },
+      "premiumComfort": {
+        "title": "Premium Comfort",
+        "description": "Luxury amenities, spacious cabins, and personalized service"
+      },
+      "globalAccess": {
+        "title": "Global Access",
+        "description": "Access to thousands of airports worldwide, reaching destinations airlines can't"
+      }
     }
   },
   "auth": {
