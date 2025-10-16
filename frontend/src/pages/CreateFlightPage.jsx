@@ -11,6 +11,8 @@ import CustomDateTimePicker from '../components/CustomDateTimePicker';
 import AirportService from '../services/AirportService';
 import { getCountryByAirportCode } from '../utils/airportCountries';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 // Helper function to format Colombian Peso currency with COP label
 const formatCOP = (amount) => {
   const formatted = new Intl.NumberFormat('es-CO', {
@@ -373,7 +375,7 @@ export default function CreateFlightPage() {
       if (formData.originAirport?.isPending) {
         console.log('Creating custom origin airport:', formData.originAirport);
         try {
-          const response = await fetch('/api/airports', {
+          const response = await fetch(`${API_URL}/airports`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -408,7 +410,7 @@ export default function CreateFlightPage() {
       if (formData.destinationAirport?.isPending) {
         console.log('Creating custom destination airport:', formData.destinationAirport);
         try {
-          const response = await fetch('/api/airports', {
+          const response = await fetch(`${API_URL}/airports`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

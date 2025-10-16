@@ -1,6 +1,8 @@
 // Airport Service - Database-first approach
 // Replaces hardcoded airportsAndCities.js with API calls
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 class AirportService {
   static cache = new Map();
   static cacheTimeout = 5 * 60 * 1000; // 5 minutes
@@ -20,7 +22,7 @@ class AirportService {
 
     try {
       console.log('🔄 Fetching airports from database...');
-      const response = await fetch('/api/airports');
+      const response = await fetch(`${API_URL}/airports`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,7 +53,7 @@ class AirportService {
     if (!query || query.length < 2) return [];
     
     try {
-      const response = await fetch(`/api/airports?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${API_URL}/airports?q=${encodeURIComponent(query)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

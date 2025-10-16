@@ -17,6 +17,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { extractAirportCode } from '../utils/airportUtils';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {
   if (!amount) return { number: '0', currency: 'COP' };
@@ -777,7 +779,7 @@ export default function AdminDashboard({ user }) {
         return;
       }
 
-      const response = await fetch('/api/airports/admin/pending', {
+      const response = await fetch(`${API_URL}/airports/admin/pending`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -805,7 +807,7 @@ export default function AdminDashboard({ user }) {
       setProcessingAirports(prev => new Set([...prev, airportId]));
       
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/airports/admin/approve/${airportId}`, {
+      const response = await fetch(`${API_URL}/airports/admin/approve/${airportId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -841,7 +843,7 @@ export default function AdminDashboard({ user }) {
       setProcessingAirports(prev => new Set([...prev, airportId]));
       
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/airports/admin/reject/${airportId}`, {
+      const response = await fetch(`${API_URL}/airports/admin/reject/${airportId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
