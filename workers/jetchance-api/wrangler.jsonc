@@ -16,7 +16,7 @@
 	},
 	"vars": {
 		"NODE_ENV": "production",
-		"CORS_ORIGINS": "https://jetchance.alexxvives.workers.dev"
+		"CORS_ORIGINS": "https://jetchance.com,https://www.jetchance.com,https://jetchance.pages.dev"
 	},
 	"d1_databases": [
 		{
