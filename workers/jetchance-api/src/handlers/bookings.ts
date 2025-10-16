@@ -6,14 +6,263 @@ import { corsHeaders } from '../middleware/cors';
 import { AuthUser } from '../middleware/auth';
 
 export async function handleBookings(request: Request, env: Env, path: string, user: AuthUser): Promise<Response> {
-  return new Response(JSON.stringify({
-    message: 'Bookings API - Coming soon',
-    user: user.email
-  }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders
+  try {
+    // GET /api/bookings - Get all bookings for current user
+    if (request.method === 'GET' && path === '') {
+      let bookings;
+      
+      if (user.role === 'customer') {
+        // Get customer bookings with flight details
+        bookings = await env.jetchance_db.prepare(`
+          SELECT 
+            b.id, b.flight_id, b.total_passengers, b.total_amount,
+            b.payment_method, b.special_requests, b.status,
+            b.contact_email, b.created_at, b.updated_at,
+            f.aircraft_model, f.origin_name, f.origin_city, f.origin_country,
+            f.destination_name, f.destination_city, f.destination_country,
+            f.departure_datetime, f.arrival_datetime,
+            o.company_name as operator_name
+          FROM bookings b
+          JOIN customers c ON b.customer_id = c.id
+          JOIN flights f ON b.flight_id = f.id
+          JOIN operators o ON f.operator_id = o.id
+          WHERE c.user_id = ?
+          ORDER BY b.created_at DESC
+        `).bind(user.id).all();
+      } else if (user.role === 'operator') {
+        // Get operator bookings (bookings for their flights)
+        bookings = await env.jetchance_db.prepare(`
+          SELECT 
+            b.id, b.flight_id, b.total_passengers, b.total_amount,
+            b.payment_method, b.special_requests, b.status,
+            b.contact_email, b.created_at, b.updated_at,
+            f.aircraft_model, f.origin_name, f.origin_city, f.origin_country,
+            f.destination_name, f.destination_city, f.destination_country,
+            f.departure_datetime, f.arrival_datetime,
+            c.first_name, c.last_name
+          FROM bookings b
+          JOIN flights f ON b.flight_id = f.id
+          JOIN operators op ON f.operator_id = op.id
+          JOIN customers c ON b.customer_id = c.id
+          WHERE op.user_id = ?
+          ORDER BY b.created_at DESC
+        `).bind(user.id).all();
+      } else {
+        // Admin - get all bookings
+        bookings = await env.jetchance_db.prepare(`
+          SELECT 
+            b.id, b.flight_id, b.total_passengers, b.total_amount,
+            b.payment_method, b.special_requests, b.status,
+            b.contact_email, b.created_at, b.updated_at,
+            f.aircraft_model, f.origin_name, f.destination_name,
+            f.departure_datetime,
+            o.company_name as operator_name,
+            c.first_name, c.last_name
+          FROM bookings b
+          JOIN flights f ON b.flight_id = f.id
+          JOIN operators o ON f.operator_id = o.id
+          JOIN customers c ON b.customer_id = c.id
+          ORDER BY b.created_at DESC
+        `).all();
+      }
+
+      return new Response(JSON.stringify(bookings.results || []), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
     }
-  });
+
+    // GET /api/bookings/:id - Get specific booking
+    if (request.method === 'GET' && path.match(/^\/[^/]+$/)) {
+      const bookingId = path.substring(1);
+      
+      const booking = await env.jetchance_db.prepare(`
+        SELECT 
+          b.*, f.*, o.company_name as operator_name,
+          c.first_name, c.last_name, c.phone
+        FROM bookings b
+        JOIN flights f ON b.flight_id = f.id
+        JOIN operators o ON f.operator_id = o.id
+        JOIN customers c ON b.customer_id = c.id
+        WHERE b.id = ?
+      `).bind(bookingId).first();
+
+      if (!booking) {
+        return new Response(JSON.stringify({
+          error: 'Booking not found'
+        }), {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+
+      return new Response(JSON.stringify(booking), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // POST /api/bookings - Create new booking (customers only)
+    if (request.method === 'POST' && path === '') {
+      if (user.role !== 'customer') {
+        return new Response(JSON.stringify({
+          error: 'Only customers can create bookings'
+        }), {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+
+      const data = await request.json() as any;
+      
+      // Validate required fields
+      if (!data.flight_id || !data.total_passengers || !data.total_amount) {
+        return new Response(JSON.stringify({
+          error: 'Missing required fields'
+        }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+
+      // Get customer ID from user
+      const customer = await env.jetchance_db.prepare(
+        'SELECT id FROM customers WHERE user_id = ?'
+      ).bind(user.id).first();
+
+      if (!customer) {
+        return new Response(JSON.stringify({
+          error: 'Customer profile not found'
+        }), {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+
+      // Generate booking ID (e.g., BK00001)
+      const lastBooking = await env.jetchance_db.prepare(
+        'SELECT id FROM bookings ORDER BY id DESC LIMIT 1'
+      ).first();
+      
+      let bookingNumber = 1;
+      if (lastBooking && lastBooking.id) {
+        const match = String(lastBooking.id).match(/BK(\d+)/);
+        if (match) {
+          bookingNumber = parseInt(match[1]) + 1;
+        }
+      }
+      const bookingId = `BK${String(bookingNumber).padStart(5, '0')}`;
+
+      // Create booking
+      await env.jetchance_db.prepare(`
+        INSERT INTO bookings (
+          id, flight_id, customer_id, total_passengers, total_amount,
+          payment_method, special_requests, contact_email, status,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'), datetime('now'))
+      `).bind(
+        bookingId,
+        data.flight_id,
+        customer.id,
+        data.total_passengers,
+        data.total_amount,
+        data.payment_method || null,
+        data.special_requests || null,
+        data.contact_email || user.email
+      ).run();
+
+      // Update flight availability
+      await env.jetchance_db.prepare(`
+        UPDATE flights 
+        SET available_seats = available_seats - ?,
+            status = CASE 
+              WHEN available_seats - ? <= 0 THEN 'fully booked'
+              WHEN available_seats - ? < total_seats THEN 'partially booked'
+              ELSE status
+            END,
+            updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(data.total_passengers, data.total_passengers, data.total_passengers, data.flight_id).run();
+
+      // Get the created booking
+      const newBooking = await env.jetchance_db.prepare(
+        'SELECT * FROM bookings WHERE id = ?'
+      ).bind(bookingId).first();
+
+      return new Response(JSON.stringify(newBooking), {
+        status: 201,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // PATCH /api/bookings/:id - Update booking status
+    if (request.method === 'PATCH' && path.match(/^\/[^/]+$/)) {
+      const bookingId = path.substring(1);
+      const data = await request.json() as any;
+
+      await env.jetchance_db.prepare(`
+        UPDATE bookings 
+        SET status = ?, updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(data.status, bookingId).run();
+
+      const updatedBooking = await env.jetchance_db.prepare(
+        'SELECT * FROM bookings WHERE id = ?'
+      ).bind(bookingId).first();
+
+      return new Response(JSON.stringify(updatedBooking), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // 404 for unknown routes
+    return new Response(JSON.stringify({
+      error: 'Not Found',
+      message: `Booking route ${path} not found`
+    }), {
+      status: 404,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+
+  } catch (error) {
+    console.error('Bookings handler error:', error);
+    return new Response(JSON.stringify({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'An error occurred'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
 }

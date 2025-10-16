@@ -12,6 +12,7 @@ import { handleUsers } from './handlers/users';
 import { handleOperators } from './handlers/operators';
 import { handlePayments } from './handlers/payments';
 import { handleAirports } from './handlers/airports';
+import { handleNotifications } from './handlers/notifications';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -99,6 +100,17 @@ export default {
 				}
 				// Public routes (GET approved airports, POST new airport)
 				return handleAirports(request, env, path.replace('/api/airports', ''));
+			}
+
+			if (path.startsWith('/api/notifications')) {
+				const authResult = await authenticate(request, env);
+				if (authResult.error) {
+					return new Response(JSON.stringify({ error: authResult.error }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json', ...corsHeaders }
+					});
+				}
+				return handleNotifications(request, env, path.replace('/api/notifications', ''), authResult.user);
 			}
 
 			// 404 handler
