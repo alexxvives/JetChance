@@ -307,25 +307,6 @@ const LuxuryLandingPage = () => {
               {t('home.hero.cta.fullCharter')}
             </button>
           </div>
-
-          {/* Trust Indicators */}
-          <div className="mb-12 sm:mb-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 md:gap-8 text-gray-200">
-              <div className="flex items-center gap-2 text-center sm:text-left">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.safety')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-center sm:text-left">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.concierge')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-center sm:text-left">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                <span className="text-sm sm:text-base font-medium whitespace-nowrap">{t('home.hero.trust.booking')}</span>
-              </div>
-            </div>
-          </div>
-
           {/* Scroll Indicator */}
           <div className="animate-bounce absolute bottom-20 sm:bottom-16 left-1/2 transform -translate-x-1/2">
             <div className="w-6 h-10 border-2 border-white/50 rounded-full">
