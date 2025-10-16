@@ -83,7 +83,9 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     const firstName = data.firstName || data.first_name;
     const lastName = data.lastName || data.last_name;
     
-    if (!firstName || !lastName) {
+    // Only require name for customers, not for operators
+    const isOperator = !!data.signupCode;
+    if (!isOperator && (!firstName || !lastName)) {
       return new Response(JSON.stringify({
         error: 'Validation failed',
         message: 'First name and last name are required'
@@ -139,9 +141,11 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       ).bind(customerId, userId, firstName, lastName, data.phone || null).run();
     } else if (role === 'operator') {
       const operatorId = uuidv4();
+      const companyName = data.companyName || data.company_name || 
+                         (firstName && lastName ? `${firstName} ${lastName} Aviation` : 'New Aviation Company');
       await env.jetchance_db.prepare(
         'INSERT INTO operators (id, user_id, company_name, status) VALUES (?, ?, ?, ?)'
-      ).bind(operatorId, userId, `${firstName} ${lastName} Aviation`, 'pending').run();
+      ).bind(operatorId, userId, companyName, 'pending').run();
     }
     
     // Get the created user and role-specific data
