@@ -66,10 +66,19 @@ export async function handleAuth(request: Request, env: Env, path: string): Prom
 
 async function handleRegister(request: Request, env: Env): Promise<Response> {
   try {
+    console.log('🔵 [REGISTER] Starting registration process');
     const data = await request.json() as RegisterRequest;
+    console.log('🔵 [REGISTER] Data received:', {
+      email: data.email,
+      hasPassword: !!data.password,
+      hasSignupCode: !!data.signupCode,
+      hasFirstName: !!(data.firstName || data.first_name),
+      hasLastName: !!(data.lastName || data.last_name)
+    });
     
     // Validation
     if (!data.email || !data.password) {
+      console.log('❌ [REGISTER] Missing email or password');
       return new Response(JSON.stringify({
         error: 'Validation failed',
         message: 'Email and password are required'
@@ -85,7 +94,10 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     
     // Only require name for customers, not for operators
     const isOperator = !!data.signupCode;
+    console.log('🔵 [REGISTER] User type:', isOperator ? 'OPERATOR' : 'CUSTOMER');
+    
     if (!isOperator && (!firstName || !lastName)) {
+      console.log('❌ [REGISTER] Customer missing first/last name');
       return new Response(JSON.stringify({
         error: 'Validation failed',
         message: 'First name and last name are required'
@@ -106,11 +118,13 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     }
     
     // Check if user already exists
+    console.log('🔵 [REGISTER] Checking if user exists...');
     const existingUser = await env.jetchance_db.prepare(
       'SELECT id FROM users WHERE email = ?'
     ).bind(data.email).first();
     
     if (existingUser) {
+      console.log('❌ [REGISTER] User already exists');
       return new Response(JSON.stringify({
         error: 'User already exists',
         message: 'An account with this email already exists'
@@ -121,31 +135,40 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     }
     
     // Hash password
+    console.log('🔵 [REGISTER] Hashing password...');
     const passwordHash = await bcrypt.hash(data.password, 12);
     
     // Generate user ID
     const userId = uuidv4();
     const role = data.role || 'customer';
+    console.log('🔵 [REGISTER] Creating user with role:', role);
     
     // Create user (authentication data only)
+    console.log('🔵 [REGISTER] Inserting into users table...');
     await env.jetchance_db.prepare(
       `INSERT INTO users (id, email, password_hash, role)
        VALUES (?, ?, ?, ?)`
     ).bind(userId, data.email, passwordHash, role).run();
+    console.log('✅ [REGISTER] User created successfully');
     
     // Create role-specific profile
     if (role === 'customer') {
+      console.log('🔵 [REGISTER] Creating customer profile...');
       const customerId = uuidv4();
       await env.jetchance_db.prepare(
         'INSERT INTO customers (id, user_id, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)'
       ).bind(customerId, userId, firstName, lastName, data.phone || null).run();
+      console.log('✅ [REGISTER] Customer profile created');
     } else if (role === 'operator') {
+      console.log('🔵 [REGISTER] Creating operator profile...');
       const operatorId = uuidv4();
       const companyName = data.companyName || data.company_name || 
                          (firstName && lastName ? `${firstName} ${lastName} Aviation` : 'New Aviation Company');
+      console.log('🔵 [REGISTER] Operator company name:', companyName);
       await env.jetchance_db.prepare(
-        'INSERT INTO operators (id, user_id, company_name, status) VALUES (?, ?, ?, ?)'
-      ).bind(operatorId, userId, companyName, 'pending').run();
+        'INSERT INTO operators (id, user_id, company_name) VALUES (?, ?, ?)'
+      ).bind(operatorId, userId, companyName).run();
+      console.log('✅ [REGISTER] Operator profile created');
     }
     
     // Get the created user and role-specific data
@@ -183,8 +206,11 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       }
     }
     
+    console.log('🔵 [REGISTER] Generating tokens...');
     const { accessToken, refreshToken } = generateTokens(userId, env);
+    console.log('✅ [REGISTER] Tokens generated');
     
+    console.log('✅ [REGISTER] Registration complete! Returning success response...');
     return new Response(JSON.stringify({
       message: 'User registered successfully',
       user: userData,
@@ -201,10 +227,13 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     });
     
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ [REGISTER] FATAL ERROR:', error);
+    console.error('❌ [REGISTER] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('❌ [REGISTER] Error stack:', error instanceof Error ? error.stack : 'No stack');
     return new Response(JSON.stringify({
       error: 'Registration failed',
-      message: 'Unable to create account. Please try again.'
+      message: 'Unable to create account. Please try again.',
+      debug: error instanceof Error ? error.message : String(error)
     }), {
       status: 500,
       headers: {

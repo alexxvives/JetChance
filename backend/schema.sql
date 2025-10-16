@@ -145,8 +145,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 -- REMOVED TABLES (Previously existed, now eliminated for MVP simplicity)
 -- ========================================================================
 -- ❌ aircraft - Merged into flights.aircraft_name (no separate aircraft management needed)
--- ❌ refresh_tokens - Using stateless JWT (no database storage needed)
--- ❌ payments - Merged into bookings table (one booking = one payment for MVP simplicity)  
+-- ❌ refresh_tokens - Using stateless JWT (no database storage needed)  
 
 -- ========================================================================
 -- REMOVED COLUMNS (Previously existed, now eliminated to prevent over-engineering)
@@ -182,15 +181,42 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 -- Quotes table - Store quote requests from landing page
 CREATE TABLE IF NOT EXISTS quotes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  service_type TEXT NOT NULL CHECK (service_type IN ('full-charter', 'empty-leg')),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
-  departure TEXT NOT NULL,
+  service_type TEXT NOT NULL CHECK (service_type IN ('full-charter', 'empty-leg')),
+  origin TEXT NOT NULL,
   destination TEXT NOT NULL,
-  date TEXT NOT NULL,
-  passengers INTEGER NOT NULL,
-  details TEXT,
+  departure_date TEXT,
+  departure_time TEXT,
+  passengers INTEGER NOT NULL DEFAULT 1,
+  notes TEXT,
+  seen_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  seen_at DATETIME DEFAULT NULL  -- When admin viewed this quote
+  contact_status TEXT DEFAULT 'not_contacted'
+);
+
+-- Payments table - Track payment transactions
+CREATE TABLE IF NOT EXISTS payments (
+  id TEXT PRIMARY KEY,
+  flight_id TEXT NOT NULL,
+  user_id TEXT,
+  amount REAL NOT NULL,
+  payment_method TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (flight_id) REFERENCES flights (id),
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Airports table - Airport directory with approval system
+CREATE TABLE IF NOT EXISTS airports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  city TEXT NOT NULL,
+  country TEXT NOT NULL,
+  latitude REAL,
+  longitude REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  status TEXT DEFAULT 'pending'
 );
