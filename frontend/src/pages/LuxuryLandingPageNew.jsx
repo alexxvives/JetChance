@@ -236,7 +236,7 @@ const LuxuryLandingPage = () => {
       )}
 
       {/* 1. Hero Section */}
-      <section className="relative min-h-screen flex items-start justify-center pt-8 sm:pt-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-start justify-center pt-8 sm:pt-32 overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -273,7 +273,7 @@ const LuxuryLandingPage = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-start sm:justify-center pt-16 sm:pt-0">
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col justify-start sm:justify-center pt-16 sm:pt-8">
           {/* Headline */}
           <div className="mb-6 sm:mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
