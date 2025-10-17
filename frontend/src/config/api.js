@@ -2,13 +2,13 @@
  * API Configuration
  * 
  * Worker is configured to respond on www.jetchance.com/api/*
- * Use relative URLs in production for same-domain requests
+ * Always use production Worker API for consistency
  */
 
-// For production: use relative URL (same domain)
-// For development: use localhost
+// Production: relative URL (same domain)
+// Development: use production Worker directly
 export const API_BASE_URL = import.meta.env.MODE === 'development' 
-  ? 'http://localhost:4000/api' 
+  ? 'https://www.jetchance.com/api' 
   : '/api';
 
 export default API_BASE_URL;
