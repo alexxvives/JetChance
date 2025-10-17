@@ -1,15 +1,17 @@
 /**
  * API Configuration
  * 
- * Production: Uses relative URLs (/api) - Worker on same domain
- * Development: Set VITE_USE_LOCAL_API=true in .env.local to use local backend
+ * Always uses Cloudflare Worker in production domain:
+ * - Production build: /api (relative URL on www.jetchance.com)
+ * - Development: /api (connects to www.jetchance.com/api via CORS)
+ * 
+ * Benefits:
+ * - Simple: No local backend needed
+ * - Consistent: Same API in dev and prod
+ * - Fast: Cloudflare's global CDN
+ * - Free tier: 100k requests/day (more than enough for development)
  */
 
-// Check if we should use local API (only in development)
-const useLocalAPI = import.meta.env.VITE_USE_LOCAL_API === 'true';
-
-export const API_BASE_URL = useLocalAPI
-  ? 'http://localhost:4000/api'  // Local Node.js backend
-  : '/api';  // Production Worker (www.jetchance.com/api/*)
+export const API_BASE_URL = '/api';
 
 export default API_BASE_URL;
