@@ -61,6 +61,23 @@ export async function handleNotifications(
       });
     }
 
+    // GET /api/notifications/unread-count - Get count of unread notifications
+    if (request.method === 'GET' && path === '/unread-count') {
+      const result = await env.jetchance_db.prepare(
+        'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND read_at IS NULL'
+      ).bind(user.id).first();
+
+      return new Response(JSON.stringify({
+        count: result?.count || 0
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
     // POST /api/notifications/mark-all-read - Mark all notifications as read
     if (request.method === 'POST' && path === '/mark-all-read') {
       await env.jetchance_db.prepare(

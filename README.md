@@ -2,6 +2,36 @@
 
 A comprehensive platform for booking shared private jet charters, featuring role-based access for customers and operators.
 
+## 🚀 Quick Start
+
+### Development
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+That's it! The app will connect to the production API automatically.
+
+Open [http://localhost:5173](http://localhost:5173)
+
+### Test Accounts
+
+- **Admin**: `admin@jetchance.com` / `password`
+- **Super Admin**: `superadmin@jetchance.com` / `password`
+
+---
+
+## 🏗 Architecture
+
+- **Frontend**: React + Vite → Cloudflare Pages (`www.jetchance.com`)
+- **API**: Cloudflare Workers → `www.jetchance.com/api/*`
+- **Database**: Cloudflare D1 (SQLite-compatible)
+- **Storage**: Cloudflare R2 (aircraft images)
+
+---
+
 ## 🚀 Features
 
 ### For Customers
@@ -21,19 +51,19 @@ A comprehensive platform for booking shared private jet charters, featuring role
 ## 🛠 Technology Stack
 
 ### Frontend
-- **React** - Modern UI framework
-- **Vite** - Fast development build tool
-- **TailwindCSS** - Utility-first CSS framework
+- **React 18** - Modern UI framework
+- **Vite** - Lightning-fast build tool
+- **TailwindCSS** - Utility-first CSS
 - **React Router** - Client-side routing
 - **Heroicons** - Beautiful SVG icons
-- **OpenStreetMap & Leaflet** - Free interactive maps
+- **Leaflet** - Interactive maps
 
 ### Backend
-- **Node.js** - Server runtime
-- **Express.js** - Web application framework
-- **SQLite** - Lightweight database
+- **Cloudflare Workers** - Serverless edge compute
+- **Cloudflare D1** - SQLite database at the edge
+- **Cloudflare R2** - Object storage
+- **TypeScript** - Type-safe API handlers
 - **JWT** - Secure authentication
-- **CORS** - Cross-origin resource sharing
 
 ## 📁 Project Structure
 
@@ -43,11 +73,16 @@ JetChance/
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
 │   │   ├── pages/          # Route-based page components
-│   │   ├── data/           # Mock data and constants
-│   │   └── main.jsx        # Application entry point
-│   ├── public/             # Static assets
+│   │   ├── config/         # API configuration
+│   │   └── locales/        # i18n translations (EN/ES)
 │   └── package.json        # Frontend dependencies
-├── backend/                 # Node.js backend API
+├── workers/
+│   └── jetchance-api/      # Cloudflare Worker API
+│       ├── src/
+│       │   ├── handlers/   # API route handlers
+│       │   └── middleware/ # Auth, CORS
+│       └── wrangler.jsonc  # Worker configuration
+└── backend/                 # Legacy Node.js backend (deprecated)
 │   ├── server.js           # Express server setup
 │   ├── initDatabase.js     # Database initialization
 │   └── package.json        # Backend dependencies

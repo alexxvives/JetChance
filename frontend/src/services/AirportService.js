@@ -7,6 +7,7 @@ const API_URL = API_BASE_URL;
 class AirportService {
   static cache = new Map();
   static cacheTimeout = 5 * 60 * 1000; // 5 minutes
+  static silent = true; // Silent mode by default - only log errors
 
   /**
    * Get all approved airports from database
@@ -17,12 +18,12 @@ class AirportService {
     
     // Return cached data if still valid
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      console.log('🎯 Using cached airports data');
+      if (!this.silent) console.log('🎯 Using cached airports data');
       return cached.data;
     }
 
     try {
-      console.log('🔄 Fetching airports from database...');
+      if (!this.silent) console.log('🔄 Fetching airports from database...');
       const response = await fetch(`${API_URL}/airports`);
       
       if (!response.ok) {
@@ -30,7 +31,7 @@ class AirportService {
       }
       
       const airports = await response.json();
-      console.log(`📡 Loaded ${airports.length} approved airports from database`);
+      if (!this.silent) console.log(`📡 Loaded ${airports.length} approved airports from database`);
       
       // Cache the results
       this.cache.set(cacheKey, {
@@ -49,6 +50,7 @@ class AirportService {
 
   /**
    * Search airports by query (code, name, or city)
+   * Only loads data when actually needed
    */
   static async searchAirports(query) {
     if (!query || query.length < 2) return [];
@@ -61,7 +63,7 @@ class AirportService {
       }
       
       const airports = await response.json();
-      console.log(`🔍 Found ${airports.length} airports matching "${query}"`);
+      if (!this.silent) console.log(`🔍 Found ${airports.length} airports matching "${query}"`);
       return airports;
     } catch (error) {
       console.error('❌ Error searching airports:', error);
