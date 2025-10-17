@@ -349,14 +349,97 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 }
 
 async function handleGetProfile(request: Request, env: Env): Promise<Response> {
-  // This would need authentication - simplified for now
-  return new Response(JSON.stringify({
-    message: 'Profile endpoint - authentication required'
-  }), {
-    status: 401,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders
+  try {
+    // Extract token from Authorization header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'No token provided'
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
     }
-  });
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    // Verify JWT token
+    const { verifyToken } = await import('../middleware/auth');
+    const payload = await verifyToken(token, env);
+    
+    if (!payload || !payload.userId) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'Invalid token'
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // Get user from database
+    const user = await env.jetchance_db.prepare(
+      'SELECT id, email, role, created_at FROM users WHERE id = ?'
+    ).bind(payload.userId).first();
+
+    if (!user) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'User not found'
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // Build user data object
+    const userData: any = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      createdAt: user.created_at
+    };
+
+    // If operator, get company name
+    if (user.role === 'operator') {
+      const operatorResult = await env.jetchance_db.prepare(
+        'SELECT company_name FROM operators WHERE user_id = ?'
+      ).bind(user.id).first();
+      
+      if (operatorResult) {
+        userData.companyName = operatorResult.company_name;
+      }
+    }
+
+    return new Response(JSON.stringify(userData), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+
+  } catch (error) {
+    console.error('Get profile error:', error);
+    return new Response(JSON.stringify({
+      error: 'Unauthorized',
+      message: 'Token verification failed'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
 }

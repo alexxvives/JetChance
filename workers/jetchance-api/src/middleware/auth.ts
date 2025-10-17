@@ -111,3 +111,14 @@ export function generateTokens(userId: string, env: Env) {
   
   return { accessToken, refreshToken };
 }
+
+export async function verifyToken(token: string, env: Env): Promise<{ userId: string } | null> {
+  try {
+    const jwtSecret = env.JWT_SECRET || 'fallback-secret-for-development';
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string };
+    return decoded;
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return null;
+  }
+}
