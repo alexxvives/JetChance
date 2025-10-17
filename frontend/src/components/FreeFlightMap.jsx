@@ -138,12 +138,6 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
     if (airportsData[upperCode]) {
       const airport = airportsData[upperCode];
       const isApproved = airport.status === 'approved';
-      console.log(`✅ Using database coordinates for ${upperCode}:`, { 
-        lat: airport.latitude, 
-        lng: airport.longitude,
-        status: airport.status,
-        isExact: isApproved
-      });
       return {
         lat: parseFloat(airport.latitude),
         lng: parseFloat(airport.longitude),
@@ -159,7 +153,7 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
       const cityKey = cityName.toUpperCase().trim();
       const cityCoords = cityCoordinates[cityKey];
       if (cityCoords) {
-        console.log(`🏙️ Using hardcoded city coordinates for ${cityName}:`, cityCoords);
+
         return {
           lat: cityCoords.lat,
           lng: cityCoords.lng,
@@ -170,15 +164,15 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
       }
     }
     
-    console.log(`❌ No coordinates found for ${code}`);
+
     return null;
   };
 
   const originCoords = getCoordinates(flight.origin_code, flight.origin);
   const destinationCoords = getCoordinates(flight.destination_code, flight.destination);
 
-  console.log('🎯 Origin coords:', originCoords);
-  console.log('🎯 Destination coords:', destinationCoords);
+
+
 
   // Check if we're using city centers instead of exact airport coordinates
   const usingCityFallback = (!originCoords?.isExact) || (!destinationCoords?.isExact);
