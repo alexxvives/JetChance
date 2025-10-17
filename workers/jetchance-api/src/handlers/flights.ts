@@ -190,6 +190,23 @@ async function handleGetFlight(request: Request, env: Env, flightId: string): Pr
  */
 async function handleGetOperatorFlights(request: Request, env: Env, userId: string): Promise<Response> {
   try {
+    // First check if operator exists for this user_id
+    const operator = await env.jetchance_db.prepare(
+      'SELECT id FROM operators WHERE user_id = ?'
+    ).bind(userId).first();
+
+    // If no operator profile, return empty array (user might not be registered as operator yet)
+    if (!operator) {
+      console.log(`No operator profile found for user_id: ${userId}`);
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
     // Get flights for this operator
     const flights = await env.jetchance_db.prepare(`
       SELECT 
@@ -200,10 +217,9 @@ async function handleGetOperatorFlights(request: Request, env: Env, userId: stri
         f.available_seats, f.total_seats, f.status, f.images,
         f.created_at, f.updated_at
       FROM flights f
-      JOIN operators o ON f.operator_id = o.id
-      WHERE o.user_id = ?
+      WHERE f.operator_id = ?
       ORDER BY f.departure_datetime DESC
-    `).bind(userId).all();
+    `).bind(operator.id).all();
 
     return new Response(JSON.stringify(flights.results || []), {
       status: 200,
@@ -217,7 +233,8 @@ async function handleGetOperatorFlights(request: Request, env: Env, userId: stri
     console.error('Get operator flights error:', error);
     return new Response(JSON.stringify({
       error: 'Flight retrieval failed',
-      message: 'Unable to get flight details. Please try again.'
+      message: error instanceof Error ? error.message : 'Unable to get flight details',
+      details: 'Check if operator profile exists for this user'
     }), {
       status: 500,
       headers: {
