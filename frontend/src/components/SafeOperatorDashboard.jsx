@@ -161,7 +161,35 @@ function ActualOperatorDashboard({ user }) {
       
       // Handle both direct array response and object with flights property
       const flightsArray = Array.isArray(flightData) ? flightData : flightData.flights || [];
-      setFlights(flightsArray);
+      
+      // Transform backend data to frontend format
+      const transformedFlights = flightsArray.map(flight => ({
+        ...flight,
+        // Extract airport codes from formatted names like "Airport Name (CODE)"
+        originCode: flight.origin_name ? flight.origin_name.match(/\(([^)]+)\)/)?.[1] || 'N/A' : 'N/A',
+        destinationCode: flight.destination_name ? flight.destination_name.match(/\(([^)]+)\)/)?.[1] || 'N/A' : 'N/A',
+        // Add fallback field names for compatibility
+        origin_code: flight.origin_name ? flight.origin_name.match(/\(([^)]+)\)/)?.[1] || 'N/A' : 'N/A',
+        destination_code: flight.destination_name ? flight.destination_name.match(/\(([^)]+)\)/)?.[1] || 'N/A' : 'N/A',
+        // Map pricing fields
+        price: flight.empty_leg_price || flight.price,
+        // Map seats fields
+        seats_available: flight.available_seats,
+        max_passengers: flight.total_seats,
+        capacity: {
+          availableSeats: flight.available_seats,
+          maxPassengers: flight.total_seats
+        },
+        // Parse images JSON string to array
+        images: typeof flight.images === 'string' ? JSON.parse(flight.images || '[]') : (flight.images || []),
+        // Map datetime fields
+        departure_time: flight.departure_datetime,
+        departureDateTime: flight.departure_datetime,
+        arrival_time: flight.arrival_datetime,
+        arrivalDateTime: flight.arrival_datetime
+      }));
+      
+      setFlights(transformedFlights);
       
     } catch (error) {
       console.error('❌ Error loading flights:', error);
