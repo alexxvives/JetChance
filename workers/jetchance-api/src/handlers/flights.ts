@@ -14,6 +14,11 @@ interface FlightSearchParams {
 
 export async function handleFlights(request: Request, env: Env, path: string): Promise<Response> {
   try {
+    // POST /api/flights - Create new flight
+    if (path === '' && request.method === 'POST') {
+      return handleCreateFlight(request, env);
+    }
+
     // GET /api/flights?user_id=... - Get flights for operator
     if (path === '' && request.method === 'GET') {
       const url = new URL(request.url);
@@ -236,6 +241,157 @@ async function handleGetOperatorFlights(request: Request, env: Env, userId: stri
       error: 'Flight retrieval failed',
       message: error instanceof Error ? error.message : 'Unable to get flight details',
       details: 'Check if operator profile exists for this user'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+}
+
+/**
+ * Create a new flight
+ */
+async function handleCreateFlight(request: Request, env: Env): Promise<Response> {
+  try {
+    // Authenticate user
+    const { authenticate } = await import('../middleware/auth');
+    const authResult = await authenticate(request, env);
+    
+    if (authResult.error || !authResult.user) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: authResult.error || 'Authentication required'
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // Only operators can create flights
+    if (authResult.user.role !== 'operator') {
+      return new Response(JSON.stringify({
+        error: 'Forbidden',
+        message: 'Only operators can create flights'
+      }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    const data = await request.json() as any;
+
+    // Validate required fields
+    const requiredFields = [
+      'origin_name', 'origin_city', 'origin_country',
+      'destination_name', 'destination_city', 'destination_country',
+      'departure_datetime', 'market_price', 'empty_leg_price',
+      'available_seats', 'total_seats'
+    ];
+
+    for (const field of requiredFields) {
+      if (!data[field]) {
+        return new Response(JSON.stringify({
+          error: 'Validation failed',
+          message: `Missing required field: ${field}`
+        }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+    }
+
+    // Get operator_id from user_id
+    const operator = await env.jetchance_db.prepare(
+      'SELECT id FROM operators WHERE user_id = ?'
+    ).bind(authResult.user.id).first();
+
+    if (!operator) {
+      return new Response(JSON.stringify({
+        error: 'Forbidden',
+        message: 'Operator profile not found'
+      }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // Generate flight ID (e.g., FL00001)
+    const { generateFlightId } = await import('../utils/idGenerator');
+    const flightId = await generateFlightId(env.jetchance_db, operator.id as string);
+
+    // Insert flight
+    await env.jetchance_db.prepare(`
+      INSERT INTO flights (
+        id, operator_id, aircraft_model, images,
+        origin_name, origin_city, origin_country,
+        destination_name, destination_city, destination_country,
+        departure_datetime, arrival_datetime,
+        market_price, empty_leg_price,
+        available_seats, total_seats,
+        status, description
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      flightId,
+      operator.id,
+      data.aircraft_model || null,
+      data.images || '[]',
+      data.origin_name,
+      data.origin_city,
+      data.origin_country,
+      data.destination_name,
+      data.destination_city,
+      data.destination_country,
+      data.departure_datetime,
+      data.arrival_datetime || null,
+      data.market_price,
+      data.empty_leg_price,
+      data.available_seats,
+      data.total_seats,
+      data.status || 'pending',
+      data.description || null
+    ).run();
+
+    // Update operator's total_flights count
+    await env.jetchance_db.prepare(
+      'UPDATE operators SET total_flights = total_flights + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    ).bind(operator.id).run();
+
+    // Get the created flight
+    const flight = await env.jetchance_db.prepare(
+      'SELECT * FROM flights WHERE id = ?'
+    ).bind(flightId).first();
+
+    return new Response(JSON.stringify({
+      message: 'Flight created successfully',
+      flight: flight
+    }), {
+      status: 201,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+
+  } catch (error) {
+    console.error('Create flight error:', error);
+    return new Response(JSON.stringify({
+      error: 'Flight creation failed',
+      message: error instanceof Error ? error.message : 'Unable to create flight'
     }), {
       status: 500,
       headers: {
