@@ -241,7 +241,8 @@ function ActualOperatorDashboard({ user }) {
   
   // Use the correct field name: departure_time
   const getFlightDate = (flight) => {
-    return flight.departure_time || 
+    return flight.departure_datetime || // Backend field
+           flight.departure_time || 
            flight.departureDateTime || 
            flight.departure_date || 
            flight.departureDate || 
