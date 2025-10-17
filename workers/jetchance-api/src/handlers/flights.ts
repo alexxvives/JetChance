@@ -14,6 +14,19 @@ interface FlightSearchParams {
 
 export async function handleFlights(request: Request, env: Env, path: string): Promise<Response> {
   try {
+    // GET /api/flights?user_id=... - Get flights for operator
+    if (path === '' && request.method === 'GET') {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('user_id');
+      
+      if (userId) {
+        return handleGetOperatorFlights(request, env, userId);
+      }
+      
+      // If no user_id, fall through to search
+      return handleFlightSearch(request, env);
+    }
+    
     if (path === '/search' && request.method === 'GET') {
       return handleFlightSearch(request, env);
     }
@@ -159,6 +172,49 @@ async function handleGetFlight(request: Request, env: Env, flightId: string): Pr
     
   } catch (error) {
     console.error('Get flight error:', error);
+    return new Response(JSON.stringify({
+      error: 'Internal Server Error',
+      message: 'Failed to retrieve flight'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+}
+
+/**
+ * Get all flights for an operator by user_id
+ */
+async function handleGetOperatorFlights(request: Request, env: Env, userId: string): Promise<Response> {
+  try {
+    // Get flights for this operator
+    const flights = await env.jetchance_db.prepare(`
+      SELECT 
+        f.id, f.aircraft_model, f.aircraft_type, f.origin_name, 
+        f.origin_city, f.origin_country, f.origin_iata,
+        f.destination_name, f.destination_city, f.destination_country, f.destination_iata,
+        f.departure_datetime, f.arrival_datetime, f.price, 
+        f.available_seats, f.total_seats, f.status, f.images,
+        f.created_at, f.updated_at
+      FROM flights f
+      JOIN operators o ON f.operator_id = o.id
+      WHERE o.user_id = ?
+      ORDER BY f.departure_datetime DESC
+    `).bind(userId).all();
+
+    return new Response(JSON.stringify(flights.results || []), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+    
+  } catch (error) {
+    console.error('Get operator flights error:', error);
     return new Response(JSON.stringify({
       error: 'Flight retrieval failed',
       message: 'Unable to get flight details. Please try again.'

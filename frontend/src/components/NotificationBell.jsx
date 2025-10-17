@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellSolidIcon } from '@heroicons/react/24/solid';
 import { useTranslation } from '../contexts/TranslationContext';
+import API_BASE_URL from '../config/api';
 
 const NotificationBell = () => {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ const NotificationBell = () => {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/unread-count`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -45,7 +46,7 @@ const NotificationBell = () => {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -73,7 +74,7 @@ const NotificationBell = () => {
       }
 
       console.log('📬 Marking all notifications as read...');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/mark-all-read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
