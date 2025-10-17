@@ -337,7 +337,7 @@ export default function CreateFlightPage() {
         for (const image of formData.aircraftImages) {
           try {
             const formDataForUpload = new FormData();
-            formDataForUpload.append('aircraftImage', image);
+            formDataForUpload.append('image', image); // Backend expects 'image', not 'aircraftImage'
             
             const uploadResponse = await fetch(`${API_URL}/upload/aircraft-image`, {
               method: 'POST',
@@ -442,36 +442,23 @@ export default function CreateFlightPage() {
       
       // Prepare flight data
       const flightData = {
-        // Required backend fields
-        aircraftType: formData.aircraftType,
-        originCode: formData.originAirport?.code || '',
-        destinationCode: formData.destinationAirport?.code || '',
-        departureDateTime: formData.departureTime,
-        emptyLegPrice: parseFloat(formData.price) * 1.3, // Customer price with 30% commission
-        operatorPrice: parseFloat(formData.price), // Operator's base price (stored for reference)
-        totalSeats: parseInt(formData.seatsAvailable),
-        
-        // Add originalPrice only if provided
-        ...(formData.originalPrice && { originalPrice: parseFloat(formData.originalPrice) }),
-        
-        // Optional fields with improved airport naming format
-        flightNumber: isEditMode ? formData.flightNumber : `CF${Date.now()}`, // Keep existing flight number in edit mode
-        originName: formData.originAirport ? `${formData.originAirport.name} (${formData.originAirport.code})` : '',
-        originCity: formData.originAirport?.city || '',
-        originCountry: formData.originAirport?.country || getCountryByAirportCode(formData.originAirport?.code),
-        destinationName: formData.destinationAirport ? `${formData.destinationAirport.name} (${formData.destinationAirport.code})` : '',
-        destinationCity: formData.destinationAirport?.city || '',
-        destinationCountry: formData.destinationAirport?.country || getCountryByAirportCode(formData.destinationAirport?.code),
-        arrivalDateTime: formData.arrivalTime,
-        description: formData.description,
-        
-        // Additional frontend fields for display
-        origin: formData.originAirport?.city || '',
-        destination: formData.destinationAirport?.city || '',
-        price: parseFloat(formData.price),
-        seatsAvailable: parseInt(formData.seatsAvailable),
-        aircraft_image: uploadedImageUrls.length > 0 ? uploadedImageUrls[0] : getDefaultAircraftImage(formData.aircraftType),
-        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : []
+        // Backend required fields (snake_case matching database schema)
+        aircraft_model: formData.aircraftType,
+        origin_name: formData.originAirport ? `${formData.originAirport.name} (${formData.originAirport.code})` : '',
+        origin_city: formData.originAirport?.city || '',
+        origin_country: formData.originAirport?.country || getCountryByAirportCode(formData.originAirport?.code),
+        destination_name: formData.destinationAirport ? `${formData.destinationAirport.name} (${formData.destinationAirport.code})` : '',
+        destination_city: formData.destinationAirport?.city || '',
+        destination_country: formData.destinationAirport?.country || getCountryByAirportCode(formData.destinationAirport?.code),
+        departure_datetime: formData.departureTime,
+        arrival_datetime: formData.arrivalTime || null,
+        market_price: parseFloat(formData.originalPrice || formData.price) * 1.3, // Original price or calculated
+        empty_leg_price: parseFloat(formData.price), // Actual empty leg price
+        available_seats: parseInt(formData.seatsAvailable),
+        total_seats: parseInt(formData.seatsAvailable),
+        status: 'pending', // New flights start as pending
+        description: formData.description || null,
+        images: JSON.stringify(uploadedImageUrls.length > 0 ? uploadedImageUrls : [])
       };
       
       // Use real API to save to database, fallback to mock API if needed
