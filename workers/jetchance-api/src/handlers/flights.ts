@@ -36,7 +36,8 @@ export async function handleFlights(request: Request, env: Env, path: string): P
       return handleFlightSearch(request, env);
     }
     
-    if (path.match(/^\/\d+$/) && request.method === 'GET') {
+    // GET /api/flights/{id} - Get single flight (UUID format)
+    if (path.match(/^\/[a-f0-9-]{36}$/i) && request.method === 'GET') {
       const flightId = path.substring(1);
       return handleGetFlight(request, env, flightId);
     }
@@ -146,12 +147,16 @@ async function handleGetFlight(request: Request, env: Env, flightId: string): Pr
   try {
     const flight = await env.jetchance_db.prepare(
       `SELECT 
-        id, operator_id, origin, destination, origin_code, destination_code,
-        departure_time, arrival_time, aircraft_type, aircraft_image,
-        price, original_price, seats_available, operator_name, duration,
-        origin_lat, origin_lng, destination_lat, destination_lng, status
+        id, operator_id, aircraft_model, images,
+        origin_name, origin_city, origin_country,
+        destination_name, destination_city, destination_country,
+        departure_datetime, arrival_datetime,
+        market_price, empty_leg_price,
+        available_seats, total_seats,
+        status, description,
+        created_at, updated_at
        FROM flights 
-       WHERE id = ? AND status = 'active'`
+       WHERE id = ?`
     ).bind(flightId).first();
     
     if (!flight) {
@@ -167,7 +172,7 @@ async function handleGetFlight(request: Request, env: Env, flightId: string): Pr
       });
     }
     
-    return new Response(JSON.stringify({ flight }), {
+    return new Response(JSON.stringify(flight), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
