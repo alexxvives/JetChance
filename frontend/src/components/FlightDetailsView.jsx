@@ -89,16 +89,6 @@ export default function FlightDetailsOption1({
 
   const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin';
 
-  // Debug logging
-  console.log('Edit button visibility check:', {
-    isOperator,
-    hasExistingBookings,
-    availableSeats,
-    maxPassengers,
-    userRole: user?.role,
-    showButton: isOperator && !hasExistingBookings
-  });
-
   // Parse images field (it's a JSON string in the database or already an array)
   let parsedImages = [];
   if (flight.images) {
@@ -109,13 +99,17 @@ export default function FlightDetailsOption1({
       } else if (typeof flight.images === 'string') {
         parsedImages = flight.images ? JSON.parse(flight.images) : [];
       }
-      console.log('📸 FlightDetailsView - Images:', parsedImages);
-      console.log('   Main image:', parsedImages[0]);
     } catch (e) {
       console.error('❌ Error parsing flight images:', e, flight.images);
       parsedImages = [];
     }
   }
+  
+  console.log('📸 Images for flight:', { 
+    raw: flight.images, 
+    parsed: parsedImages, 
+    mainImage: parsedImages[0] || 'fallback' 
+  });
   
   // Prepare images array - main image + additional images
   const mainImage = parsedImages[0] || flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image || '/images/aircraft/default-aircraft.jpg';

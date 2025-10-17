@@ -65,12 +65,6 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
     fetchAirportData();
   }, []);
   
-  console.log('🗺️ Flight data for map:', flight);
-  console.log('🗺️ Flight keys:', Object.keys(flight || {}));
-  console.log('🗺️ Origin code:', flight.origin_code);
-  console.log('🗺️ Destination code:', flight.destination_code);
-  console.log('🗺️ Airports data:', airportsData);
-  
   // Airport coordinates lookup (we'll expand this with more airports)
   const airportCoordinates = {
     'BOS': { lat: 42.3601, lng: -71.0056, name: 'Boston Logan International' },
@@ -238,10 +232,6 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
   const deltaLat = destinationCoords.lat - originCoords.lat;
   const deltaLng = destinationCoords.lng - originCoords.lng;
   const angle = Math.atan2(deltaLng, deltaLat) * 180 / Math.PI;
-  
-  console.log('✈️ Plane position:', planePosition);
-  console.log('✈️ Delta lat:', deltaLat, 'Delta lng:', deltaLng);
-  console.log('✈️ Flight angle:', angle);
 
   // Flight path coordinates
   const flightPath = [origin, destination];

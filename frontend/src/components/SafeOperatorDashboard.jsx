@@ -914,18 +914,8 @@ function FlightCard({ flight, navigate, isPast = false, onDelete, onViewDetails 
           {!isPast && (
             <>
               {/* Edit button - show for pending flights OR approved flights with no bookings */}
-              {(() => {
-                const showEdit = flight.status === 'pending' || 
-                  (flight.status === 'approved' && flight.available_seats >= flight.max_passengers);
-                console.log('Edit button check:', {
-                  flightId: flight.id,
-                  status: flight.status,
-                  available_seats: flight.available_seats,
-                  max_passengers: flight.max_passengers,
-                  showEdit
-                });
-                return showEdit;
-              })() && (
+              {(flight.status === 'pending' || 
+                (flight.status === 'approved' && flight.available_seats >= flight.max_passengers)) && (
                 <button
                   onClick={() => navigate(`/edit-flight/${flight.id}`)}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
