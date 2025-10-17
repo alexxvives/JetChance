@@ -330,19 +330,8 @@ export async function handleBookings(request: Request, env: Env, path: string, u
         });
       }
 
-      // Generate booking ID (e.g., BK00001)
-      const lastBooking = await env.jetchance_db.prepare(
-        'SELECT id FROM bookings ORDER BY id DESC LIMIT 1'
-      ).first();
-      
-      let bookingNumber = 1;
-      if (lastBooking && lastBooking.id) {
-        const match = String(lastBooking.id).match(/BK(\d+)/);
-        if (match) {
-          bookingNumber = parseInt(match[1]) + 1;
-        }
-      }
-      const bookingId = `BK${String(bookingNumber).padStart(5, '0')}`;
+      // Generate booking ID using UUID
+      const bookingId = crypto.randomUUID();
 
       // Create booking
       await env.jetchance_db.prepare(`

@@ -330,9 +330,9 @@ async function handleCreateFlight(request: Request, env: Env): Promise<Response>
       });
     }
 
-    // Generate flight ID (e.g., FL00001)
-    const { generateFlightId } = await import('../utils/idGenerator');
-    const flightId = await generateFlightId(env.jetchance_db, operator.id as string);
+    // Generate flight ID using UUID
+    const { generateUUID } = await import('../utils/idGenerator');
+    const flightId = generateUUID();
 
     // Insert flight
     await env.jetchance_db.prepare(`
