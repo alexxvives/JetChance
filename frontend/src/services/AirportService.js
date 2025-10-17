@@ -1,7 +1,8 @@
 // Airport Service - Database-first approach
 // Replaces hardcoded airportsAndCities.js with API calls
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+import API_BASE_URL from '../config/api';
+const API_URL = API_BASE_URL;
 
 class AirportService {
   static cache = new Map();
