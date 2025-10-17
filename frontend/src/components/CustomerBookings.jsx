@@ -17,6 +17,9 @@ import {
   BarChart3
 } from 'lucide-react';
 
+// API URL from environment variable
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 export default function CustomerBookings() {
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -32,7 +35,7 @@ export default function CustomerBookings() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/bookings', {
+      const response = await fetch(`${API_URL}/bookings`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

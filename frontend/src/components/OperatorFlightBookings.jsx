@@ -13,6 +13,9 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline';
 
+// API URL from environment variable
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {
   if (!amount) return { number: '0', currency: 'COP' };
@@ -37,7 +40,7 @@ export default function OperatorFlightBookings({ user, onViewFlight }) {
       const token = localStorage.getItem('accessToken');
       
       // First, get the flight ID from the booking
-      const bookingResponse = await fetch(`/api/bookings/${bookingId}/flight`, {
+      const bookingResponse = await fetch(`${API_URL}/bookings/${bookingId}/flight`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -53,7 +56,7 @@ export default function OperatorFlightBookings({ user, onViewFlight }) {
           console.log('✈️ Fetching flight details for ID:', bookingData.flightId);
           
           // Now fetch the full flight object
-          const flightResponse = await fetch(`/api/flights/${bookingData.flightId}`, {
+          const flightResponse = await fetch(`${API_URL}/flights/${bookingData.flightId}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -102,7 +105,7 @@ export default function OperatorFlightBookings({ user, onViewFlight }) {
     try {
       setCrmLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/bookings/operator', {
+      const response = await fetch(`${API_URL}/bookings/operator`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
