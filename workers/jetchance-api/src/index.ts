@@ -1,6 +1,7 @@
 /**
  * JetChance API - Cloudflare Workers Backend
  * Migrated from Node.js/Express to Cloudflare Workers with D1 Database
+ * Version: 1.0.0 - Auto-deployed via GitHub Actions
  */
 
 import { corsHeaders, handleCors } from './middleware/cors';
