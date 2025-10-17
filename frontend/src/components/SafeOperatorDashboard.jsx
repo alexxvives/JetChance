@@ -180,8 +180,17 @@ function ActualOperatorDashboard({ user }) {
           availableSeats: flight.available_seats,
           maxPassengers: flight.total_seats
         },
-        // Parse images JSON string to array
-        images: typeof flight.images === 'string' ? JSON.parse(flight.images || '[]') : (flight.images || []),
+        // Parse images JSON string to array safely
+        images: (() => {
+          if (!flight.images) return [];
+          if (Array.isArray(flight.images)) return flight.images;
+          try {
+            return JSON.parse(flight.images);
+          } catch (e) {
+            console.error('Error parsing images for flight:', flight.id, e);
+            return [];
+          }
+        })(),
         // Map datetime fields
         departure_time: flight.departure_datetime,
         departureDateTime: flight.departure_datetime,

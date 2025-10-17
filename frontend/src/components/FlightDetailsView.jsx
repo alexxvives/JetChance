@@ -99,14 +99,20 @@ export default function FlightDetailsOption1({
     showButton: isOperator && !hasExistingBookings
   });
 
-  // Parse images field (it's a JSON string in the database)
+  // Parse images field (it's a JSON string in the database or already an array)
   let parsedImages = [];
   if (flight.images) {
     try {
-      parsedImages = typeof flight.images === 'string' ? JSON.parse(flight.images) : flight.images;
-      console.log('📸 FlightDetailsView - Parsed images:', parsedImages);
+      // If it's already an array, use it directly
+      if (Array.isArray(flight.images)) {
+        parsedImages = flight.images;
+      } else if (typeof flight.images === 'string') {
+        parsedImages = flight.images ? JSON.parse(flight.images) : [];
+      }
+      console.log('📸 FlightDetailsView - Images:', parsedImages);
+      console.log('   Main image:', parsedImages[0]);
     } catch (e) {
-      console.error('❌ Error parsing flight images:', e);
+      console.error('❌ Error parsing flight images:', e, flight.images);
       parsedImages = [];
     }
   }

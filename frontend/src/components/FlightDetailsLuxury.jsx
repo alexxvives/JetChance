@@ -68,14 +68,19 @@ export default function FlightDetailsLuxury({ flight, onBack, selectedPassengers
 
   const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin';
 
-  // Parse images field (it's a JSON string in the database)
+  // Parse images field (it's a JSON string in the database or already an array)
   let images = [];
   if (flight.images) {
     try {
-      images = typeof flight.images === 'string' ? JSON.parse(flight.images) : flight.images;
-      console.log('📸 FlightDetailsLuxury - Parsed images:', images);
+      // If it's already an array, use it directly
+      if (Array.isArray(flight.images)) {
+        images = flight.images;
+      } else if (typeof flight.images === 'string') {
+        images = flight.images ? JSON.parse(flight.images) : [];
+      }
+      console.log('📸 FlightDetailsLuxury - Images:', images);
     } catch (e) {
-      console.error('❌ Error parsing flight images:', e);
+      console.error('❌ Error parsing flight images:', e, flight.images);
       images = [];
     }
   }
