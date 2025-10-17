@@ -210,15 +210,16 @@ async function handleGetOperatorFlights(request: Request, env: Env, userId: stri
     // Get flights for this operator
     const flights = await env.jetchance_db.prepare(`
       SELECT 
-        f.id, f.aircraft_model, f.aircraft_type, f.origin_name, 
-        f.origin_city, f.origin_country, f.origin_iata,
-        f.destination_name, f.destination_city, f.destination_country, f.destination_iata,
-        f.departure_datetime, f.arrival_datetime, f.price, 
-        f.available_seats, f.total_seats, f.status, f.images,
-        f.created_at, f.updated_at
-      FROM flights f
-      WHERE f.operator_id = ?
-      ORDER BY f.departure_datetime DESC
+        id, aircraft_model, images,
+        origin_name, origin_city, origin_country,
+        destination_name, destination_city, destination_country,
+        departure_datetime, arrival_datetime, 
+        market_price, empty_leg_price,
+        available_seats, total_seats, status, description,
+        created_at, updated_at
+      FROM flights
+      WHERE operator_id = ?
+      ORDER BY departure_datetime DESC
     `).bind(operator.id).all();
 
     return new Response(JSON.stringify(flights.results || []), {
