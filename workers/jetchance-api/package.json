@@ -4,6 +4,9 @@
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
+		"safe-deploy": "node scripts/safe-deploy.mjs",
+		"validate": "node scripts/pre-deploy.mjs",
+		"validate:endpoints": "node scripts/validate-endpoints.mjs",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",

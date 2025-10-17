@@ -233,17 +233,29 @@ CREATE TABLE IF NOT EXISTS airports (
 -- Quotes table - Store quote requests from landing page
 CREATE TABLE IF NOT EXISTS quotes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  service_type TEXT NOT NULL CHECK (service_type IN ('full-charter', 'empty-leg')),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
-  departure TEXT NOT NULL,
+  origin TEXT NOT NULL,
   destination TEXT NOT NULL,
-  date TEXT NOT NULL,
+  departure_date TEXT NOT NULL,
+  return_date TEXT,
   passengers INTEGER NOT NULL,
-  details TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  seen_at DATETIME DEFAULT NULL  -- When admin viewed this quote
+  message TEXT,
+  trip_type TEXT DEFAULT 'one-way',
+  status TEXT DEFAULT 'pending',
+  contacted INTEGER DEFAULT 0,
+  seen INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Email logs for tracking notifications
+CREATE TABLE IF NOT EXISTS email_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  recipient TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed'))
 );
 
 -- ========================================================================

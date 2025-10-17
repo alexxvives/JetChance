@@ -145,6 +145,109 @@ export async function handleBookings(request: Request, env: Env, path: string, u
       });
     }
 
+    // GET /api/bookings/crm - Get CRM data for admin
+    if (request.method === 'GET' && path === '/crm') {
+      if (user.role !== 'admin' && user.role !== 'super-admin') {
+        return new Response(JSON.stringify({ error: 'Unauthorized - Admin access required' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      // Get all bookings with detailed info for CRM
+      const bookings = await env.jetchance_db.prepare(`
+        SELECT 
+          b.id, b.flight_id, b.total_passengers, b.total_amount,
+          b.payment_method, b.special_requests, b.status,
+          b.contact_email, b.created_at, b.updated_at,
+          f.aircraft_model, f.origin_name, f.origin_city, f.origin_country,
+          f.destination_name, f.destination_city, f.destination_country,
+          f.departure_datetime, f.arrival_datetime, f.price,
+          o.company_name as operator_name, o.contact_name as operator_contact,
+          c.name as customer_name, c.phone as customer_phone
+        FROM bookings b
+        JOIN flights f ON b.flight_id = f.id
+        JOIN operators o ON f.operator_id = o.id
+        LEFT JOIN customers c ON b.customer_id = c.id
+        ORDER BY b.created_at DESC
+      `).all();
+
+      return new Response(JSON.stringify({
+        bookings: bookings.results || [],
+        totalBookings: bookings.results?.length || 0
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // GET /api/bookings/:id/flight - Get booking with flight details
+    if (request.method === 'GET' && path.match(/^\/\d+\/flight$/)) {
+      const bookingId = path.split('/')[1];
+      
+      const result = await env.jetchance_db.prepare(`
+        SELECT 
+          b.id as booking_id, b.total_passengers, b.total_amount,
+          b.payment_method, b.special_requests, b.status as booking_status,
+          b.contact_email, b.created_at as booking_created_at,
+          f.id as flight_id, f.aircraft_model, f.aircraft_type,
+          f.origin_name, f.origin_city, f.origin_country, f.origin_iata,
+          f.destination_name, f.destination_city, f.destination_country, f.destination_iata,
+          f.departure_datetime, f.arrival_datetime, f.price,
+          f.available_seats, f.status as flight_status,
+          o.company_name as operator_name, o.contact_name as operator_contact,
+          o.phone as operator_phone
+        FROM bookings b
+        JOIN flights f ON b.flight_id = f.id
+        JOIN operators o ON f.operator_id = o.id
+        WHERE b.id = ?
+      `).bind(bookingId).first();
+
+      if (!result) {
+        return new Response(JSON.stringify({ error: 'Booking not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      // Restructure data for frontend
+      const response = {
+        ...result,
+        flight: {
+          id: result.flight_id,
+          aircraftModel: result.aircraft_model,
+          aircraftType: result.aircraft_type,
+          origin: {
+            name: result.origin_name,
+            city: result.origin_city,
+            country: result.origin_country,
+            iata: result.origin_iata
+          },
+          destination: {
+            name: result.destination_name,
+            city: result.destination_city,
+            country: result.destination_country,
+            iata: result.destination_iata
+          },
+          departureDateTime: result.departure_datetime,
+          arrivalDateTime: result.arrival_datetime,
+          price: result.price,
+          availableSeats: result.available_seats,
+          status: result.flight_status
+        },
+        operator: {
+          name: result.operator_name,
+          contact: result.operator_contact,
+          phone: result.operator_phone
+        }
+      };
+
+      return new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
     // GET /api/bookings/:id - Get specific booking
     if (request.method === 'GET' && path.match(/^\/[^/]+$/)) {
       const bookingId = path.substring(1);

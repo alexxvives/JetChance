@@ -13,6 +13,11 @@ import { handleOperators } from './handlers/operators';
 import { handlePayments } from './handlers/payments';
 import { handleAirports } from './handlers/airports';
 import { handleNotifications } from './handlers/notifications';
+import { handleQuotes } from './handlers/quotes';
+import { handleUpload } from './handlers/upload';
+import { handleEmail } from './handlers/email';
+import { handleProfile } from './handlers/profile';
+import { handleAdmin } from './handlers/admin';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -117,6 +122,64 @@ export default {
 				// Normalize path: /api/notifications or /api/notifications/ should both result in empty string
 				const notificationsPath = path.replace('/api/notifications', '').replace(/^\/$/, '');
 				return handleNotifications(request, env, notificationsPath, authResult.user);
+			}
+
+			if (path.startsWith('/api/quotes')) {
+				// Public POST, but other methods require auth
+				if (request.method === 'POST' && path === '/api/quotes') {
+					return handleQuotes(request, env, '');
+				}
+				
+				const authResult = await authenticate(request, env);
+				if (authResult.error) {
+					return new Response(JSON.stringify({ error: authResult.error }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json', ...corsHeaders }
+					});
+				}
+				const quotesPath = path.replace('/api/quotes', '').replace(/^\/$/, '');
+				return handleQuotes(request, env, quotesPath, authResult.user);
+			}
+
+			if (path.startsWith('/api/upload')) {
+				const authResult = await authenticate(request, env);
+				if (authResult.error) {
+					return new Response(JSON.stringify({ error: authResult.error }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json', ...corsHeaders }
+					});
+				}
+				const uploadPath = path.replace('/api/upload', '').replace(/^\/$/, '');
+				return handleUpload(request, env, uploadPath, authResult.user);
+			}
+
+			if (path.startsWith('/api/send-email')) {
+				// Email endpoint is public (for quote notifications from landing page)
+				return handleEmail(request, env, path.replace('/api/send-email', '').replace(/^\/$/, ''));
+			}
+
+			if (path.startsWith('/api/profile')) {
+				const authResult = await authenticate(request, env);
+				if (authResult.error) {
+					return new Response(JSON.stringify({ error: authResult.error }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json', ...corsHeaders }
+					});
+				}
+				const profilePath = path.replace('/api/profile', '').replace(/^\/$/, '');
+				return handleProfile(request, env, profilePath, authResult.user);
+			}
+
+			if (path.startsWith('/api/admin/')) {
+				const authResult = await authenticate(request, env);
+				if (authResult.error) {
+					return new Response(JSON.stringify({ error: authResult.error }), {
+						status: 401,
+						headers: { 'Content-Type': 'application/json', ...corsHeaders }
+					});
+				}
+				const adminPath = path.replace('/api/admin', '').replace(/^\/$/, '');
+				return handleAdmin(request, env, adminPath, authResult.user);
 			}
 
 			// 404 handler
