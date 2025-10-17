@@ -24,30 +24,30 @@ export async function handleAdmin(
     if (request.method === 'GET' && path === '/system-stats') {
       // Get counts from various tables
       const [users, operators, flights, bookings, quotes, airports] = await Promise.all([
-        env.DB.prepare('SELECT COUNT(*) as count FROM users').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM operators WHERE status = ?').bind('approved').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM flights WHERE status = ?').bind('active').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM bookings').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM quotes').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM airports WHERE approved = 1').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM users').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM operators WHERE status = ?').bind('approved').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM flights WHERE status = ?').bind('active').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM bookings').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM quotes').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM airports WHERE approved = 1').first(),
       ]);
 
       // Get pending items
       const [pendingOperators, pendingFlights, pendingAirports, unseenQuotes] = await Promise.all([
-        env.DB.prepare('SELECT COUNT(*) as count FROM operators WHERE status = ?').bind('pending').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM flights WHERE status = ?').bind('pending').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM airports WHERE approved = 0').first(),
-        env.DB.prepare('SELECT COUNT(*) as count FROM quotes WHERE seen = 0').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM operators WHERE status = ?').bind('pending').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM flights WHERE status = ?').bind('pending').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM airports WHERE approved = 0').first(),
+        env.jetchance_db.prepare('SELECT COUNT(*) as count FROM quotes WHERE seen = 0').first(),
       ]);
 
       // Get recent activity (last 7 days)
       const [recentBookings, recentQuotes] = await Promise.all([
-        env.DB.prepare(`
+        env.jetchance_db.prepare(`
           SELECT COUNT(*) as count 
           FROM bookings 
           WHERE created_at >= datetime('now', '-7 days')
         `).first(),
-        env.DB.prepare(`
+        env.jetchance_db.prepare(`
           SELECT COUNT(*) as count 
           FROM quotes 
           WHERE created_at >= datetime('now', '-7 days')

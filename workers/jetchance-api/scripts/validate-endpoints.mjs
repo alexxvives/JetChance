@@ -9,7 +9,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, extname } from 'path';
 
 const FRONTEND_DIR = '../../frontend/src';
-const HANDLERS_DIR = '../src/handlers';
+const HANDLERS_DIR = './src/handlers';
 
 // Extract all fetch() calls from frontend code
 function extractFetchCalls(dir, basePath = '') {
@@ -51,7 +51,7 @@ function extractWorkerEndpoints() {
   const endpoints = new Set();
   
   // From index.ts routing
-  const indexContent = readFileSync('../src/index.ts', 'utf-8');
+  const indexContent = readFileSync('./src/index.ts', 'utf-8');
   
   // Known base routes from index.ts
   const baseRoutes = [

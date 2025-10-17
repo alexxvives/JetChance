@@ -5,7 +5,12 @@ declare namespace Cloudflare {
 	interface Env {
 		NODE_ENV: "production";
 		CORS_ORIGINS: "https://jetchance.alexxvives.workers.dev";
+		JWT_SECRET: string;
+		JWT_REFRESH_SECRET: string;
+		ENVIRONMENT: string;
 		jetchance_db: D1Database;
+		DB: D1Database;
+		AIRCRAFT_IMAGES: R2Bucket;
 	}
 }
 interface Env extends Cloudflare.Env {}

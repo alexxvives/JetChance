@@ -44,7 +44,7 @@ export async function handleEmail(
       });
 
       // Store email log in database for tracking
-      await env.DB.prepare(`
+      await env.jetchance_db.prepare(`
         INSERT INTO email_logs (
           recipient, subject, sent_at, status
         ) VALUES (?, ?, datetime('now'), 'pending')

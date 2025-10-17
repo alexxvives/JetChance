@@ -17,6 +17,9 @@ interface RegisterRequest {
   last_name?: string;
   phone?: string;
   role?: 'customer' | 'operator';
+  signupCode?: string;
+  companyName?: string;
+  company_name?: string;
 }
 
 interface LoginRequest {

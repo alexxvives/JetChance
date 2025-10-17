@@ -40,7 +40,7 @@ export async function handleQuotes(
       }
 
       // Insert quote
-      const result = await env.DB.prepare(`
+      const result = await env.jetchance_db.prepare(`
         INSERT INTO quotes (
           name, email, phone, origin, destination, 
           departure_date, return_date, passengers, 
@@ -78,7 +78,7 @@ export async function handleQuotes(
         });
       }
 
-      const quotes = await env.DB.prepare(`
+      const quotes = await env.jetchance_db.prepare(`
         SELECT 
           id, name, email, phone, origin, destination,
           departure_date, return_date, passengers, message,
@@ -102,7 +102,7 @@ export async function handleQuotes(
         });
       }
 
-      const result = await env.DB.prepare(`
+      const result = await env.jetchance_db.prepare(`
         SELECT COUNT(*) as count FROM quotes WHERE seen = 0
       `).first();
 
@@ -121,7 +121,7 @@ export async function handleQuotes(
         });
       }
 
-      const result = await env.DB.prepare(`
+      const result = await env.jetchance_db.prepare(`
         SELECT COUNT(*) as count FROM quotes WHERE contacted = 0
       `).first();
 
@@ -152,7 +152,7 @@ export async function handleQuotes(
 
       // Mark all as seen
       const placeholders = quoteIds.map(() => '?').join(',');
-      await env.DB.prepare(`
+      await env.jetchance_db.prepare(`
         UPDATE quotes SET seen = 1 WHERE id IN (${placeholders})
       `).bind(...quoteIds).run();
 
@@ -196,7 +196,7 @@ export async function handleQuotes(
 
       values.push(quoteId);
 
-      await env.DB.prepare(`
+      await env.jetchance_db.prepare(`
         UPDATE quotes SET ${updates.join(', ')} WHERE id = ?
       `).bind(...values).run();
 

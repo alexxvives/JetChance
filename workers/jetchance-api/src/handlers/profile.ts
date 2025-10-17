@@ -16,7 +16,7 @@ export async function handleProfile(
     // GET /api/profile - Get user profile
     if (request.method === 'GET' && path === '') {
       // Get base user info
-      const userRecord = await env.DB.prepare(`
+      const userRecord = await env.jetchance_db.prepare(`
         SELECT id, email, role, created_at
         FROM users
         WHERE id = ?
@@ -33,13 +33,13 @@ export async function handleProfile(
       let profileData = null;
 
       if (user.role === 'customer') {
-        profileData = await env.DB.prepare(`
+        profileData = await env.jetchance_db.prepare(`
           SELECT name, phone, address, city, country, postal_code
           FROM customers
           WHERE user_id = ?
         `).bind(user.id).first();
       } else if (user.role === 'operator') {
-        profileData = await env.DB.prepare(`
+        profileData = await env.jetchance_db.prepare(`
           SELECT company_name, contact_name, phone, address, 
                  city, country, certification, status
           FROM operators
@@ -70,13 +70,13 @@ export async function handleProfile(
         const { name, phone, address, city, country, postal_code } = body;
 
         // Check if customer record exists
-        const existing = await env.DB.prepare(`
+        const existing = await env.jetchance_db.prepare(`
           SELECT user_id FROM customers WHERE user_id = ?
         `).bind(user.id).first();
 
         if (existing) {
           // Update existing
-          await env.DB.prepare(`
+          await env.jetchance_db.prepare(`
             UPDATE customers 
             SET name = ?, phone = ?, address = ?, city = ?, 
                 country = ?, postal_code = ?
@@ -84,7 +84,7 @@ export async function handleProfile(
           `).bind(name, phone, address, city, country, postal_code, user.id).run();
         } else {
           // Create new customer record
-          await env.DB.prepare(`
+          await env.jetchance_db.prepare(`
             INSERT INTO customers (user_id, name, phone, address, city, country, postal_code)
             VALUES (?, ?, ?, ?, ?, ?, ?)
           `).bind(user.id, name, phone, address, city, country, postal_code).run();
@@ -92,7 +92,7 @@ export async function handleProfile(
       } else if (user.role === 'operator') {
         const { company_name, contact_name, phone, address, city, country } = body;
 
-        await env.DB.prepare(`
+        await env.jetchance_db.prepare(`
           UPDATE operators 
           SET company_name = ?, contact_name = ?, phone = ?, 
               address = ?, city = ?, country = ?
@@ -140,7 +140,7 @@ export async function handleProfile(
       }
 
       // Verify current password
-      const userRecord = await env.DB.prepare(`
+      const userRecord = await env.jetchance_db.prepare(`
         SELECT password_hash FROM users WHERE id = ?
       `).bind(user.id).first();
 
@@ -156,7 +156,7 @@ export async function handleProfile(
 
       // Hash and update new password
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await env.DB.prepare(`
+      await env.jetchance_db.prepare(`
         UPDATE users SET password_hash = ? WHERE id = ?
       `).bind(hashedPassword, user.id).run();
 
