@@ -75,6 +75,76 @@ export async function handleBookings(request: Request, env: Env, path: string, u
       });
     }
 
+    // GET /api/bookings/operator - Get CRM data for operator
+    if (request.method === 'GET' && path === '/operator') {
+      if (user.role !== 'operator') {
+        return new Response(JSON.stringify({
+          error: 'Only operators can access this endpoint'
+        }), {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
+
+      // Get operator's flights count
+      const flightsCount = await env.jetchance_db.prepare(`
+        SELECT COUNT(*) as count
+        FROM flights f
+        JOIN operators o ON f.operator_id = o.id
+        WHERE o.user_id = ?
+      `).bind(user.id).first();
+
+      // Get operator bookings with all details
+      const bookings = await env.jetchance_db.prepare(`
+        SELECT 
+          b.id,
+          b.flight_id as flightId,
+          b.total_passengers,
+          b.total_amount as totalAmount,
+          b.status,
+          b.contact_email,
+          b.created_at as bookingDate,
+          f.origin_name || ' (' || f.origin_city || ')' as origin,
+          f.destination_name || ' (' || f.destination_city || ')' as destination,
+          f.departure_datetime as departure,
+          f.available_seats as availableSeats,
+          f.total_seats as totalSeats,
+          c.first_name || ' ' || c.last_name as customerName
+        FROM bookings b
+        JOIN flights f ON b.flight_id = f.id
+        JOIN operators op ON f.operator_id = op.id
+        JOIN customers c ON b.customer_id = c.id
+        WHERE op.user_id = ?
+        ORDER BY b.created_at DESC
+      `).bind(user.id).all();
+
+      const response = {
+        totalFlights: flightsCount?.count || 0,
+        bookings: (bookings.results || []).map((booking: any) => ({
+          ...booking,
+          flight: {
+            origin: booking.origin,
+            destination: booking.destination,
+            departure: booking.departure,
+            availableSeats: booking.availableSeats,
+            totalSeats: booking.totalSeats
+          },
+          passengers: [] // Could be populated from passengers table if needed
+        }))
+      };
+
+      return new Response(JSON.stringify(response), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+
     // GET /api/bookings/:id - Get specific booking
     if (request.method === 'GET' && path.match(/^\/[^/]+$/)) {
       const bookingId = path.substring(1);
