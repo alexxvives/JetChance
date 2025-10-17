@@ -66,7 +66,7 @@ export default {
 				}
 				// Normalize path: /api/bookings or /api/bookings/ should both result in empty string
 				const bookingsPath = path.replace('/api/bookings', '').replace(/^\/$/, '');
-				return handleBookings(request, env, bookingsPath, authResult.user);
+				return handleBookings(request, env, bookingsPath, authResult.user!);
 			}
 			
 			if (path.startsWith('/api/users/')) {
@@ -77,7 +77,7 @@ export default {
 						headers: { 'Content-Type': 'application/json', ...corsHeaders }
 					});
 				}
-				return handleUsers(request, env, path.replace('/api/users', ''), authResult.user);
+				return handleUsers(request, env, path.replace('/api/users', ''), authResult.user!);
 			}
 			
 			if (path.startsWith('/api/operators/')) {
@@ -92,7 +92,7 @@ export default {
 						headers: { 'Content-Type': 'application/json', ...corsHeaders }
 					});
 				}
-				return handlePayments(request, env, path.replace('/api/payments', ''), authResult.user);
+				return handlePayments(request, env, path.replace('/api/payments', ''), authResult.user!);
 			}
 
 			if (path.startsWith('/api/airports')) {

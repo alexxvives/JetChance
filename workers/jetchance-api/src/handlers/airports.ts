@@ -44,7 +44,7 @@ export async function handleAirports(
 
     // POST /api/airports - Create new airport (pending approval)
     if (request.method === 'POST' && path === '') {
-      const data = await request.json();
+      const data = await request.json() as any;
       
       // Validate required fields
       if (!data.name || !data.code) {

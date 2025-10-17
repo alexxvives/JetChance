@@ -14,7 +14,7 @@ export async function handleQuotes(
   try {
     // POST /api/quotes - Create new quote (public)
     if (request.method === 'POST' && path === '') {
-      const body = await request.json();
+      const body = await request.json() as any;
       
       const {
         name,
@@ -140,7 +140,7 @@ export async function handleQuotes(
         });
       }
 
-      const body = await request.json();
+      const body = await request.json() as any;
       const { quoteIds } = body;
 
       if (!Array.isArray(quoteIds) || quoteIds.length === 0) {
@@ -172,7 +172,7 @@ export async function handleQuotes(
       }
 
       const quoteId = path.substring(1);
-      const body = await request.json();
+      const body = await request.json() as any;
       const { status, contacted } = body;
 
       const updates = [];

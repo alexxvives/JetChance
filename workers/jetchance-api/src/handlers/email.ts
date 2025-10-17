@@ -13,7 +13,7 @@ export async function handleEmail(
   try {
     // POST /api/send-email - Send email notification
     if (request.method === 'POST' && path === '') {
-      const body = await request.json();
+      const body = await request.json() as any;
       
       const {
         to,

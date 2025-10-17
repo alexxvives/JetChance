@@ -63,7 +63,7 @@ export async function handleProfile(
 
     // PUT /api/profile - Update user profile
     if (request.method === 'PUT' && path === '') {
-      const body = await request.json();
+      const body = await request.json() as any;
 
       // Update role-specific data
       if (user.role === 'customer') {
@@ -127,7 +127,7 @@ export async function handleProfile(
 
     // POST /api/profile/password - Change password
     if (request.method === 'POST' && path === '/password') {
-      const body = await request.json();
+      const body = await request.json() as any;
       const { currentPassword, newPassword } = body;
 
       if (!currentPassword || !newPassword) {
@@ -142,9 +142,18 @@ export async function handleProfile(
       // Verify current password
       const userRecord = await env.jetchance_db.prepare(`
         SELECT password_hash FROM users WHERE id = ?
-      `).bind(user.id).first();
+      `).bind(user.id).first() as any;
 
-      const isValid = await bcrypt.compare(currentPassword, userRecord.password_hash);
+      if (!userRecord) {
+        return new Response(JSON.stringify({
+          error: 'User not found'
+        }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      const isValid = await bcrypt.compare(currentPassword, userRecord.password_hash as string);
       if (!isValid) {
         return new Response(JSON.stringify({
           error: 'Current password is incorrect'
