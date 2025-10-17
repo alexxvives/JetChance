@@ -65,6 +65,8 @@ export default function Login() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="username"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -80,6 +82,8 @@ export default function Login() {
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
+                    name="password"
+                    autoComplete="current-password"
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}

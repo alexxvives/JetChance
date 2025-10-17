@@ -50,8 +50,9 @@ export default {
 				return handleAuth(request, env, path.replace('/api/auth', ''));
 			}
 			
-			if (path.startsWith('/api/flights/')) {
-				return handleFlights(request, env, path.replace('/api/flights', ''));
+			if (path.startsWith('/api/flights')) {
+				const flightsPath = path.replace('/api/flights', '').replace(/^\/$/, '');
+				return handleFlights(request, env, flightsPath);
 			}
 			
 			if (path.startsWith('/api/bookings')) {
