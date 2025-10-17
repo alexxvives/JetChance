@@ -180,41 +180,65 @@ export default function CreateFlightPage() {
       }
 
       const flight = await response.json();
+      console.log('📥 Loaded flight data:', flight);
+      
+      // Extract airport codes from formatted names like "Airport Name (CODE)"
+      const extractCode = (fullName) => {
+        const match = fullName?.match(/\(([^)]+)\)$/);
+        return match ? match[1] : '';
+      };
+      
+      // Extract airport name without code
+      const extractName = (fullName) => {
+        return fullName?.replace(/\s*\([^)]+\)$/, '') || '';
+      };
       
       // Construct proper airport objects for the autocomplete components
-      const originAirport = flight.origin_code ? {
-        code: flight.origin_code,
-        name: flight.origin_name,
+      const originAirport = flight.origin_name ? {
+        code: extractCode(flight.origin_name),
+        name: extractName(flight.origin_name),
         city: flight.origin_city,
         country: flight.origin_country
       } : null;
 
-      const destinationAirport = flight.destination_code ? {
-        code: flight.destination_code,
-        name: flight.destination_name,
+      const destinationAirport = flight.destination_name ? {
+        code: extractCode(flight.destination_name),
+        name: extractName(flight.destination_name),
         city: flight.destination_city,
         country: flight.destination_country
       } : null;
       
+      console.log('✈️ Parsed airports:', { originAirport, destinationAirport });
+      
       // Populate form with existing flight data
       setFormData({
-        departureTime: flight.departure_time || flight.departure_datetime || '',
-        arrivalTime: flight.arrival_time || flight.arrival_datetime || '',
+        departureTime: flight.departure_datetime || '',
+        arrivalTime: flight.arrival_datetime || '',
         aircraftType: flight.aircraft_model || '',
         price: flight.empty_leg_price ? String(flight.empty_leg_price) : '',
         originalPrice: flight.market_price ? String(flight.market_price) : '',
-        seatsAvailable: String(flight.available_seats || ''),
+        seatsAvailable: String(flight.available_seats || flight.total_seats || ''),
         aircraftImages: [],
         description: flight.description || '',
-        flightNumber: flight.flight_number || flight.id || '', // Preserve existing flight number
+        flightNumber: flight.id || '', // Use flight ID
         originAirport: originAirport,
         destinationAirport: destinationAirport
       });
 
+      // Parse images from JSON string to array
+      let imagesArray = [];
+      if (flight.images) {
+        try {
+          imagesArray = typeof flight.images === 'string' ? JSON.parse(flight.images) : flight.images;
+        } catch (e) {
+          console.error('Error parsing images:', e);
+          imagesArray = [];
+        }
+      }
+      
       // Load existing images as previews
-      if (flight.images && Array.isArray(flight.images) && flight.images.length > 0) {
-        // Images are already full URLs from the API
-        const previews = flight.images.map(imgUrl => {
+      if (Array.isArray(imagesArray) && imagesArray.length > 0) {
+        const previews = imagesArray.map(imgUrl => {
           // Extract just the filename from the URL for storage
           const filename = imgUrl.split('/').pop();
           return {
