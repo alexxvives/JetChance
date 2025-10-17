@@ -1,8 +1,8 @@
 /**
  * API Configuration
  * 
- * Since the Worker is now configured to respond on the same domain at /api/*,
- * we use relative URLs in production and localhost for development.
+ * Worker is configured to respond on www.jetchance.com/api/*
+ * Use relative URLs in production for same-domain requests
  */
 
 // For production: use relative URL (same domain)
