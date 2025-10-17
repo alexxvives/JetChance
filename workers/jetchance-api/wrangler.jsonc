@@ -16,7 +16,7 @@
 	},
 	"vars": {
 		"NODE_ENV": "production",
-		"CORS_ORIGINS": "https://jetchance.com,https://www.jetchance.com,https://jetchance.pages.dev"
+		"CORS_ORIGINS": "https://www.jetchance.com,https://jetchance.pages.dev"
 	},
 	"d1_databases": [
 		{
@@ -33,7 +33,13 @@
 	],
 	"triggers": {
 		"crons": ["0 2 * * *"]
-	}
+	},
+	"routes": [
+		{
+			"pattern": "www.jetchance.com/api/*",
+			"zone_name": "jetchance.com"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

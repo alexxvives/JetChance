@@ -49,7 +49,7 @@ export default {
 				return handleFlights(request, env, path.replace('/api/flights', ''));
 			}
 			
-			if (path.startsWith('/api/bookings/')) {
+			if (path.startsWith('/api/bookings')) {
 				const authResult = await authenticate(request, env);
 				if (authResult.error) {
 					return new Response(JSON.stringify({ error: authResult.error }), {
@@ -57,7 +57,9 @@ export default {
 						headers: { 'Content-Type': 'application/json', ...corsHeaders }
 					});
 				}
-				return handleBookings(request, env, path.replace('/api/bookings', ''), authResult.user);
+				// Normalize path: /api/bookings or /api/bookings/ should both result in empty string
+				const bookingsPath = path.replace('/api/bookings', '').replace(/^\/$/, '');
+				return handleBookings(request, env, bookingsPath, authResult.user);
 			}
 			
 			if (path.startsWith('/api/users/')) {
@@ -86,7 +88,7 @@ export default {
 				return handlePayments(request, env, path.replace('/api/payments', ''), authResult.user);
 			}
 
-			if (path.startsWith('/api/airports/')) {
+			if (path.startsWith('/api/airports')) {
 				// Admin routes require authentication
 				if (path.startsWith('/api/airports/admin/')) {
 					const authResult = await authenticate(request, env);
@@ -99,7 +101,9 @@ export default {
 					return handleAirports(request, env, path.replace('/api/airports', ''), authResult.user);
 				}
 				// Public routes (GET approved airports, POST new airport)
-				return handleAirports(request, env, path.replace('/api/airports', ''));
+				// Normalize path: /api/airports or /api/airports/ should both result in empty string
+				const airportsPath = path.replace('/api/airports', '').replace(/^\/$/, '');
+				return handleAirports(request, env, airportsPath);
 			}
 
 			if (path.startsWith('/api/notifications')) {
@@ -110,7 +114,9 @@ export default {
 						headers: { 'Content-Type': 'application/json', ...corsHeaders }
 					});
 				}
-				return handleNotifications(request, env, path.replace('/api/notifications', ''), authResult.user);
+				// Normalize path: /api/notifications or /api/notifications/ should both result in empty string
+				const notificationsPath = path.replace('/api/notifications', '').replace(/^\/$/, '');
+				return handleNotifications(request, env, notificationsPath, authResult.user);
 			}
 
 			// 404 handler
