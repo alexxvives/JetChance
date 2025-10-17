@@ -1,14 +1,15 @@
 /**
  * API Configuration
  * 
- * Worker is configured to respond on www.jetchance.com/api/*
- * Always use production Worker API for consistency
+ * Production: Uses relative URLs (/api) - Worker on same domain
+ * Development: Set VITE_USE_LOCAL_API=true in .env.local to use local backend
  */
 
-// Production: relative URL (same domain)
-// Development: use production Worker directly
-export const API_BASE_URL = import.meta.env.MODE === 'development' 
-  ? 'https://www.jetchance.com/api' 
-  : '/api';
+// Check if we should use local API (only in development)
+const useLocalAPI = import.meta.env.VITE_USE_LOCAL_API === 'true';
+
+export const API_BASE_URL = useLocalAPI
+  ? 'http://localhost:4000/api'  // Local Node.js backend
+  : '/api';  // Production Worker (www.jetchance.com/api/*)
 
 export default API_BASE_URL;
