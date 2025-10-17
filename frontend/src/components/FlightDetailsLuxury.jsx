@@ -68,7 +68,17 @@ export default function FlightDetailsLuxury({ flight, onBack, selectedPassengers
 
   const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'super-admin';
 
-  const images = flight.images || [];
+  // Parse images field (it's a JSON string in the database)
+  let images = [];
+  if (flight.images) {
+    try {
+      images = typeof flight.images === 'string' ? JSON.parse(flight.images) : flight.images;
+      console.log('📸 FlightDetailsLuxury - Parsed images:', images);
+    } catch (e) {
+      console.error('❌ Error parsing flight images:', e);
+      images = [];
+    }
+  }
   const hasImages = images.length > 0;
 
   return (

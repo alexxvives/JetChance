@@ -99,23 +99,24 @@ export default function FlightDetailsOption1({
     showButton: isOperator && !hasExistingBookings
   });
 
-  // Prepare images array - main image + additional images
-  const mainImage = flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image || '/images/aircraft/default-aircraft.jpg';
-  
   // Parse images field (it's a JSON string in the database)
   let parsedImages = [];
   if (flight.images) {
     try {
       parsedImages = typeof flight.images === 'string' ? JSON.parse(flight.images) : flight.images;
+      console.log('📸 FlightDetailsView - Parsed images:', parsedImages);
     } catch (e) {
-      console.error('Error parsing flight images:', e);
+      console.error('❌ Error parsing flight images:', e);
       parsedImages = [];
     }
   }
   
+  // Prepare images array - main image + additional images
+  const mainImage = parsedImages[0] || flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image || '/images/aircraft/default-aircraft.jpg';
+  
   // Only use additional images for gallery, not the main image
-  const additionalImages = parsedImages.filter(img => img && img !== mainImage);
-  const allImages = [mainImage, ...additionalImages].filter(img => img); // All images for lightbox
+  const additionalImages = parsedImages.slice(1).filter(img => img); // Skip first image, it's the main one
+  const allImages = parsedImages.length > 0 ? parsedImages : [mainImage]; // All images for lightbox
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
@@ -152,7 +153,7 @@ export default function FlightDetailsOption1({
       {/* Hero Image Section */}
       <div className="relative h-96 rounded-2xl overflow-hidden mb-8 shadow-xl">
         <img
-          src={flight.aircraft_image || flight.aircraft_image_url || flight.aircraft?.image || '/images/aircraft/default-aircraft.jpg'}
+          src={mainImage}
           alt={flight.aircraft_model || 'Aircraft'}
           className="w-full h-full object-cover"
           onError={(e) => {
