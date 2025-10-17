@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -40,30 +40,41 @@ const destinationIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-export default function FreeFlightMap({ flight, onCoordinateStatus }) {
+const FreeFlightMap = memo(function FreeFlightMap({ flight, onCoordinateStatus }) {
   const [airportsData, setAirportsData] = useState({});
   
-  // Fetch airport data from API
+  // Fetch airport data from API only once
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchAirportData = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/airports`);
         const airports = await response.json();
         
-        // Create a map of airport code -> airport data
-        const airportsMap = {};
-        airports.forEach(airport => {
-          airportsMap[airport.code] = airport;
-        });
-        
-        setAirportsData(airportsMap);
+        if (isMounted) {
+          // Create a map of airport code -> airport data
+          const airportsMap = {};
+          airports.forEach(airport => {
+            airportsMap[airport.code] = airport;
+          });
+          
+          setAirportsData(airportsMap);
+        }
       } catch (error) {
-        console.error('Failed to fetch airport data:', error);
+        if (isMounted) {
+          console.error('Failed to fetch airport data:', error);
+        }
       }
     };
     
-    fetchAirportData();
-  }, []);
+    // Only fetch if we don't have data yet
+    if (Object.keys(airportsData).length === 0) {
+      fetchAirportData();
+    }
+    
+    return () => { isMounted = false; };
+  }, []); // Empty dependency array - only runs once
   
   // Airport coordinates lookup (we'll expand this with more airports)
   const airportCoordinates = {
@@ -312,4 +323,6 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
       </div>
     </div>
   );
-}
+});
+
+export default FreeFlightMap;
