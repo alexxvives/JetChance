@@ -238,11 +238,14 @@ export default function CreateFlightPage() {
       
       // Load existing images as previews
       if (Array.isArray(imagesArray) && imagesArray.length > 0) {
+        console.log('📸 Raw images array:', imagesArray);
         const previews = imagesArray.map(imgUrl => {
-          // Extract just the filename from the URL for storage
-          const filename = imgUrl.split('/').pop();
+          // Ensure URL is complete (should already be from R2)
+          const fullUrl = imgUrl.startsWith('http') ? imgUrl : `${API_BASE_URL}${imgUrl}`;
+          const filename = fullUrl.split('/').pop();
+          console.log(`  - Image: ${filename}, URL: ${fullUrl}`);
           return {
-            preview: imgUrl,
+            preview: fullUrl,
             name: filename,
             isExisting: true
           };
