@@ -13,8 +13,8 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline';
 
-// API URL from environment variable
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Use relative URL - Worker is now on same domain at /api/*
+const API_URL = '/api';
 
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {

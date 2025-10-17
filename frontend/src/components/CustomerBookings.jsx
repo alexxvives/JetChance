@@ -17,8 +17,8 @@ import {
   BarChart3
 } from 'lucide-react';
 
-// API URL from environment variable
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Use relative URL - Worker is now on same domain at /api/*
+const API_URL = '/api';
 
 export default function CustomerBookings() {
   const { user } = useAuth();
