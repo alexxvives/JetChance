@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { CreditCardIcon, LockClosedIcon, UserIcon, EnvelopeIcon, PhoneIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from '../contexts/TranslationContext';
 import { useAuth } from '../contexts/AuthContext';
+import API_BASE_URL from '../config/api';
+
+const API_URL = API_BASE_URL;
 
 export default function PayUPaymentForm({ 
   amount, 
@@ -187,8 +190,7 @@ export default function PayUPaymentForm({
       const token = localStorage.getItem('accessToken');
       console.log('Auth token exists:', !!token);
       
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-      const bookingResponse = await fetch(`${API_BASE_URL}/bookings`, {
+      const bookingResponse = await fetch(`${API_URL}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

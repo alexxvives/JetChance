@@ -10,8 +10,9 @@ import CurrencyInput from '../components/CurrencyInput';
 import CustomDateTimePicker from '../components/CustomDateTimePicker';
 import AirportService from '../services/AirportService';
 import { getCountryByAirportCode } from '../utils/airportCountries';
+import API_BASE_URL from '../config/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = API_BASE_URL;
 
 // Helper function to format Colombian Peso currency with COP label
 const formatCOP = (amount) => {
@@ -168,8 +169,7 @@ export default function CreateFlightPage() {
   const loadFlightData = async (flightId) => {
     try {
       setIsLoading(true);
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${API_BASE_URL}/flights/${flightId}`, {
+      const response = await fetch(`${API_URL}/flights/${flightId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -334,13 +334,12 @@ export default function CreateFlightPage() {
       
       // Upload new images (those without isExisting flag or from aircraftImages array)
       if (formData.aircraftImages.length > 0) {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
         for (const image of formData.aircraftImages) {
           try {
             const formDataForUpload = new FormData();
             formDataForUpload.append('aircraftImage', image);
             
-            const uploadResponse = await fetch(`${API_BASE_URL}/upload/aircraft-image`, {
+            const uploadResponse = await fetch(`${API_URL}/upload/aircraft-image`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`

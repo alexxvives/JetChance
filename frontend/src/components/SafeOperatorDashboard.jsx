@@ -8,6 +8,9 @@ import NotificationsAPI from '../api/notificationsAPI';
 import { flightsAPI } from '../api/flightsAPI';
 import Profile from './Profile';
 import FreeFlightMap from './FreeFlightMap';
+import API_BASE_URL from '../config/api';
+
+const API_URL = API_BASE_URL;
 import FlightDetailsView from './FlightDetailsView';
 import { 
   PlusIcon, 
@@ -142,8 +145,7 @@ function ActualOperatorDashboard({ user }) {
       setIsLoading(true);
       console.log('🔄 Loading flights for operator:', user.id);
       
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${API_BASE_URL}/flights?user_id=${user.id}`);
+      const response = await fetch(`${API_URL}/flights?user_id=${user.id}`);
       
       if (!response.ok) {
         if (response.status === 404) {

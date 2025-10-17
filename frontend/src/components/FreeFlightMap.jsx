@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import API_BASE_URL from '../config/api';
 
 // Fix for default markers in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -46,8 +47,7 @@ export default function FreeFlightMap({ flight, onCoordinateStatus }) {
   useEffect(() => {
     const fetchAirportData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-        const response = await fetch(`${apiUrl}/airports`);
+        const response = await fetch(`${API_BASE_URL}/airports`);
         const airports = await response.json();
         
         // Create a map of airport code -> airport data

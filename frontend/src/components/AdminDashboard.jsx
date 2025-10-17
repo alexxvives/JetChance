@@ -16,8 +16,9 @@ import SystemDashboard from './SystemDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { extractAirportCode } from '../utils/airportUtils';
+import API_BASE_URL from '../config/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = API_BASE_URL;
 
 // Helper function to format COP with separate styling for currency label
 const formatCOPWithStyling = (amount) => {
@@ -594,8 +595,7 @@ export default function AdminDashboard({ user }) {
         throw new Error('No authentication token found. Please log in again.');
       }
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${API_BASE_URL}/bookings/crm`, {
+      const response = await fetch(`${API_URL}/bookings/crm`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
