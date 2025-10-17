@@ -665,27 +665,6 @@ export default function CreateFlightPage() {
                   label={t('createFlight.sections.flightSchedule.departureDateTimeTitle')}
                   required
                 />
-                
-                {/* Departure Preview */}
-                {formData.departureTime && formData.departureTime.includes('T') && formData.departureTime.split('T')[1] && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="text-sm text-blue-800 font-medium">
-                      {new Date(formData.departureTime).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                    <div className="text-lg font-bold text-blue-900">
-                      {new Date(formData.departureTime).toLocaleTimeString('en-GB', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Arrival Section */}
@@ -698,27 +677,6 @@ export default function CreateFlightPage() {
                   label={t('createFlight.sections.flightSchedule.arrivalDateTimeTitle')}
                   required
                 />
-                
-                {/* Arrival Preview */}
-                {formData.arrivalTime && formData.arrivalTime.includes('T') && formData.arrivalTime.split('T')[1] && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <div className="text-sm text-purple-800 font-medium">
-                      {new Date(formData.arrivalTime).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                    <div className="text-lg font-bold text-purple-900">
-                      {new Date(formData.arrivalTime).toLocaleTimeString('en-GB', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
